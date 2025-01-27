@@ -1,6 +1,11 @@
 <?php
 
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\CountryController;
+use App\Http\Controllers\GovernmentController;
+use App\Http\Controllers\ProviderTypeController;
+use App\Http\Controllers\SpecializationController;
+use App\Http\Controllers\SubSpecializationController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -15,14 +20,26 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-Route::group('auth', function () {
-    Route::post('/register', [AuthController::class, 'register']);
-    Route::post('/login', [AuthController::class, 'login']);
-    Route::post('/logout', [AuthController::class, 'logout']);
-    Route::post('/reset-password', [AuthController::class, 'resetPassword']);
-    Route::post('/forget-password', [AuthController::class, 'forgetPassword']);
+/// Auth Routes
+Route::prefix("auth")->group(function () {
+    Route::post('register', [AuthController::class, 'register']);
+    Route::post('login', [AuthController::class, 'login']);
+    Route::post('logout', [AuthController::class, 'logout']);
+    Route::post('reset-password', [AuthController::class, 'resetPassword']);
+    Route::post('forget-password', [AuthController::class, 'forgetPassword']);
 });
 
-Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
-    return $request->user();
-});
+// Country Routes
+Route::apiResource('countries', CountryController::class);
+
+// Government Routes
+Route::apiResource('governments', GovernmentController::class);
+
+// Provider Type Routes
+Route::apiResource('provider-types', ProviderTypeController::class);
+
+// Specialization Routes
+Route::apiResource('specializations', SpecializationController::class);
+
+// Sub Specialization Routes
+Route::apiResource('sub-specializations', SubSpecializationController::class);

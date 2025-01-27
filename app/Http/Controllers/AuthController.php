@@ -4,7 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Admin;
 use App\Models\Client;
-use App\Models\ServiceProvider;
+use App\Models\Provider;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -26,6 +26,19 @@ class AuthController extends Controller
 
             if (Auth::attempt($credentials)) {
                 $user = User::where('email', $request->email)->first();
+                if ($user->role == 'service_provider' && $user->status == 'inactive') {
+                    return response()->json([
+                        'status' => 'error',
+                        'message' => 'Please wait for admin approval.',
+                    ], 401);
+                }
+
+                if ($user->status == 'inactive') {
+                    return response()->json([
+                        'status' => 'error',
+                        'message' => 'Your account is inactive.',
+                    ], 401);
+                }
                 $token = $user->createToken('auth_token')->plainTextToken;
                 return response()->json([
                     'status' => 'success',
@@ -68,9 +81,9 @@ class AuthController extends Controller
                 'email' => 'required|email|unique:users,email',
                 'password' => 'required|string|min:6',
                 'country_code' => 'required|string',
-                'phone' => 'required|string|unique:users,phone_number',
+                'phone' => 'required|string|unique:users,phone',
                 'role' => 'required|in:client,service_provider,admin',
-                'government_id' => 'required|string|unique:users,government_id',
+                'government_id' => 'required|string|exists:governments,id',
                 'image' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg',
                 'sub_specialization_id' => 'nullable|exists:sub_specializations,id',
                 'service_provider_type_id' => 'nullable|exists:service_provider_types,id',
@@ -82,6 +95,10 @@ class AuthController extends Controller
             $user->password = Hash::make($request->password);
             $user->phone = $request->phone;
             $user->country_code = $request->country_code;
+            $user->role = $request->role;
+            if ($request->role ==  'service_provider') {
+                $user->status = 'inactive';
+            }
             $user->save();
 
             switch ($request->role) {
@@ -99,7 +116,7 @@ class AuthController extends Controller
                     break;
                 case 'service_provider':
                     $user->assignRole('service_provider');
-                    $serviceProvider = new ServiceProvider();
+                    $serviceProvider = new Provider();
                     $serviceProvider->user_id = $user->id;
                     $serviceProvider->service_provider_type_id = $request->service_provider_type_id;
                     $serviceProvider->sub_specialization_id = $request->sub_specialization_id;
@@ -129,7 +146,7 @@ class AuthController extends Controller
         } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
             return response()->json([
                 'status' => 'error',
-                'message' => 'Invalid credentials.',
+                'message' => 'Not found.',
                 'error' => $e->getMessage(),
             ], 401);
         } catch (\Illuminate\Validation\ValidationException $e) {
@@ -159,7 +176,7 @@ class AuthController extends Controller
         } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
             return response()->json([
                 'status' => 'error',
-                'message' => 'Invalid credentials.',
+                'message' => 'Not found.',
                 'error' => $e->getMessage(),
             ], 401);
         } catch (\Illuminate\Validation\ValidationException $e) {
@@ -207,7 +224,7 @@ class AuthController extends Controller
         } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
             return response()->json([
                 'status' => 'error',
-                'message' => 'Invalid credentials.',
+                'message' => 'Not found.',
                 'error' => $e->getMessage(),
             ], 401);
         } catch (\Illuminate\Validation\ValidationException $e) {

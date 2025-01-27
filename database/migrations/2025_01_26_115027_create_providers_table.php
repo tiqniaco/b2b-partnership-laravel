@@ -11,10 +11,10 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('service_providers', function (Blueprint $table) {
+        Schema::create('providers', function (Blueprint $table) {
             $table->id();
             $table->foreignId('user_id')->constrained('users');
-            $table->foreignId('service_provider_type_id')->constrained('service_provider_types');
+            $table->foreignId('provider_types_id')->constrained('provider_types');
             $table->foreignId('sub_specialization_id')->constrained('sub_specializations');
             $table->foreignId('governments_id')->constrained('governments');
             $table->text('image');

@@ -4,6 +4,10 @@ namespace Database\Seeders;
 
 // use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 
+use App\Models\Country;
+use App\Models\Government;
+use App\Models\Specialization;
+use App\Models\SubSpecialization;
 use App\Models\User;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
@@ -18,7 +22,7 @@ class DatabaseSeeder extends Seeder
     {
         $adminRole = Role::create(['name' => 'admin']);
         $clientRole = Role::create(['name' => 'client']);
-        $serviceProviderRole = Role::create(['name' => 'service_provider']);
+        $serviceProviderRole = Role::create(['name' => 'provider']);
 
         $userAdmin = User::create([
             'name' => 'Admin',
@@ -27,5 +31,9 @@ class DatabaseSeeder extends Seeder
         ]);
 
         $userAdmin->assignRole($adminRole);
+
+        Country::factory(10)->create();
+
+        Government::factory(10)->create();
     }
 }
