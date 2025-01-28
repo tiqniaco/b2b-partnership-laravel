@@ -10,15 +10,19 @@ class GovernmentController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
         try {
-            $countries = Government::all();
+            $request->validate([
+                "country_id" => "required|exists:countries,id",
+            ]);
+
+            $governments = Government::where('country_id', $request->country_id)->get();
 
             return response()->json([
                 'status' => 'success',
                 'message' => 'Data fetched successfully.',
-                'data' => $countries,
+                'data' => $governments,
             ]);
         } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
             return response()->json([

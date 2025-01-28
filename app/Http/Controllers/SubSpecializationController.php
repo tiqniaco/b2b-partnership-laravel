@@ -11,10 +11,13 @@ class SubSpecializationController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
         try {
-            $subSpecialization = SubSpecialization::all();
+            $request->validate([
+                'specialization_id' => 'required|exists:specializations,id',
+            ]);
+            $subSpecialization = SubSpecialization::where('parent_id', $request->specialization_id)->get();
 
             return response()->json([
                 'status' => 'success',

@@ -131,13 +131,22 @@ class CountryController extends Controller
     {
         try {
             $request->validate([
-                'name_en' => 'unique:countries,name_en',
-                'name_ar' => 'unique:countries,name_ar',
+                'name_en' => 'nullable|string',
+                'name_ar' => 'nullable|string',
+                'flag' => "image|mimes:jpeg,png,jpg,gif,svg",
+                'code' => 'nullable|string|max:10',
             ]);
 
             $country = Country::findOrFail($id);
             $country->name_en = $request->name_en ?? $country->name_en;
             $country->name_ar = $request->name_ar ?? $country->name_ar;
+            $country->code = $request->code ?? $country->code;
+            if ($request->hasFile('flag')) {
+                unlink(public_path($country->flag));
+                $imageName = 'images/countries/' . time() . '.' . $request->flag->extension();
+                $request->flag->move(public_path('images/countries'), $imageName);
+                $country->flag = $imageName;
+            }
             $country->save();
 
             return response()->json([
@@ -172,6 +181,7 @@ class CountryController extends Controller
     {
         try {
             $country = Country::findOrFail($id);
+            unlink(public_path($country->flag));
             $country->delete();
 
             return response()->json([

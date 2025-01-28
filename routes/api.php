@@ -31,6 +31,7 @@ Route::prefix("auth")->group(function () {
 
 // Country Routes
 Route::apiResource('countries', CountryController::class);
+Route::post('countries/{id}/update', [CountryController::class, 'update']);
 
 // Government Routes
 Route::apiResource('governments', GovernmentController::class);
