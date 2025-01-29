@@ -18,6 +18,9 @@ return new class extends Migration
             $table->foreignId('sub_specialization_id')->constrained('sub_specializations');
             $table->foreignId('governments_id')->constrained('governments');
             $table->text('image');
+            $table->text('commercial_register');
+            $table->text('tax_card');
+            $table->text("bio");
             $table->timestamps();
         });
     }

@@ -19,7 +19,7 @@ class CountryController extends Controller
                 'status' => 'success',
                 'message' => 'Data fetched successfully.',
                 'data' => $countries,
-            ]);
+            ], 200);
         } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
             return response()->json([
                 'status' => 'error',
@@ -52,12 +52,14 @@ class CountryController extends Controller
                 'name_ar' => 'required|string',
                 'flag' => "required|image|mimes:jpeg,png,jpg,gif,svg",
                 'code' => 'required|string|max:10',
-            ]);
+                'phone_length' => 'required|integer',
+            ], 200);
 
             $country = new Country();
             $country->name_en = $request->name_en;
             $country->name_ar = $request->name_ar;
             $country->code = $request->code;
+            $country->phone_length = $request->phone_length;
             if ($request->hasFile('flag')) {
                 $imageName = 'images/countries/' . time() . '.' . $request->flag->extension();
                 $request->flag->move(public_path('images/countries'), $imageName);
@@ -102,7 +104,7 @@ class CountryController extends Controller
                 'status' => 'success',
                 'message' => 'Data fetched successfully.',
                 'data' => $country,
-            ]);
+            ], 200);
         } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
             return response()->json([
                 'status' => 'error',
@@ -135,12 +137,14 @@ class CountryController extends Controller
                 'name_ar' => 'nullable|string',
                 'flag' => "image|mimes:jpeg,png,jpg,gif,svg",
                 'code' => 'nullable|string|max:10',
-            ]);
+                'phone_length' => 'nullable|integer',
+            ], 200);
 
             $country = Country::findOrFail($id);
             $country->name_en = $request->name_en ?? $country->name_en;
             $country->name_ar = $request->name_ar ?? $country->name_ar;
             $country->code = $request->code ?? $country->code;
+            $country->phone_length = $request->phone_length ?? $country->phone_length;
             if ($request->hasFile('flag')) {
                 unlink(public_path($country->flag));
                 $imageName = 'images/countries/' . time() . '.' . $request->flag->extension();
@@ -152,7 +156,7 @@ class CountryController extends Controller
             return response()->json([
                 'status' => 'success',
                 'message' => 'Data updated successfully.',
-            ]);
+            ], 200);
         } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
             return response()->json([
                 'status' => 'error',
@@ -187,7 +191,7 @@ class CountryController extends Controller
             return response()->json([
                 'status' => 'success',
                 'message' => 'Data deleted successfully.',
-            ]);
+            ], 200);
         } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
             return response()->json([
                 'status' => 'error',

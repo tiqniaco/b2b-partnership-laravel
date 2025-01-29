@@ -23,7 +23,7 @@ class SubSpecializationController extends Controller
                 'status' => 'success',
                 'message' => 'Data fetched successfully.',
                 'data' => $subSpecialization,
-            ]);
+            ], 200);
         } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
             return response()->json([
                 'status' => 'error',
@@ -66,7 +66,7 @@ class SubSpecializationController extends Controller
             return response()->json([
                 'status' => 'success',
                 'message' => 'Data created successfully.',
-            ]);
+            ], 200);
         } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
             return response()->json([
                 'status' => 'error',
@@ -100,7 +100,7 @@ class SubSpecializationController extends Controller
                 'status' => 'success',
                 'message' => 'Data fetched successfully.',
                 'data' => $subSpecialization,
-            ]);
+            ], 200);
         } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
             return response()->json([
                 'status' => 'error',
@@ -141,7 +141,7 @@ class SubSpecializationController extends Controller
             return response()->json([
                 'status' => 'success',
                 'message' => 'Data updated successfully.',
-            ]);
+            ], 200);
         } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
             return response()->json([
                 'status' => 'error',
@@ -175,7 +175,7 @@ class SubSpecializationController extends Controller
             return response()->json([
                 'status' => 'success',
                 'message' => 'Data deleted successfully.',
-            ]);
+            ], 200);
         } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
             return response()->json([
                 'status' => 'error',

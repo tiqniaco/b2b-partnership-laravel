@@ -26,7 +26,7 @@ class AuthController extends Controller
 
             if (Auth::attempt($credentials)) {
                 $user = User::where('email', $request->email)->first();
-                if ($user->role == 'service_provider' && $user->status == 'inactive') {
+                if ($user->role == 'provider' && $user->status == 'inactive') {
                     return response()->json([
                         'status' => 'error',
                         'message' => 'Please wait for admin approval.',
@@ -82,11 +82,14 @@ class AuthController extends Controller
                 'password' => 'required|string|min:6',
                 'country_code' => 'required|string',
                 'phone' => 'required|string|unique:users,phone',
-                'role' => 'required|in:client,service_provider,admin',
+                'role' => 'required|in:client,provider,admin',
                 'government_id' => 'required|string|exists:governments,id',
                 'image' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg',
                 'sub_specialization_id' => 'nullable|exists:sub_specializations,id',
-                'service_provider_type_id' => 'nullable|exists:service_provider_types,id',
+                'provider_type_id' => 'nullable|exists:provider_types,id',
+                'commercial_register' => 'nullable|mimes:pdf',
+                'tax_card' => 'nullable|mimes:pdf',
+                'bio' => 'nullable|string',
             ]);
 
             $user = new User();
@@ -96,7 +99,7 @@ class AuthController extends Controller
             $user->phone = $request->phone;
             $user->country_code = $request->country_code;
             $user->role = $request->role;
-            if ($request->role ==  'service_provider') {
+            if ($request->role ==  'provider') {
                 $user->status = 'inactive';
             }
             $user->save();
@@ -114,19 +117,33 @@ class AuthController extends Controller
                     }
                     $client->save();
                     break;
-                case 'service_provider':
-                    $user->assignRole('service_provider');
-                    $serviceProvider = new Provider();
-                    $serviceProvider->user_id = $user->id;
-                    $serviceProvider->service_provider_type_id = $request->service_provider_type_id;
-                    $serviceProvider->sub_specialization_id = $request->sub_specialization_id;
-                    $serviceProvider->governments_id = $request->government_id;
+                case 'provider':
+                    $user->assignRole('provider');
+                    $provider = new Provider();
+                    $provider->user_id = $user->id;
+                    $provider->provider_types_id = $request->provider_types_id;
+                    $provider->sub_specialization_id = $request->sub_specialization_id;
+                    $provider->governments_id = $request->government_id;
                     if ($request->hasFile('image')) {
-                        $imageName = 'images/service_providers/' . time() . '.' . $request->image->extension();
-                        $request->image->move(public_path('images/service_providers'), $imageName);
-                        $serviceProvider->image = $imageName;
+                        $imageName = 'images/providers/' . time() . '.' . $request->image->extension();
+                        $request->image->move(public_path('images/providers'), $imageName);
+                        $provider->image = $imageName;
                     }
-                    $serviceProvider->save();
+                    if ($request->hasFile('commercial_register')) {
+                        $file = $request->file('commercial_register');
+                        $filename = 'images/providers/' . time() . '.' . $request->commercial_register->extension();
+                        $file->move(public_path('images/providers'), $filename);
+                        $provider->commercial_register = $filename;
+                    }
+
+                    if ($request->hasFile('tax_card')) {
+                        $file = $request->file('tax_card');
+                        $filename = 'images/providers/' . time() . '.' . $request->tax_card->extension();
+                        $file->move(public_path('images/providers'), $filename);
+                        $provider->tax_card = $filename;
+                    }
+                    $provider->bio = $request->bio;
+                    $provider->save();
                     break;
                 case 'admin':
                     $user->assignRole('admin');
@@ -193,6 +210,71 @@ class AuthController extends Controller
             ], 500);
         }
     }
+
+    public function updateProfile(Request $request)
+    {
+        try {
+            $request->validate([
+                "id" => "required|exists:users,id",
+                'name' => 'nullable|string',
+                'email' => 'nullable|email',
+                'phone' => 'nullable|string',
+                'country_code' => 'nullable|string',
+                'image' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg',
+            ]);
+            $user = User::findOrFail($request->id);
+            $user->name = $request->name ?? $user->name;
+            $user->email = $request->email ?? $user->email;
+            $user->phone = $request->phone ?? $user->phone;
+            $user->country_code = $request->country_code ?? $user->country_code;
+            $user->save();
+
+            if ($request->hasFile('image')) {
+                switch ($user->role) {
+                    case 'client':
+                        $client = Client::where('user_id', $user->id)->first();
+                        unlink(public_path($client->image));
+                        $imageName = 'images/clients/' . time() . '.' . $request->image->extension();
+                        $request->image->move(public_path('images/clients'), $imageName);
+                        $client->image = $imageName;
+                        $client->save();
+                        break;
+                    case 'provider':
+                        $provider = Provider::where('user_id', $user->id)->first();
+                        unlink(public_path($provider->image));
+                        $imageName = 'images/providers/' . time() . '.' . $request->image->extension();
+                        $request->image->move(public_path('images/providers'), $imageName);
+                        $provider->image = $imageName;
+                        $provider->save();
+                        break;
+                }
+            }
+
+            return response()->json([
+                'status' => 'success',
+                'message' => 'Profile updated successfully.',
+            ], 200);
+        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Not found.',
+                'error' => $e->getMessage(),
+            ], 401);
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Validation error.',
+                'error' => $e->getMessage(),
+            ], 401);
+        } catch (\Throwable $e) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Something went wrong.',
+                'error' => $e->getMessage(),
+            ], 500);
+        }
+    }
+
     public function resetPassword(Request $request)
     {
         try {

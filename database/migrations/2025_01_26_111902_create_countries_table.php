@@ -17,6 +17,7 @@ return new class extends Migration
             $table->string('name_en', 255);
             $table->string('code', 10);
             $table->text("flag");
+            $table->integer("phone_length");
             $table->timestamps();
         });
     }

@@ -3,6 +3,7 @@
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\CountryController;
 use App\Http\Controllers\GovernmentController;
+use App\Http\Controllers\ProviderController;
 use App\Http\Controllers\ProviderTypeController;
 use App\Http\Controllers\SpecializationController;
 use App\Http\Controllers\SubSpecializationController;
@@ -25,6 +26,7 @@ Route::prefix("auth")->group(function () {
     Route::post('register', [AuthController::class, 'register']);
     Route::post('login', [AuthController::class, 'login']);
     Route::post('logout', [AuthController::class, 'logout']);
+    Route::post('update-profile', [AuthController::class, 'updateProfile']);
     Route::post('reset-password', [AuthController::class, 'resetPassword']);
     Route::post('forget-password', [AuthController::class, 'forgetPassword']);
 });
@@ -44,3 +46,6 @@ Route::apiResource('specializations', SpecializationController::class);
 
 // Sub Specialization Routes
 Route::apiResource('sub-specializations', SubSpecializationController::class);
+
+// Provider Routes
+Route::apiResource('providers', ProviderController::class);
