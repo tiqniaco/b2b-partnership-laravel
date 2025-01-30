@@ -2,10 +2,10 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\ClientServices;
+use App\Models\ProviderService;
 use Illuminate\Http\Request;
 
-class ClientServiceController extends Controller
+class ProviderServiceController extends Controller
 {
     /**
      * Display a listing of the resource.
@@ -13,18 +13,18 @@ class ClientServiceController extends Controller
     public function index()
     {
         try {
-            $clientsServices = ClientServices::select(
-                'client_services.id',
-                'client_services.client_id',
-                'client_services.governments_id',
-                'client_services.sub_specialization_id',
-                'client_services.address',
-                'client_services.description',
-                'client_services.image',
-                'client_services.start_price',
-                'client_services.end_price',
-                'client_services.duration',
-                'client_services.file',
+            $providerServices = ProviderService::select(
+                'provider_services.id',
+                'provider_services.provider_id',
+                'provider_services.governments_id',
+                'provider_services.sub_specialization_id',
+                'provider_services.address',
+                'provider_services.description',
+                'provider_services.image',
+                'provider_services.start_price',
+                'provider_services.end_price',
+                'provider_services.duration',
+                'provider_services.file',
                 'specializations.name_ar as specialization_name_ar',
                 'specializations.name_en as specialization_name_en',
                 'sub_specializations.name_ar as sub_specialization_name_ar',
@@ -33,17 +33,17 @@ class ClientServiceController extends Controller
                 'countries.name_en as country_name_en',
                 'governments.name_ar as government_name_ar',
                 'governments.name_en as government_name_en',
-                'client_services.created_at',
-                'client_services.updated_at',
+                'provider_services.created_at',
+                'provider_services.updated_at',
             )
-                ->join('sub_specializations', 'client_services.sub_specialization_id', '=', 'sub_specializations.id')
+                ->join('sub_specializations', 'provider_services.sub_specialization_id', '=', 'sub_specializations.id')
                 ->join('specializations', 'sub_specializations.parent_id', '=', 'specializations.id')
-                ->join('governments', 'client_services.governments_id', '=', 'governments.id')
+                ->join('governments', 'provider_services.governments_id', '=', 'governments.id')
                 ->join('countries', 'governments.country_id', '=', 'countries.id')
                 ->paginate(12);
 
             return response()->json(
-                $clientsServices,
+                $providerServices,
                 200,
             );
         } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
@@ -74,7 +74,7 @@ class ClientServiceController extends Controller
     {
         try {
             $request->validate([
-                'client_id' => 'required|integer|exists:clients,id',
+                'provider_id' => 'required|integer|exists:providers,id',
                 'governments_id' => 'required|integer|exists:governments,id',
                 'sub_specialization_id' => 'required|integer|exists:sub_specializations,id',
                 'address' => 'required|string|max:255',
@@ -86,26 +86,26 @@ class ClientServiceController extends Controller
                 'file' => 'nullable|file|mimes:pdf|max:50000',
             ]);
 
-            $clientService = new ClientServices();
-            $clientService->client_id = $request->client_id;
-            $clientService->governments_id = $request->governments_id;
-            $clientService->sub_specialization_id = $request->sub_specialization_id;
-            $clientService->address = $request->address;
-            $clientService->description = $request->description;
-            $clientService->start_price = $request->start_price;
-            $clientService->end_price = $request->end_price;
-            $clientService->duration = $request->duration;
+            $providerService = new ProviderService();
+            $providerService->provider_id = $request->client_id;
+            $providerService->governments_id = $request->governments_id;
+            $providerService->sub_specialization_id = $request->sub_specialization_id;
+            $providerService->address = $request->address;
+            $providerService->description = $request->description;
+            $providerService->start_price = $request->start_price;
+            $providerService->end_price = $request->end_price;
+            $providerService->duration = $request->duration;
             if ($request->hasFile('image')) {
-                $imageName = 'images/client_services/' . time() . '.' . $request->image->extension();
-                $request->image->move(public_path('images/client_services'), $imageName);
-                $clientService->image = $imageName;
+                $imageName = 'images/$provider_services/' . time() . '.' . $request->image->extension();
+                $request->image->move(public_path('images/$provider_services'), $imageName);
+                $providerService->image = $imageName;
             }
             if ($request->hasFile('file')) {
-                $file = 'files/client_services/' . time() . '.' . $request->file->extension();
-                $request->file->move(public_path('files/client_services'), $file);
-                $clientService->file = $file;
+                $file = 'files/$provider_services/' . time() . '.' . $request->file->extension();
+                $request->file->move(public_path('files/$provider_services'), $file);
+                $providerService->file = $file;
             }
-            $clientService->save();
+            $providerService->save();
 
             return response()->json(
                 [
@@ -141,18 +141,18 @@ class ClientServiceController extends Controller
     public function show(string $id)
     {
         try {
-            $clientService = ClientServices::select(
-                'client_services.id',
-                'client_services.client_id',
-                'client_services.governments_id',
-                'client_services.sub_specialization_id',
-                'client_services.address',
-                'client_services.description',
-                'client_services.image',
-                'client_services.start_price',
-                'client_services.end_price',
-                'client_services.duration',
-                'client_services.file',
+            $providerService = ProviderService::select(
+                'provider_services.id',
+                'provider_services.provider_id',
+                'provider_services.governments_id',
+                'provider_services.sub_specialization_id',
+                'provider_services.address',
+                'provider_services.description',
+                'provider_services.image',
+                'provider_services.start_price',
+                'provider_services.end_price',
+                'provider_services.duration',
+                'provider_services.file',
                 'specializations.name_ar as specialization_name_ar',
                 'specializations.name_en as specialization_name_en',
                 'sub_specializations.name_ar as sub_specialization_name_ar',
@@ -161,21 +161,21 @@ class ClientServiceController extends Controller
                 'countries.name_en as country_name_en',
                 'governments.name_ar as government_name_ar',
                 'governments.name_en as government_name_en',
-                'client_services.created_at',
-                'client_services.updated_at',
+                'provider_services.created_at',
+                'provider_services.updated_at',
             )
-                ->join('sub_specializations', 'client_services.sub_specialization_id', '=', 'sub_specializations.id')
+                ->join('sub_specializations', 'provider_services.sub_specialization_id', '=', 'sub_specializations.id')
                 ->join('specializations', 'sub_specializations.parent_id', '=', 'specializations.id')
-                ->join('governments', 'client_services.governments_id', '=', 'governments.id')
+                ->join('governments', 'provider_services.governments_id', '=', 'governments.id')
                 ->join('countries', 'governments.country_id', '=', 'countries.id')
-                ->where('client_services.id', $id)
+                ->where('provider_services.id', $id)
                 ->first();
 
             return response()->json(
                 [
                     'status' => 'success',
                     'message' => 'Data fetched successfully.',
-                    'data' => $clientService,
+                    'data' => $providerService,
                 ],
                 200,
             );
@@ -217,32 +217,32 @@ class ClientServiceController extends Controller
                 'file' => 'nullable|file|mimes:pdf|max:50000',
             ]);
 
-            $clientService = ClientServices::findOrFail($id);
-            $clientService->governments_id = $request->governments_id ?? $clientService->governments_id;
-            $clientService->address = $request->address ?? $clientService->address;
-            $clientService->description = $request->description ?? $clientService->description;
-            $clientService->start_price = $request->start_price ?? $clientService->start_price;
-            $clientService->end_price = $request->end_price ?? $clientService->end_price;
-            $clientService->duration = $request->duration ?? $clientService->duration;
+            $providerService = ProviderService::findOrFail($id);
+            $providerService->governments_id = $request->governments_id ?? $providerService->governments_id;
+            $providerService->address = $request->address ?? $providerService->address;
+            $providerService->description = $request->description ?? $providerService->description;
+            $providerService->start_price = $request->start_price ?? $providerService->start_price;
+            $providerService->end_price = $request->end_price ?? $providerService->end_price;
+            $providerService->duration = $request->duration ?? $providerService->duration;
             if ($request->hasFile('image')) {
-                unlink(public_path($clientService->image));
-                $imageName = 'images/client_services/' . time() . '.' . $request->image->extension();
-                $request->image->move(public_path('images/client_services'), $imageName);
-                $clientService->image = $imageName;
+                unlink(public_path($providerService->image));
+                $imageName = 'images/$provider_services/' . time() . '.' . $request->image->extension();
+                $request->image->move(public_path('images/$provider_services'), $imageName);
+                $providerService->image = $imageName;
             }
             if ($request->hasFile('file')) {
-                unlink(public_path($clientService->file));
-                $file = 'files/client_services/' . time() . '.' . $request->file->extension();
-                $request->file->move(public_path('files/client_services'), $file);
-                $clientService->file = $file;
+                unlink(public_path($providerService->file));
+                $file = 'files/$provider_services/' . time() . '.' . $request->file->extension();
+                $request->file->move(public_path('files/$provider_services'), $file);
+                $providerService->file = $file;
             }
-            $clientService->save();
+            $providerService->save();
 
             return response()->json(
                 [
                     'status' => 'success',
                     'message' => 'Data created successfully.',
-                    'data' => $clientService,
+                    'data' => $providerService,
                 ],
                 201
             );
@@ -273,19 +273,19 @@ class ClientServiceController extends Controller
     public function destroy(string $id)
     {
         try {
-            $clientService = ClientServices::findOrFail($id);
-            unlink(public_path($clientService->image));
-            if ($clientService->file) {
-                unlink(public_path($clientService->file));
+            $providerService = ProviderService::findOrFail($id);
+            unlink(public_path($providerService->image));
+            if ($providerService->file) {
+                unlink(public_path($providerService->file));
             }
 
-            $clientService->delete();
+            $providerService->delete();
 
             return response()->json(
                 [
                     'status' => 'success',
                     'message' => 'Data deleted successfully.',
-                    'data' => $clientService,
+                    'data' => $providerService,
                 ],
                 200,
             );

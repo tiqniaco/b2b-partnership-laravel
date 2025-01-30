@@ -11,9 +11,9 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('client_services', function (Blueprint $table) {
+        Schema::create('provider_services', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('client_id')->constrained('clients')->onDelete('cascade');
+            $table->foreignId('provider_id')->constrained('providers')->onDelete('cascade');
             $table->foreignId('governments_id')->constrained('governments');
             $table->foreignId('sub_specialization_id')->constrained('sub_specializations');
             $table->text('address');
@@ -23,7 +23,6 @@ return new class extends Migration
             $table->double('end_price');
             $table->string('duration');
             $table->text('file')->nullable();
-
             $table->timestamps();
         });
     }
@@ -33,6 +32,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('client_services');
+        Schema::dropIfExists('provider_services');
     }
 };

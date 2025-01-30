@@ -9,7 +9,7 @@ use App\Http\Controllers\ProviderTypeController;
 use App\Http\Controllers\SpecializationController;
 use App\Http\Controllers\SubSpecializationController;
 use App\Http\Controllers\PHPMailerController;
-use Illuminate\Http\Request;
+use App\Http\Controllers\ProviderServiceController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -45,17 +45,27 @@ Route::apiResource('provider-types', ProviderTypeController::class);
 
 // Specialization Routes
 Route::apiResource('specializations', SpecializationController::class);
+Route::post('specializations/{id}/update', [SpecializationController::class, 'update']);
 
 // Sub Specialization Routes
 Route::apiResource('sub-specializations', SubSpecializationController::class);
+Route::post('sub-specializations/{id}/update', [SubSpecializationController::class, 'update']);
 
 // Provider Routes
 Route::apiResource('providers', ProviderController::class);
 
-// Client Service
+// Provider Service
+Route::apiResource('provider-service', ProviderServiceController::class);
+Route::post('provider-service/{id}/update', [ProviderServiceController::class, 'update']);
+
+// Provider Service
 Route::apiResource('client-service', ClientServiceController::class);
 Route::post('client-service/{id}/update', [ClientServiceController::class, 'update']);
 
 // OTP
 Route::post('send-otp', [PHPMailerController::class, 'sendOTP']);
 Route::post('verify-otp', [PHPMailerController::class, 'verifyOTP']);
+
+// Banners
+Route::apiResource('banners', \App\Http\Controllers\BannerController::class);
+Route::post('banners/{id}/update', [\App\Http\Controllers\BannerController::class, 'update']);

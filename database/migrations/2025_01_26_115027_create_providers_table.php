@@ -21,6 +21,7 @@ return new class extends Migration
             $table->text('commercial_register');
             $table->text('tax_card');
             $table->text("bio");
+            $table->integer('rating')->default(0);
             $table->timestamps();
         });
     }

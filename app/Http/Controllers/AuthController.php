@@ -184,11 +184,32 @@ class AuthController extends Controller
                 'error' => $e->getMessage(),
             ], 401);
         } catch (\Illuminate\Validation\ValidationException $e) {
-            return response()->json([
-                'status' => 'error',
-                'message' => 'Validation error.',
-                'error' => $e->getMessage(),
-            ], 401);
+
+            if (str_contains($e->getMessage(), 'The email has already been taken.')) {
+                return response()->json([
+                    'status' => 'error',
+                    'message' => 'This email already exists. Please choose another one.',
+                    'error' => $e->getMessage(),
+                ], 401);
+            } else if (str_contains($e->getMessage(), 'The phone has already been taken.')) {
+                return response()->json([
+                    'status' => 'error',
+                    'message' => 'This phone number already exists. Please choose another one.',
+                    'error' => $e->getMessage(),
+                ], 401);
+            } else if (str_contains($e->getMessage(), 'The password must be at least 6 characters.')) {
+                return response()->json([
+                    'status' => 'error',
+                    'message' => 'Password must be at least 6 characters.',
+                    'error' => $e->getMessage(),
+                ]);
+            } else {
+                return response()->json([
+                    'status' => 'error',
+                    'message' => 'Validation error.',
+                    'error' => $e->getMessage(),
+                ], 401);
+            }
         } catch (\Throwable $e) {
             return response()->json([
                 'status' => 'error',

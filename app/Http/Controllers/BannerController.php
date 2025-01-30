@@ -2,27 +2,24 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\SubSpecialization;
+use App\Models\Banner;
 use Illuminate\Http\Request;
 
-class SubSpecializationController extends Controller
+class BannerController extends Controller
 {
     /**
      * Display a listing of the resource.
      */
-    public function index(Request $request)
+    public function index()
     {
         try {
-            $request->validate([
-                'specialization_id' => 'required|exists:specializations,id',
-            ]);
-            $subSpecialization = SubSpecialization::where('parent_id', $request->specialization_id)->get();
+            $banners = Banner::all();
 
             return response()->json([
                 'status' => 'success',
                 'message' => 'Data fetched successfully.',
-                'data' => $subSpecialization,
-            ], 200);
+                'data' => $banners
+            ]);
         } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
             return response()->json([
                 'status' => 'error',
@@ -51,27 +48,20 @@ class SubSpecializationController extends Controller
     {
         try {
             $request->validate([
-                'name_en' => 'required|string',
-                'name_ar' => 'required|string',
-                'image' => "required|image|mimes:jpeg,png,jpg,gif,svg",
-                'specialization_id' => 'required|exists:specializations,id',
+                'image' => 'required|image|mimes:jpg,jpeg,png|max:5000',
             ]);
-
-            $subSpecialization = new SubSpecialization();
-            $subSpecialization->name_en = $request->name_en;
-            $subSpecialization->name_ar = $request->name_ar;
+            $banner = new Banner();
             if ($request->hasFile('image')) {
-                $imageName = 'images/sub_specializations/' . time() . '.' . $request->image->extension();
-                $request->image->move(public_path('images/sub_specializations'), $imageName);
-                $subSpecialization->image = $imageName;
-            }
-            $subSpecialization->parent_id = $request->specialization_id;
-            $subSpecialization->save();
+                $imageName = 'images/banners/' . time() . '.' . $request->image->extension();
+                $request->image->move(public_path('images/banners'), $imageName);
+                $banner->image = $imageName;
+            };
+            $banner->save();
 
             return response()->json([
                 'status' => 'success',
                 'message' => 'Data created successfully.',
-            ], 200);
+            ]);
         } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
             return response()->json([
                 'status' => 'error',
@@ -99,13 +89,13 @@ class SubSpecializationController extends Controller
     public function show(string $id)
     {
         try {
-            $subSpecialization = SubSpecialization::findOrFail($id);
+            $banner = Banner::findOrFail($id);
 
             return response()->json([
                 'status' => 'success',
                 'message' => 'Data fetched successfully.',
-                'data' => $subSpecialization,
-            ], 200);
+                'data' => $banner
+            ]);
         } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
             return response()->json([
                 'status' => 'error',
@@ -134,26 +124,23 @@ class SubSpecializationController extends Controller
     {
         try {
             $request->validate([
-                'name_en' => 'nullable|string',
-                'name_ar' => 'nullable|string',
-                'image' => "nullable|image|mimes:jpeg,png,jpg,gif,svg",
+                'image' => 'image|mimes:jpg,jpeg,png|max:5000',
+                'status' => 'nullable|in:active,inactive',
             ]);
-
-            $subSpecialization = SubSpecialization::findOrFail($id);
-            $subSpecialization->name_en = $request->name_en ?? $subSpecialization->name_en;
-            $subSpecialization->name_ar = $request->name_ar ?? $subSpecialization->name_ar;
+            $banner = Banner::findOrFail($id);
             if ($request->hasFile('image')) {
-                unlink(public_path($subSpecialization->image));
-                $imageName = 'images/sub_specializations/' . time() . '.' . $request->image->extension();
-                $request->image->move(public_path('images/sub_specializations'), $imageName);
-                $subSpecialization->image = $imageName;
-            }
-            $subSpecialization->save();
+                unlink(public_path($banner->image));
+                $imageName = 'images/banners/' . time() . '.' . $request->image->extension();
+                $request->image->move(public_path('images/banners'), $imageName);
+                $banner->image = $imageName;
+            };
+            $banner->status = $request->status ?? $banner->status;
+            $banner->save();
 
             return response()->json([
                 'status' => 'success',
                 'message' => 'Data updated successfully.',
-            ], 200);
+            ]);
         } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
             return response()->json([
                 'status' => 'error',
@@ -181,14 +168,14 @@ class SubSpecializationController extends Controller
     public function destroy(string $id)
     {
         try {
-            $subSpecialization = SubSpecialization::findOrFail($id);
-            unlink(public_path($subSpecialization->image));
-            $subSpecialization->delete();
+            $banner = Banner::findOrFail($id);
+            unlink(public_path($banner->image));
+            $banner->delete();
 
             return response()->json([
                 'status' => 'success',
                 'message' => 'Data deleted successfully.',
-            ], 200);
+            ]);
         } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
             return response()->json([
                 'status' => 'error',

@@ -11,12 +11,10 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('sub_specializations', function (Blueprint $table) {
+        Schema::create('banners', function (Blueprint $table) {
             $table->id();
-            $table->string('name_ar', 255);
-            $table->string('name_en', 255);
-            $table->text('image');
-            $table->foreignId('parent_id')->constrained('specializations');
+            $table->text("image");
+            $table->enum("status", ["active", "inactive"])->default("active");
             $table->timestamps();
         });
     }
@@ -26,6 +24,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('sub_specializations');
+        Schema::dropIfExists('banners');
     }
 };

@@ -50,11 +50,17 @@ class SpecializationController extends Controller
             $request->validate([
                 'name_en' => 'required|string',
                 'name_ar' => 'required|string',
+                'image' => "required|image|mimes:jpeg,png,jpg,gif,svg",
             ]);
 
             $specialization = new Specialization();
             $specialization->name_en = $request->name_en;
             $specialization->name_ar = $request->name_ar;
+            if ($request->hasFile('image')) {
+                $imageName = 'images/specializations/' . time() . '.' . $request->image->extension();
+                $request->image->move(public_path('images/specializations'), $imageName);
+                $specialization->image = $imageName;
+            }
             $specialization->save();
 
             return response()->json([
@@ -125,11 +131,19 @@ class SpecializationController extends Controller
             $request->validate([
                 'name_en' => 'nullable|string',
                 'name_ar' => 'nullable|string',
+                'image' => "nullable|image|mimes:jpeg,png,jpg,gif,svg",
+
             ]);
 
             $specialization = Specialization::findOrFail($id);
             $specialization->name_en = $request->name_en ?? $specialization->name_en;
             $specialization->name_ar = $request->name_ar ?? $specialization->name_ar;
+            if ($request->hasFile('image')) {
+                unlink(public_path($specialization->image));
+                $imageName = 'images/specializations/' . time() . '.' . $request->image->extension();
+                $request->image->move(public_path('images/specializations'), $imageName);
+                $specialization->image = $imageName;
+            }
             $specialization->save();
 
             return response()->json([
@@ -164,6 +178,7 @@ class SpecializationController extends Controller
     {
         try {
             $specialization = Specialization::findOrFail($id);
+            unlink(public_path($specialization->image));
             $specialization->delete();
 
             return response()->json([
