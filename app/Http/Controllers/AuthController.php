@@ -40,10 +40,29 @@ class AuthController extends Controller
                     ], 401);
                 }
                 $token = $user->createToken('auth_token')->plainTextToken;
+                $user_id = 0;
+                switch ($user->role) {
+                    case 'client':
+                        $client = Client::where('user_id', $user->id)->first();
+                        $user_id = $client->id;
+                        break;
+                    case 'provider':
+                        $provider = Provider::where('user_id', $user->id)->first();
+                        $user_id = $provider->id;
+                        break;
+                    case 'admin':
+                        $admin = Admin::where('user_id', $user->id)->first();
+                        $user_id = $admin->id;
+                        break;
+                }
                 return response()->json([
                     'status' => 'success',
                     'message' => 'Login successfully.',
-                    'user' => $user,
+                    'user_id' => $user_id,
+                    "name" => $user->name,
+                    "email" => $user->email,
+                    "phone" => $user->phone,
+                    "role" => $user->role,
                     'token' => $token
                 ], 200);
             } else {
@@ -131,15 +150,15 @@ class AuthController extends Controller
                     }
                     if ($request->hasFile('commercial_register')) {
                         $file = $request->file('commercial_register');
-                        $filename = 'images/providers/' . time() . '.' . $request->commercial_register->extension();
-                        $file->move(public_path('images/providers'), $filename);
+                        $filename = 'files/providers/' . time() . '.' . $request->commercial_register->extension();
+                        $file->move(public_path('files/providers'), $filename);
                         $provider->commercial_register = $filename;
                     }
 
                     if ($request->hasFile('tax_card')) {
                         $file = $request->file('tax_card');
-                        $filename = 'images/providers/' . time() . '.' . $request->tax_card->extension();
-                        $file->move(public_path('images/providers'), $filename);
+                        $filename = 'files/providers/' . time() . '.' . $request->tax_card->extension();
+                        $file->move(public_path('files/providers'), $filename);
                         $provider->tax_card = $filename;
                     }
                     $provider->bio = $request->bio;
@@ -157,8 +176,6 @@ class AuthController extends Controller
             return response()->json([
                 'status' => 'success',
                 'message' => 'Register successfully.',
-                'user' => $user,
-                'token' => $user->createToken('auth_token')->plainTextToken,
             ], 200);
         } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
             return response()->json([
@@ -324,5 +341,40 @@ class AuthController extends Controller
         }
     }
 
-    public function forgetPassword(Request $request) {}
+    public function forgetPassword(Request $request)
+    {
+        try {
+            $request->validate([
+                'email' => 'required|email|exists:users,email',
+                'password' => 'required|string|min:6',
+            ]);
+
+            $user = User::where('email', $request->email)->first();
+
+            $user->password = Hash::make($request->password);
+            $user->save();
+            return response()->json([
+                'status' => "success",
+                'message' => "Password Reset Successfully",
+            ], 200);
+        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Not found.',
+                'error' => $e->getMessage(),
+            ], 401);
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Validation error.',
+                'error' => $e->getMessage(),
+            ], 401);
+        } catch (\Throwable $e) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Something went wrong.',
+                'error' => $e->getMessage(),
+            ], 500);
+        }
+    }
 }

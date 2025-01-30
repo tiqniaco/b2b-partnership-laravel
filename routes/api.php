@@ -1,12 +1,14 @@
 <?php
 
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\ClientServiceController;
 use App\Http\Controllers\CountryController;
 use App\Http\Controllers\GovernmentController;
 use App\Http\Controllers\ProviderController;
 use App\Http\Controllers\ProviderTypeController;
 use App\Http\Controllers\SpecializationController;
 use App\Http\Controllers\SubSpecializationController;
+use App\Http\Controllers\PHPMailerController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -49,3 +51,11 @@ Route::apiResource('sub-specializations', SubSpecializationController::class);
 
 // Provider Routes
 Route::apiResource('providers', ProviderController::class);
+
+// Client Service
+Route::apiResource('client-service', ClientServiceController::class);
+Route::post('client-service/{id}/update', [ClientServiceController::class, 'update']);
+
+// OTP
+Route::post('send-otp', [PHPMailerController::class, 'sendOTP']);
+Route::post('verify-otp', [PHPMailerController::class, 'verifyOTP']);
