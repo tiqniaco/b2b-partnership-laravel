@@ -146,7 +146,9 @@ class CountryController extends Controller
             $country->code = $request->code ?? $country->code;
             $country->phone_length = $request->phone_length ?? $country->phone_length;
             if ($request->hasFile('flag')) {
-                unlink(public_path($country->flag));
+                if (file_exists(public_path($country->flag))) {
+                    unlink(public_path($country->flag));
+                }
                 $imageName = 'images/countries/' . time() . '.' . $request->flag->extension();
                 $request->flag->move(public_path('images/countries'), $imageName);
                 $country->flag = $imageName;
@@ -185,7 +187,9 @@ class CountryController extends Controller
     {
         try {
             $country = Country::findOrFail($id);
-            unlink(public_path($country->flag));
+            if (file_exists(public_path($country->flag))) {
+                unlink(public_path($country->flag));
+            }
             $country->delete();
 
             return response()->json([

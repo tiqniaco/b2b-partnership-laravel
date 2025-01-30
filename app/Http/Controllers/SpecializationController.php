@@ -139,7 +139,9 @@ class SpecializationController extends Controller
             $specialization->name_en = $request->name_en ?? $specialization->name_en;
             $specialization->name_ar = $request->name_ar ?? $specialization->name_ar;
             if ($request->hasFile('image')) {
-                unlink(public_path($specialization->image));
+                if (file_exists(public_path($specialization->image))) {
+                    unlink(public_path($specialization->image));
+                }
                 $imageName = 'images/specializations/' . time() . '.' . $request->image->extension();
                 $request->image->move(public_path('images/specializations'), $imageName);
                 $specialization->image = $imageName;
@@ -178,7 +180,9 @@ class SpecializationController extends Controller
     {
         try {
             $specialization = Specialization::findOrFail($id);
-            unlink(public_path($specialization->image));
+            if (file_exists(public_path($specialization->image))) {
+                unlink(public_path($specialization->image));
+            }
             $specialization->delete();
 
             return response()->json([

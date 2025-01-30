@@ -25,6 +25,7 @@ class ProviderServiceController extends Controller
                 'provider_services.end_price',
                 'provider_services.duration',
                 'provider_services.file',
+                'provider_services.rating',
                 'specializations.name_ar as specialization_name_ar',
                 'specializations.name_en as specialization_name_en',
                 'sub_specializations.name_ar as sub_specialization_name_ar',
@@ -153,6 +154,7 @@ class ProviderServiceController extends Controller
                 'provider_services.end_price',
                 'provider_services.duration',
                 'provider_services.file',
+                'provider_services.rating',
                 'specializations.name_ar as specialization_name_ar',
                 'specializations.name_en as specialization_name_en',
                 'sub_specializations.name_ar as sub_specialization_name_ar',
@@ -225,13 +227,17 @@ class ProviderServiceController extends Controller
             $providerService->end_price = $request->end_price ?? $providerService->end_price;
             $providerService->duration = $request->duration ?? $providerService->duration;
             if ($request->hasFile('image')) {
-                unlink(public_path($providerService->image));
+                if (file_exists(public_path($providerService->image))) {
+                    unlink(public_path($providerService->image));
+                }
                 $imageName = 'images/$provider_services/' . time() . '.' . $request->image->extension();
                 $request->image->move(public_path('images/$provider_services'), $imageName);
                 $providerService->image = $imageName;
             }
             if ($request->hasFile('file')) {
-                unlink(public_path($providerService->file));
+                if (file_exists(public_path($providerService->file))) {
+                    unlink(public_path($providerService->file));
+                }
                 $file = 'files/$provider_services/' . time() . '.' . $request->file->extension();
                 $request->file->move(public_path('files/$provider_services'), $file);
                 $providerService->file = $file;
@@ -274,9 +280,13 @@ class ProviderServiceController extends Controller
     {
         try {
             $providerService = ProviderService::findOrFail($id);
-            unlink(public_path($providerService->image));
+            if (file_exists(public_path($providerService->image))) {
+                unlink(public_path($providerService->image));
+            }
             if ($providerService->file) {
-                unlink(public_path($providerService->file));
+                if (file_exists(public_path($providerService->file))) {
+                    unlink(public_path($providerService->file));
+                }
             }
 
             $providerService->delete();

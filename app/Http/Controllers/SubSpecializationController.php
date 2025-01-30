@@ -143,7 +143,9 @@ class SubSpecializationController extends Controller
             $subSpecialization->name_en = $request->name_en ?? $subSpecialization->name_en;
             $subSpecialization->name_ar = $request->name_ar ?? $subSpecialization->name_ar;
             if ($request->hasFile('image')) {
-                unlink(public_path($subSpecialization->image));
+                if (file_exists(public_path($subSpecialization->image))) {
+                    unlink(public_path($subSpecialization->image));
+                }
                 $imageName = 'images/sub_specializations/' . time() . '.' . $request->image->extension();
                 $request->image->move(public_path('images/sub_specializations'), $imageName);
                 $subSpecialization->image = $imageName;
@@ -182,7 +184,9 @@ class SubSpecializationController extends Controller
     {
         try {
             $subSpecialization = SubSpecialization::findOrFail($id);
-            unlink(public_path($subSpecialization->image));
+            if (file_exists(public_path($subSpecialization->image))) {
+                unlink(public_path($subSpecialization->image));
+            }
             $subSpecialization->delete();
 
             return response()->json([

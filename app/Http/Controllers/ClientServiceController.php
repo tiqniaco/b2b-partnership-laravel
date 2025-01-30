@@ -225,13 +225,17 @@ class ClientServiceController extends Controller
             $clientService->end_price = $request->end_price ?? $clientService->end_price;
             $clientService->duration = $request->duration ?? $clientService->duration;
             if ($request->hasFile('image')) {
-                unlink(public_path($clientService->image));
+                if (file_exists(public_path($clientService->image))) {
+                    unlink(public_path($clientService->image));
+                }
                 $imageName = 'images/client_services/' . time() . '.' . $request->image->extension();
                 $request->image->move(public_path('images/client_services'), $imageName);
                 $clientService->image = $imageName;
             }
             if ($request->hasFile('file')) {
-                unlink(public_path($clientService->file));
+                if (file_exists(public_path($clientService->file))) {
+                    unlink(public_path($clientService->file));
+                }
                 $file = 'files/client_services/' . time() . '.' . $request->file->extension();
                 $request->file->move(public_path('files/client_services'), $file);
                 $clientService->file = $file;
@@ -274,9 +278,13 @@ class ClientServiceController extends Controller
     {
         try {
             $clientService = ClientServices::findOrFail($id);
-            unlink(public_path($clientService->image));
+            if (file_exists(public_path($clientService->image))) {
+                unlink(public_path($clientService->image));
+            }
             if ($clientService->file) {
-                unlink(public_path($clientService->file));
+                if (file_exists(public_path($clientService->file))) {
+                    unlink(public_path($clientService->file));
+                }
             }
 
             $clientService->delete();

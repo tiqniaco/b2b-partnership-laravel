@@ -129,7 +129,9 @@ class BannerController extends Controller
             ]);
             $banner = Banner::findOrFail($id);
             if ($request->hasFile('image')) {
-                unlink(public_path($banner->image));
+                if (file_exists(public_path($banner->image))) {
+                    unlink(public_path($banner->image));
+                }
                 $imageName = 'images/banners/' . time() . '.' . $request->image->extension();
                 $request->image->move(public_path('images/banners'), $imageName);
                 $banner->image = $imageName;
@@ -169,7 +171,9 @@ class BannerController extends Controller
     {
         try {
             $banner = Banner::findOrFail($id);
-            unlink(public_path($banner->image));
+            if (file_exists(public_path($banner->image))) {
+                unlink(public_path($banner->image));
+            }
             $banner->delete();
 
             return response()->json([

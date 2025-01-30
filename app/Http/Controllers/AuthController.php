@@ -271,7 +271,9 @@ class AuthController extends Controller
                 switch ($user->role) {
                     case 'client':
                         $client = Client::where('user_id', $user->id)->first();
-                        unlink(public_path($client->image));
+                        if (file_exists(public_path($client->image))) {
+                            unlink(public_path($client->image));
+                        }
                         $imageName = 'images/clients/' . time() . '.' . $request->image->extension();
                         $request->image->move(public_path('images/clients'), $imageName);
                         $client->image = $imageName;
@@ -279,7 +281,9 @@ class AuthController extends Controller
                         break;
                     case 'provider':
                         $provider = Provider::where('user_id', $user->id)->first();
-                        unlink(public_path($provider->image));
+                        if (file_exists(public_path($provider->image))) {
+                            unlink(public_path($provider->image));
+                        }
                         $imageName = 'images/providers/' . time() . '.' . $request->image->extension();
                         $request->image->move(public_path('images/providers'), $imageName);
                         $provider->image = $imageName;

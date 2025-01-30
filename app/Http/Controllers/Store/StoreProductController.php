@@ -130,7 +130,9 @@ class StoreProductController extends Controller
     {
         try {
             $product = StoreProduct::findOrFail($id);
-            unlink(public_path($product->image));
+            if (file_exists(public_path($product->image))) {
+                unlink(public_path($product->image));
+            }
             $product->delete();
 
             return response()->json(

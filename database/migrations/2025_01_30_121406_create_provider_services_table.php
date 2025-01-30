@@ -23,6 +23,7 @@ return new class extends Migration
             $table->double('end_price');
             $table->string('duration');
             $table->text('file')->nullable();
+            $table->integer('rating')->default(0);
             $table->timestamps();
         });
     }
