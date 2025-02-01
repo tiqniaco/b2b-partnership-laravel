@@ -69,3 +69,9 @@ Route::post('verify-otp', [PHPMailerController::class, 'verifyOTP']);
 // Banners
 Route::apiResource('banners', \App\Http\Controllers\BannerController::class);
 Route::post('banners/{id}/update', [\App\Http\Controllers\BannerController::class, 'update']);
+
+// Home Slider
+Route::prefix('home')->group(function () {
+    Route::get('top-services', [\App\Http\Controllers\HomeController::class, 'topServices']);
+    Route::get('new-services', [\App\Http\Controllers\HomeController::class, 'newServices']);
+});

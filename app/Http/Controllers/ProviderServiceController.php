@@ -88,7 +88,7 @@ class ProviderServiceController extends Controller
             ]);
 
             $providerService = new ProviderService();
-            $providerService->provider_id = $request->client_id;
+            $providerService->provider_id = $request->provider_id;
             $providerService->governments_id = $request->governments_id;
             $providerService->sub_specialization_id = $request->sub_specialization_id;
             $providerService->address = $request->address;
