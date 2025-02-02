@@ -3,37 +3,51 @@
 namespace App\Http\Controllers;
 
 use App\Models\ProviderService;
+use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 
 class ProviderServiceController extends Controller
 {
+
+    public function __construct()
+    {
+        $this->middleware('auth:sanctum');
+    }
+
     /**
      * Display a listing of the resource.
      */
     public function index()
     {
         try {
+
+            $userId =  Auth::user()->id;
+
             $providerServices = ProviderService::select(
                 'provider_services.id',
                 'provider_services.provider_id',
-                'provider_services.governments_id',
-                'provider_services.sub_specialization_id',
+                'provider_services.name_ar',
+                'provider_services.name_en',
                 'provider_services.address',
                 'provider_services.description',
                 'provider_services.image',
-                'provider_services.start_price',
-                'provider_services.end_price',
-                'provider_services.duration',
-                'provider_services.file',
+                'provider_services.price',
                 'provider_services.rating',
-                'specializations.name_ar as specialization_name_ar',
-                'specializations.name_en as specialization_name_en',
-                'sub_specializations.name_ar as sub_specialization_name_ar',
-                'sub_specializations.name_en as sub_specialization_name_en',
+                'provider_services.overview',
+                'provider_services.video',
                 'countries.name_ar as country_name_ar',
                 'countries.name_en as country_name_en',
+                'provider_services.governments_id',
                 'governments.name_ar as government_name_ar',
                 'governments.name_en as government_name_en',
+                'specializations.name_ar as specialization_name_ar',
+                'specializations.name_en as specialization_name_en',
+                'provider_services.sub_specialization_id',
+                'sub_specializations.name_ar as sub_specialization_name_ar',
+                'sub_specializations.name_en as sub_specialization_name_en',
+                DB::raw("(CASE WHEN EXISTS (SELECT 1 FROM favorite_services WHERE favorite_services.user_id = $userId AND favorite_services.provider_service_id = provider_services.id) THEN 1 ELSE 0 END) as is_favorite"),
                 'provider_services.created_at',
                 'provider_services.updated_at',
             )
@@ -78,34 +92,33 @@ class ProviderServiceController extends Controller
                 'provider_id' => 'required|integer|exists:providers,id',
                 'governments_id' => 'required|integer|exists:governments,id',
                 'sub_specialization_id' => 'required|integer|exists:sub_specializations,id',
-                'address' => 'required|string|max:255',
+                'name_ar' => 'required|string|max:255',
+                'name_en' => 'required|string|max:255',
+                'address' => 'nullable|string|max:255',
                 'description' => 'required|string|max:255',
                 'image' => 'required|image|mimes:jpeg,png,jpg,gif,svg|max:5000',
-                'start_price' => 'required|numeric',
-                'end_price' => 'required|numeric',
-                'duration' => 'required|string|max:255',
-                'file' => 'nullable|file|mimes:pdf|max:50000',
+                'price' => 'required|numeric',
+                'overview' => 'required|string|max:255',
+                'video' => 'nullable|string|max:255',
             ]);
 
             $providerService = new ProviderService();
             $providerService->provider_id = $request->provider_id;
             $providerService->governments_id = $request->governments_id;
             $providerService->sub_specialization_id = $request->sub_specialization_id;
+            $providerService->name_ar = $request->name_ar;
+            $providerService->name_en = $request->name_en;
             $providerService->address = $request->address;
             $providerService->description = $request->description;
-            $providerService->start_price = $request->start_price;
-            $providerService->end_price = $request->end_price;
-            $providerService->duration = $request->duration;
+            $providerService->price = $request->price;
+            $providerService->overview = $request->overview;
+            $providerService->video = $request->video;
             if ($request->hasFile('image')) {
-                $imageName = 'images/$provider_services/' . time() . '.' . $request->image->extension();
-                $request->image->move(public_path('images/$provider_services'), $imageName);
+                $imageName = 'images/provider_services/' . time() . '.' . $request->image->extension();
+                $request->image->move(public_path('images/provider_services'), $imageName);
                 $providerService->image = $imageName;
             }
-            if ($request->hasFile('file')) {
-                $file = 'files/$provider_services/' . time() . '.' . $request->file->extension();
-                $request->file->move(public_path('files/$provider_services'), $file);
-                $providerService->file = $file;
-            }
+
             $providerService->save();
 
             return response()->json(
@@ -142,27 +155,31 @@ class ProviderServiceController extends Controller
     public function show(string $id)
     {
         try {
+            $userId =  Auth::user()->id;
+
             $providerService = ProviderService::select(
                 'provider_services.id',
                 'provider_services.provider_id',
-                'provider_services.governments_id',
-                'provider_services.sub_specialization_id',
+                'provider_services.name_ar',
+                'provider_services.name_en',
                 'provider_services.address',
                 'provider_services.description',
                 'provider_services.image',
-                'provider_services.start_price',
-                'provider_services.end_price',
-                'provider_services.duration',
-                'provider_services.file',
+                'provider_services.price',
                 'provider_services.rating',
-                'specializations.name_ar as specialization_name_ar',
-                'specializations.name_en as specialization_name_en',
-                'sub_specializations.name_ar as sub_specialization_name_ar',
-                'sub_specializations.name_en as sub_specialization_name_en',
+                'provider_services.overview',
+                'provider_services.video',
                 'countries.name_ar as country_name_ar',
                 'countries.name_en as country_name_en',
+                'provider_services.governments_id',
                 'governments.name_ar as government_name_ar',
                 'governments.name_en as government_name_en',
+                'specializations.name_ar as specialization_name_ar',
+                'specializations.name_en as specialization_name_en',
+                'provider_services.sub_specialization_id',
+                'sub_specializations.name_ar as sub_specialization_name_ar',
+                'sub_specializations.name_en as sub_specialization_name_en',
+                DB::raw("(CASE WHEN EXISTS (SELECT 1 FROM favorite_services WHERE favorite_services.user_id = $userId AND favorite_services.provider_service_id = provider_services.id) THEN 1 ELSE 0 END) as is_favorite"),
                 'provider_services.created_at',
                 'provider_services.updated_at',
             )
@@ -209,38 +226,31 @@ class ProviderServiceController extends Controller
     {
         try {
             $request->validate([
-                'governments_id' => 'nullable|integer|exists:governments,id',
+                'name_ar' => 'nullable|string|max:255',
+                'name_en' => 'nullable|string|max:255',
                 'address' => 'nullable|string|max:255',
                 'description' => 'nullable|string|max:255',
                 'image' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:5000',
-                'start_price' => 'nullable|numeric',
-                'end_price' => 'nullable|numeric',
-                'duration' => 'nullable|string|max:255',
-                'file' => 'nullable|file|mimes:pdf|max:50000',
+                'price' => 'nullable|numeric',
+                'overview' => 'nullable|string|max:255',
+                'video' => 'nullable|string|max:255',
             ]);
 
             $providerService = ProviderService::findOrFail($id);
-            $providerService->governments_id = $request->governments_id ?? $providerService->governments_id;
+            $providerService->name_ar = $request->name_ar ?? $providerService->name_ar;
+            $providerService->name_en = $request->name_en ?? $providerService->name_en;
             $providerService->address = $request->address ?? $providerService->address;
             $providerService->description = $request->description ?? $providerService->description;
-            $providerService->start_price = $request->start_price ?? $providerService->start_price;
-            $providerService->end_price = $request->end_price ?? $providerService->end_price;
-            $providerService->duration = $request->duration ?? $providerService->duration;
+            $providerService->price = $request->price ?? $providerService->price;
+            $providerService->overview = $request->overview ?? $providerService->overview;
+            $providerService->video = $request->video ?? $providerService->video;
             if ($request->hasFile('image')) {
                 if (file_exists(public_path($providerService->image))) {
                     unlink(public_path($providerService->image));
                 }
-                $imageName = 'images/$provider_services/' . time() . '.' . $request->image->extension();
-                $request->image->move(public_path('images/$provider_services'), $imageName);
+                $imageName = 'images/provider_services/' . time() . '.' . $request->image->extension();
+                $request->image->move(public_path('images/provider_services'), $imageName);
                 $providerService->image = $imageName;
-            }
-            if ($request->hasFile('file')) {
-                if (file_exists(public_path($providerService->file))) {
-                    unlink(public_path($providerService->file));
-                }
-                $file = 'files/$provider_services/' . time() . '.' . $request->file->extension();
-                $request->file->move(public_path('files/$provider_services'), $file);
-                $providerService->file = $file;
             }
             $providerService->save();
 
@@ -282,11 +292,6 @@ class ProviderServiceController extends Controller
             $providerService = ProviderService::findOrFail($id);
             if (file_exists(public_path($providerService->image))) {
                 unlink(public_path($providerService->image));
-            }
-            if ($providerService->file) {
-                if (file_exists(public_path($providerService->file))) {
-                    unlink(public_path($providerService->file));
-                }
             }
 
             $providerService->delete();

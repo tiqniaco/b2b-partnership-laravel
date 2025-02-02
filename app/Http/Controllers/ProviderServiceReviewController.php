@@ -1,0 +1,239 @@
+<?php
+
+namespace App\Http\Controllers;
+
+use App\Models\ProviderService;
+use App\Models\ProviderServiceReview;
+use Illuminate\Http\Request;
+
+class ProviderServiceReviewController extends Controller
+{
+    /**
+     * Display a listing of the resource.
+     */
+    public function index(Request $request)
+    {
+        try {
+            $request->validate([
+                'provider_service_id' => 'required|exists:provider_services,id',
+            ]);
+
+            $reviews = ProviderServiceReview::where('provider_service_id', $request->provider_service_id)
+                ->get();
+
+            return response()->json([
+                'status' => 'success',
+                'message' => 'Data fetched successfully.',
+                'data' => $reviews
+            ], 200);
+        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Not found.',
+                'error' => $e->getMessage(),
+            ], 401);
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Validation error.',
+                'error' => $e->getMessage(),
+            ], 401);
+        } catch (\Throwable $e) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Something went wrong.',
+                'error' => $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    /**
+     * Store a newly created resource in storage.
+     */
+    public function store(Request $request)
+    {
+        try {
+            $request->validate([
+                'provider_service_id' => 'required|exists:provider_services,id',
+                'user_id' => 'required|exists:users,id',
+                'review' => 'required|string',
+                'rating' => 'required|integer',
+            ]);
+
+            $review = new ProviderServiceReview();
+            $review->provider_service_id = $request->provider_service_id;
+            $review->user_id = $request->user_id;
+            $review->review = $request->review;
+            $review->rating = $request->rating;
+            $review->save();
+
+            $allReviews = ProviderServiceReview::where('provider_service_id', $request->provider_service_id)
+                ->get();
+
+            $rating = 0;
+            foreach ($allReviews as $review) {
+                $rating += $review->rating;
+            }
+
+            $providerService = ProviderService::findOrFail($request->provider_service_id);
+            $providerService->rating = $rating / $allReviews->count();
+            $providerService->save();
+
+            return response()->json([
+                'status' => 'success',
+                'message' => 'Data created successfully.',
+            ], 201);
+        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Not found.',
+                'error' => $e->getMessage(),
+            ], 401);
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Validation error.',
+                'error' => $e->getMessage(),
+            ], 401);
+        } catch (\Throwable $e) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Something went wrong.',
+                'error' => $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    /**
+     * Display the specified resource.
+     */
+    public function show(string $id)
+    {
+        try {
+            $review = ProviderServiceReview::findOrFail($id);
+
+            return response()->json([
+                'status' => 'success',
+                'message' => 'Data fetched successfully.',
+                'data' => $review
+            ], 200);
+        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Not found.',
+                'error' => $e->getMessage(),
+            ], 401);
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Validation error.',
+                'error' => $e->getMessage(),
+            ], 401);
+        } catch (\Throwable $e) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Something went wrong.',
+                'error' => $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    /**
+     * Update the specified resource in storage.
+     */
+    public function update(Request $request, string $id)
+    {
+        try {
+            $request->validate([
+                'review' => 'nullable|string',
+                'rating' => 'nullable|integer',
+            ]);
+
+            $review = ProviderServiceReview::findOrFail($id);
+            $review->review = $request->review ?? $review->review;
+            $review->rating = $request->rating ?? $review->rating;
+            $review->save();
+
+            $allReviews = ProviderServiceReview::where('provider_service_id', $request->provider_service_id)
+                ->get();
+
+            $rating = 0;
+            foreach ($allReviews as $review) {
+                $rating += $review->rating;
+            }
+
+            $providerService = ProviderService::findOrFail($request->provider_service_id);
+            $providerService->rating = $rating / $allReviews->count();
+            $providerService->save();
+
+            return response()->json([
+                'status' => 'success',
+                'message' => 'Data updated successfully.',
+            ], 200);
+        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Not found.',
+                'error' => $e->getMessage(),
+            ], 401);
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Validation error.',
+                'error' => $e->getMessage(),
+            ], 401);
+        } catch (\Throwable $e) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Something went wrong.',
+                'error' => $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    /**
+     * Remove the specified resource from storage.
+     */
+    public function destroy(string $id)
+    {
+        try {
+            $review = ProviderServiceReview::findOrFail($id);
+            $review->delete();
+
+            $allReviews = ProviderServiceReview::where('provider_service_id', $id)
+                ->get();
+
+            $rating = 0;
+            foreach ($allReviews as $review) {
+                $rating += $review->rating;
+            }
+
+            $providerService = ProviderService::findOrFail($id);
+            $providerService->rating = $rating / $allReviews->count();
+            $providerService->save();
+
+            return response()->json([
+                'status' => 'success',
+                'message' => 'Data deleted successfully.',
+            ], 200);
+        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Not found.',
+                'error' => $e->getMessage(),
+            ], 401);
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Validation error.',
+                'error' => $e->getMessage(),
+            ], 401);
+        } catch (\Throwable $e) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Something went wrong.',
+                'error' => $e->getMessage(),
+            ], 500);
+        }
+    }
+}

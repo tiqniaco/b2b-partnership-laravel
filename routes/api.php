@@ -3,6 +3,7 @@
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\ClientServiceController;
 use App\Http\Controllers\CountryController;
+use App\Http\Controllers\FavoriteServiceController;
 use App\Http\Controllers\GovernmentController;
 use App\Http\Controllers\ProviderController;
 use App\Http\Controllers\ProviderTypeController;
@@ -10,6 +11,8 @@ use App\Http\Controllers\SpecializationController;
 use App\Http\Controllers\SubSpecializationController;
 use App\Http\Controllers\PHPMailerController;
 use App\Http\Controllers\ProviderServiceController;
+use App\Http\Controllers\ProviderServiceFeatureController;
+use App\Http\Controllers\ProviderServiceReviewController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -62,6 +65,12 @@ Route::post('provider-service/{id}/update', [ProviderServiceController::class, '
 Route::apiResource('client-service', ClientServiceController::class);
 Route::post('client-service/{id}/update', [ClientServiceController::class, 'update']);
 
+// Provider Service Features
+Route::apiResource('provider-service-features', ProviderServiceFeatureController::class);
+
+// Provider Service Reviews
+Route::apiResource('provider-service-reviews', ProviderServiceReviewController::class);
+
 // OTP
 Route::post('send-otp', [PHPMailerController::class, 'sendOTP']);
 Route::post('verify-otp', [PHPMailerController::class, 'verifyOTP']);
@@ -70,8 +79,17 @@ Route::post('verify-otp', [PHPMailerController::class, 'verifyOTP']);
 Route::apiResource('banners', \App\Http\Controllers\BannerController::class);
 Route::post('banners/{id}/update', [\App\Http\Controllers\BannerController::class, 'update']);
 
+// Jobs
+Route::apiResource('jobs', \App\Http\Controllers\JobsController::class);
+Route::post('jobs/{id}/update', [\App\Http\Controllers\JobsController::class, 'update']);
+
 // Home Slider
 Route::prefix('home')->group(function () {
     Route::get('top-services', [\App\Http\Controllers\HomeController::class, 'topServices']);
     Route::get('new-services', [\App\Http\Controllers\HomeController::class, 'newServices']);
+    Route::get('new-jobs', [\App\Http\Controllers\HomeController::class, 'newJobs']);
 });
+
+// Favorites Services
+Route::get('favorite-services', [FavoriteServiceController::class, 'index']);
+Route::post('toggle-favorite', [FavoriteServiceController::class, 'store']);

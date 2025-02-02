@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Provider;
+use App\Models\ProviderService;
 use App\Models\User;
 use Illuminate\Http\Request;
 
@@ -83,6 +84,15 @@ class ProviderController extends Controller
     public function show(string $id)
     {
         try {
+     $allServices = ProviderService::where('provider_id', $id)->get();
+            $rating = 0;
+            foreach ($allServices as $service) {
+                $rating += $service->rating;
+            }
+            $provider = Provider::findOrFail($id);
+            $provider->rating = $rating / $allServices->count();
+            $provider->save();
+
             $provider = Provider::select(
                 'users.id as user_id',
                 'users.name as name',
@@ -116,6 +126,7 @@ class ProviderController extends Controller
                 ->join('specializations', 'sub_specializations.parent_id', '=', 'specializations.id')
                 ->where('providers.id', $id)
                 ->first();
+
 
             return response()->json([
                 'status' => 'success',

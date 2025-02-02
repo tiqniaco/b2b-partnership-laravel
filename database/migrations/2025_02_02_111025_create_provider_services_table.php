@@ -16,14 +16,15 @@ return new class extends Migration
             $table->foreignId('provider_id')->constrained('providers')->onDelete('cascade');
             $table->foreignId('governments_id')->constrained('governments');
             $table->foreignId('sub_specialization_id')->constrained('sub_specializations');
-            $table->text('address');
+            $table->string('name_ar', 255);
+            $table->string('name_en', 255);
+            $table->text('address')->nullable();
             $table->text('description');
             $table->text('image');
-            $table->double('start_price');
-            $table->double('end_price');
-            $table->string('duration');
-            $table->text('file')->nullable();
+            $table->double('price');
             $table->integer('rating')->default(0);
+            $table->text('overview');
+            $table->string('video', 255)->nullable();
             $table->timestamps();
         });
     }

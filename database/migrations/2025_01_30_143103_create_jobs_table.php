@@ -31,6 +31,7 @@ return new class extends Migration
             $table->text("key_responsibilities");
             $table->text("skill_and_experience");
             $table->text("job_skills");
+            $table->string("job_location", 255);
             $table->timestamps();
         });
     }
