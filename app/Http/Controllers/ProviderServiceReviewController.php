@@ -18,7 +18,18 @@ class ProviderServiceReviewController extends Controller
                 'provider_service_id' => 'required|exists:provider_services,id',
             ]);
 
-            $reviews = ProviderServiceReview::where('provider_service_id', $request->provider_service_id)
+            $reviews = ProviderServiceReview::select(
+                'provider_service_reviews.id',
+                'provider_service_reviews.review',
+                'provider_service_reviews.rating',
+                'users.name',
+                'users.email',
+                'users.image',
+                'users.id as user_id',
+                'provider_service_reviews.created_at',
+            )
+                ->join('users', 'provider_service_reviews.user_id', "=", "users.id")
+                ->where('provider_service_reviews.provider_service_id', "=", $request->provider_service_id)
                 ->get();
 
             return response()->json([

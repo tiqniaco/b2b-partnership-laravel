@@ -2,8 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Provider;
 use App\Models\ProviderService;
-use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -190,11 +190,46 @@ class ProviderServiceController extends Controller
                 ->where('provider_services.id', $id)
                 ->first();
 
+            $provider = Provider::select(
+                'users.id as user_id',
+                'users.name as name',
+                'users.email as email',
+                'users.country_code as country_code',
+                'users.phone as phone',
+                'users.image as image',
+                'providers.id as provider_id',
+                'providers.commercial_register as commercial_register',
+                'providers.tax_card as tax_card',
+                'providers.bio as bio',
+                'providers.rating as rating',
+                'provider_types.name_ar as provider_type_name_ar',
+                'provider_types.name_en as provider_type_name_en',
+                'specializations.name_ar as specialization_name_ar',
+                'specializations.name_en as specialization_name_en',
+                'sub_specializations.name_ar as sub_specialization_name_ar',
+                'sub_specializations.name_en as sub_specialization_name_en',
+                'countries.name_ar as country_name_ar',
+                'countries.name_en as country_name_en',
+                'governments.name_ar as government_name_ar',
+                'governments.name_en as government_name_en',
+                'providers.created_at as created_at',
+                'providers.updated_at as updated_at',
+            )
+                ->join('users', 'providers.user_id', '=', 'users.id')
+                ->join('provider_types', 'providers.provider_types_id', '=', 'provider_types.id')
+                ->join('sub_specializations', 'providers.sub_specialization_id', '=', 'sub_specializations.id')
+                ->join('governments', 'providers.governments_id', '=', 'governments.id')
+                ->join('countries', 'governments.country_id', '=', 'countries.id')
+                ->join('specializations', 'sub_specializations.parent_id', '=', 'specializations.id')
+                ->where('providers.id', $providerService->provider_id)
+                ->first();
+
             return response()->json(
                 [
                     'status' => 'success',
                     'message' => 'Data fetched successfully.',
                     'data' => $providerService,
+                    'provider' => $provider,
                 ],
                 200,
             );

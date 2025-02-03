@@ -121,6 +121,11 @@ class AuthController extends Controller
             if ($request->role ==  'provider') {
                 $user->status = 'inactive';
             }
+            if ($request->hasFile('image')) {
+                $imageName = 'images/users/' . time() . '.' . $request->image->extension();
+                $request->image->move(public_path('images/users'), $imageName);
+                $user->image = $imageName;
+            }
             $user->save();
 
             switch ($request->role) {
@@ -129,11 +134,6 @@ class AuthController extends Controller
                     $client = new Client();
                     $client->user_id = $user->id;
                     $client->governments_id = $request->government_id;
-                    if ($request->hasFile('image')) {
-                        $imageName = 'images/clients/' . time() . '.' . $request->image->extension();
-                        $request->image->move(public_path('images/clients'), $imageName);
-                        $client->image = $imageName;
-                    }
                     $client->save();
                     break;
                 case 'provider':
@@ -143,11 +143,6 @@ class AuthController extends Controller
                     $provider->provider_types_id = $request->provider_types_id;
                     $provider->sub_specialization_id = $request->sub_specialization_id;
                     $provider->governments_id = $request->government_id;
-                    if ($request->hasFile('image')) {
-                        $imageName = 'images/providers/' . time() . '.' . $request->image->extension();
-                        $request->image->move(public_path('images/providers'), $imageName);
-                        $provider->image = $imageName;
-                    }
                     if ($request->hasFile('commercial_register')) {
                         $file = $request->file('commercial_register');
                         $filename = 'files/providers/' . time() . '.' . $request->commercial_register->extension();
@@ -253,44 +248,27 @@ class AuthController extends Controller
     {
         try {
             $request->validate([
-                "id" => "required|exists:users,id",
                 'name' => 'nullable|string',
                 'email' => 'nullable|email',
                 'phone' => 'nullable|string',
                 'country_code' => 'nullable|string',
                 'image' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg',
             ]);
-            $user = User::findOrFail($request->id);
+            $user = User::findOrFail(Auth::user()->id);
             $user->name = $request->name ?? $user->name;
             $user->email = $request->email ?? $user->email;
             $user->phone = $request->phone ?? $user->phone;
             $user->country_code = $request->country_code ?? $user->country_code;
+            if ($request->image) {
+                if (file_exists(public_path($user->image))) {
+                    unlink(public_path($user->image));
+                }
+                $imageName = 'images/users/' . time() . '.' . $request->image->extension();
+                $request->image->move(public_path('images/users'), $imageName);
+                $user->image = $imageName;
+            }
             $user->save();
 
-            if ($request->hasFile('image')) {
-                switch ($user->role) {
-                    case 'client':
-                        $client = Client::where('user_id', $user->id)->first();
-                        if (file_exists(public_path($client->image))) {
-                            unlink(public_path($client->image));
-                        }
-                        $imageName = 'images/clients/' . time() . '.' . $request->image->extension();
-                        $request->image->move(public_path('images/clients'), $imageName);
-                        $client->image = $imageName;
-                        $client->save();
-                        break;
-                    case 'provider':
-                        $provider = Provider::where('user_id', $user->id)->first();
-                        if (file_exists(public_path($provider->image))) {
-                            unlink(public_path($provider->image));
-                        }
-                        $imageName = 'images/providers/' . time() . '.' . $request->image->extension();
-                        $request->image->move(public_path('images/providers'), $imageName);
-                        $provider->image = $imageName;
-                        $provider->save();
-                        break;
-                }
-            }
 
             return response()->json([
                 'status' => 'success',

@@ -20,20 +20,8 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        $adminRole = Role::create(['name' => 'admin']);
-        $clientRole = Role::create(['name' => 'client']);
-        $serviceProviderRole = Role::create(['name' => 'provider']);
-
-        $userAdmin = User::create([
-            'name' => 'Admin',
-            'email' => 'admin@gmail.com',
-            'password' => Hash::make('12345678'),
-        ]);
-
-        $userAdmin->assignRole($adminRole);
-
-        Country::factory(10)->create();
-
-        Government::factory(10)->create();
+        Role::create(['name' => 'admin', 'guard_name' => 'api']);
+        Role::create(['name' => 'client', 'guard_name' => 'api']);
+        Role::create(['name' => 'provider', 'guard_name' => 'api']);
     }
 }

@@ -30,13 +30,20 @@ use Illuminate\Support\Facades\Route;
 Route::prefix("auth")->group(function () {
     Route::post('register', [AuthController::class, 'register']);
     Route::post('login', [AuthController::class, 'login']);
-    Route::post('logout', [AuthController::class, 'logout']);
-    Route::post('update-profile', [AuthController::class, 'updateProfile']);
-    Route::post('reset-password', [AuthController::class, 'resetPassword']);
+    Route::post('logout', [AuthController::class, 'logout'])->middleware('auth:sanctum');
+    Route::post('update-profile', [AuthController::class, 'updateProfile'])->middleware('auth:sanctum');
+    Route::post('reset-password', [AuthController::class, 'resetPassword'])->middleware('auth:sanctum');
     Route::post('forget-password', [AuthController::class, 'forgetPassword']);
 });
 
 // Country Routes
+Route::middleware('auth:sanctum')->group(function () {
+    Route::get('countries', [CountryController::class, 'index']);
+    Route::post('countries', [CountryController::class, 'store']);
+    Route::get('countries/{id}', [CountryController::class, 'show']);
+    Route::post('countries/{id}/update', [CountryController::class, 'update']);
+    Route::delete('countries/{id}', [CountryController::class, 'destroy'])->middleware('role:admin');
+});
 Route::apiResource('countries', CountryController::class);
 Route::post('countries/{id}/update', [CountryController::class, 'update']);
 
