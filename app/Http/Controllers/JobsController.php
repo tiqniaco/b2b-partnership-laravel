@@ -211,6 +211,16 @@ class JobsController extends Controller
                 ->where('jobs.id', $id)
                 ->first();
 
+            if (!$jobs) {
+                return response()->json(
+                    [
+                        'status' => 'error',
+                        'message' => 'Not found.',
+                    ],
+                    404
+                );
+            }
+
             return response()->json([
                 'status' => 'success',
                 'message' => 'Job fetched successfully.',

@@ -37,15 +37,11 @@ Route::prefix("auth")->group(function () {
 });
 
 // Country Routes
-Route::middleware('auth:sanctum')->group(function () {
-    Route::get('countries', [CountryController::class, 'index']);
-    Route::post('countries', [CountryController::class, 'store']);
-    Route::get('countries/{id}', [CountryController::class, 'show']);
-    Route::post('countries/{id}/update', [CountryController::class, 'update']);
-    Route::delete('countries/{id}', [CountryController::class, 'destroy'])->middleware('role:admin');
-});
-Route::apiResource('countries', CountryController::class);
-Route::post('countries/{id}/update', [CountryController::class, 'update']);
+Route::get('countries', [CountryController::class, 'index']);
+Route::post('countries', [CountryController::class, 'store'])->middleware(['auth:sanctum']);
+Route::get('countries/{id}', [CountryController::class, 'show']);
+Route::post('countries/{id}/update', [CountryController::class, 'update'])->middleware(['auth:sanctum']);
+Route::delete('countries/{id}', [CountryController::class, 'destroy'])->middleware(['auth:sanctum']);
 
 // Government Routes
 Route::apiResource('governments', GovernmentController::class);
@@ -63,6 +59,7 @@ Route::post('sub-specializations/{id}/update', [SubSpecializationController::cla
 
 // Provider Routes
 Route::apiResource('providers', ProviderController::class);
+Route::get('providers/{id}/services', [ProviderController::class, 'services'])->middleware(['auth:sanctum']);
 
 // Provider Service
 Route::apiResource('provider-service', ProviderServiceController::class);

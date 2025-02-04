@@ -6,6 +6,8 @@ use App\Models\Provider;
 use App\Models\ProviderService;
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 
 class ProviderController extends Controller
 {
@@ -21,8 +23,8 @@ class ProviderController extends Controller
                 'users.email as email',
                 'users.country_code as country_code',
                 'users.phone as phone',
+                'users.image as image',
                 'providers.id as provider_id',
-                'providers.image as image',
                 'providers.commercial_register as commercial_register',
                 'providers.tax_card as tax_card',
                 'providers.bio as bio',
@@ -84,7 +86,7 @@ class ProviderController extends Controller
     public function show(string $id)
     {
         try {
-     $allServices = ProviderService::where('provider_id', $id)->get();
+            $allServices = ProviderService::where('provider_id', $id)->get();
             $rating = 0;
             foreach ($allServices as $service) {
                 $rating += $service->rating;
@@ -99,8 +101,8 @@ class ProviderController extends Controller
                 'users.email as email',
                 'users.country_code as country_code',
                 'users.phone as phone',
+                'users.image as image',
                 'providers.id as provider_id',
-                'providers.image as image',
                 'providers.commercial_register as commercial_register',
                 'providers.tax_card as tax_card',
                 'providers.bio as bio',
@@ -178,6 +180,76 @@ class ProviderController extends Controller
                 'status' => 'success',
                 'message' => 'Data deleted successfully.',
             ]);
+        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Not found.',
+                'error' => $e->getMessage(),
+            ], 401);
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Validation error.',
+                'error' => $e->getMessage(),
+            ], 401);
+        } catch (\Throwable $e) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Something went wrong.',
+                'error' => $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    public function services($id)
+    {
+        try {
+            $userId =  Auth::user()->id;
+            $services = ProviderService::select(
+                'provider_services.id',
+                'provider_services.provider_id',
+                'provider_services.name_ar',
+                'provider_services.name_en',
+                'provider_services.address',
+                'provider_services.description',
+                'provider_services.image',
+                'provider_services.price',
+                'provider_services.rating',
+                'provider_services.overview',
+                'provider_services.video',
+                'countries.name_ar as country_name_ar',
+                'countries.name_en as country_name_en',
+                'provider_services.governments_id',
+                'governments.name_ar as government_name_ar',
+                'governments.name_en as government_name_en',
+                'specializations.name_ar as specialization_name_ar',
+                'specializations.name_en as specialization_name_en',
+                'provider_services.sub_specialization_id',
+                'sub_specializations.name_ar as sub_specialization_name_ar',
+                'sub_specializations.name_en as sub_specialization_name_en',
+                DB::raw("
+    COALESCE(
+        (SELECT 1 FROM favorite_services 
+         WHERE favorite_services.user_id = $userId 
+           AND favorite_services.provider_service_id = provider_services.id 
+         LIMIT 1), 0
+    ) as is_favorite
+"),
+                'provider_services.created_at',
+                'provider_services.updated_at',
+            )
+                ->join('governments', 'provider_services.governments_id', '=', 'governments.id')
+                ->join('countries', 'governments.country_id', '=', 'countries.id')
+                ->join('specializations', 'provider_services.sub_specialization_id', '=', 'specializations.id')
+                ->join('sub_specializations', 'specializations.id', '=', 'sub_specializations.parent_id')
+                ->where('provider_services.provider_id', $id)
+                ->get();
+
+            return response()->json([
+                'status' => 'success',
+                'message' => 'Data fetched successfully.',
+                'data' => $services,
+            ], 200);
         } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
             return response()->json([
                 'status' => 'error',

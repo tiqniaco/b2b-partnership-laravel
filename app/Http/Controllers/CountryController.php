@@ -60,7 +60,7 @@ class CountryController extends Controller
                 'flag' => "required|image|mimes:jpeg,png,jpg,gif,svg",
                 'code' => 'required|string|max:10',
                 'phone_length' => 'required|integer',
-            ], 200);
+            ]);
 
             $country = new Country();
             $country->name_en = $request->name_en;
@@ -77,7 +77,7 @@ class CountryController extends Controller
             return response()->json([
                 'status' => 'success',
                 'message' => 'Data created successfully.',
-            ]);
+            ], 200);
         } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
             return response()->json([
                 'status' => 'error',
@@ -145,7 +145,7 @@ class CountryController extends Controller
                 'flag' => "image|mimes:jpeg,png,jpg,gif,svg",
                 'code' => 'nullable|string|max:10',
                 'phone_length' => 'nullable|integer',
-            ], 200);
+            ]);
 
             $country = Country::findOrFail($id);
             $country->name_en = $request->name_en ?? $country->name_en;

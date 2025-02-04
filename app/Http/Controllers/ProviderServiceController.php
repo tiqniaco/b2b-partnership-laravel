@@ -47,7 +47,14 @@ class ProviderServiceController extends Controller
                 'provider_services.sub_specialization_id',
                 'sub_specializations.name_ar as sub_specialization_name_ar',
                 'sub_specializations.name_en as sub_specialization_name_en',
-                DB::raw("(CASE WHEN EXISTS (SELECT 1 FROM favorite_services WHERE favorite_services.user_id = $userId AND favorite_services.provider_service_id = provider_services.id) THEN 1 ELSE 0 END) as is_favorite"),
+                DB::raw("
+    COALESCE(
+        (SELECT 1 FROM favorite_services 
+         WHERE favorite_services.user_id = $userId 
+           AND favorite_services.provider_service_id = provider_services.id 
+         LIMIT 1), 0
+    ) as is_favorite
+"),
                 'provider_services.created_at',
                 'provider_services.updated_at',
             )
@@ -179,7 +186,14 @@ class ProviderServiceController extends Controller
                 'provider_services.sub_specialization_id',
                 'sub_specializations.name_ar as sub_specialization_name_ar',
                 'sub_specializations.name_en as sub_specialization_name_en',
-                DB::raw("(CASE WHEN EXISTS (SELECT 1 FROM favorite_services WHERE favorite_services.user_id = $userId AND favorite_services.provider_service_id = provider_services.id) THEN 1 ELSE 0 END) as is_favorite"),
+                DB::raw("
+    COALESCE(
+        (SELECT 1 FROM favorite_services 
+         WHERE favorite_services.user_id = $userId 
+           AND favorite_services.provider_service_id = provider_services.id 
+         LIMIT 1), 0
+    ) as is_favorite
+"),
                 'provider_services.created_at',
                 'provider_services.updated_at',
             )
