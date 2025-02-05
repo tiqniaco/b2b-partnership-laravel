@@ -21,7 +21,7 @@ return new class extends Migration
             $table->text('address')->nullable();
             $table->text('description');
             $table->text('image');
-            $table->double('price');
+            $table->double('price')->nullable();
             $table->integer('rating')->default(0);
             $table->text('overview');
             $table->string('video', 255)->nullable();

@@ -2,29 +2,27 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Country;
+use App\Models\ProviderPreviousWork;
 use Illuminate\Http\Request;
 
-
-class CountryController extends Controller
+class ProviderPreviousWorksController extends Controller
 {
-
-    public function __construct()
-    {
-        $this->middleware('auth:sanctum');
-    }
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
         try {
-            $countries = Country::all();
+            $request->validate([
+                'provider_id' => 'required|exists:providers,id',
+            ]);
+
+            $providerPreviousWorks = ProviderPreviousWork::where('provider_id', $request->provider_id)->get();
 
             return response()->json([
                 'status' => 'success',
                 'message' => 'Data fetched successfully.',
-                'data' => $countries,
+                'data' => $providerPreviousWorks,
             ], 200);
         } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
             return response()->json([
@@ -54,29 +52,30 @@ class CountryController extends Controller
     {
         try {
             $request->validate([
-                'name_en' => 'required|string',
-                'name_ar' => 'required|string',
-                'flag' => "required|image|mimes:jpeg,png,jpg,gif,svg",
-                'code' => 'required|string|max:10',
-                'phone_length' => 'required|integer',
+                'provider_id' => 'required|exists:providers,id',
+                'title_ar' => 'required|string|max:255',
+                'title_en' => 'required|string|max:255',
+                'description' => 'required|string',
+                'image' => 'required|image|mimes:jpeg,png,jpg,gif,svg|max:5000',
             ]);
 
-            $country = new Country();
-            $country->name_en = $request->name_en;
-            $country->name_ar = $request->name_ar;
-            $country->code = $request->code;
-            $country->phone_length = $request->phone_length;
-            if ($request->hasFile('flag')) {
-                $imageName = 'images/countries/' . time() . '.' . $request->flag->extension();
-                $request->flag->move(public_path('images/countries'), $imageName);
-                $country->flag = $imageName;
+            $providerPreviousWork = new ProviderPreviousWork();
+            $providerPreviousWork->provider_id = $request->provider_id;
+            $providerPreviousWork->title_ar = $request->title_ar;
+            $providerPreviousWork->title_en = $request->title_en;
+            $providerPreviousWork->description = $request->description;
+            if ($request->hasFile('image')) {
+                $imageName = 'images/provider_previous_works/' . time() . '.' . $request->image->extension();
+                $request->image->move(public_path('images/provider_previous_works'), $imageName);
+                $providerPreviousWork->image = $imageName;
             }
-            $country->save();
+            $providerPreviousWork->save();
+
 
             return response()->json([
                 'status' => 'success',
                 'message' => 'Data created successfully.',
-            ], 200);
+            ], 201);
         } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
             return response()->json([
                 'status' => 'error',
@@ -104,12 +103,12 @@ class CountryController extends Controller
     public function show(string $id)
     {
         try {
-            $country = Country::findOrFail($id);
+            $providerPreviousWork = ProviderPreviousWork::findOrFail($id);
 
             return response()->json([
                 'status' => 'success',
-                'message' => 'Data fetched successfully.',
-                'data' => $country,
+                'message' => 'Data updated successfully.',
+                'data' => $providerPreviousWork,
             ], 200);
         } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
             return response()->json([
@@ -139,27 +138,26 @@ class CountryController extends Controller
     {
         try {
             $request->validate([
-                'name_en' => 'nullable|string',
-                'name_ar' => 'nullable|string',
-                'flag' => "image|mimes:jpeg,png,jpg,gif,svg",
-                'code' => 'nullable|string|max:10',
-                'phone_length' => 'nullable|integer',
+                'title_ar' => 'nullable|string|max:255',
+                'title_en' => 'nullable|string|max:255',
+                'description' => 'nullable|string',
+                'image' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:5000',
             ]);
 
-            $country = Country::findOrFail($id);
-            $country->name_en = $request->name_en ?? $country->name_en;
-            $country->name_ar = $request->name_ar ?? $country->name_ar;
-            $country->code = $request->code ?? $country->code;
-            $country->phone_length = $request->phone_length ?? $country->phone_length;
-            if ($request->hasFile('flag')) {
-                if (file_exists(public_path($country->flag))) {
-                    unlink(public_path($country->flag));
+            $providerPreviousWork = ProviderPreviousWork::findOrFail($id);
+            $providerPreviousWork->title_ar = $request->title_ar ?? $providerPreviousWork->title_ar;
+            $providerPreviousWork->title_en = $request->title_en ?? $providerPreviousWork->title_en;
+            $providerPreviousWork->description = $request->description ?? $providerPreviousWork->description;
+            if ($request->hasFile('image')) {
+                if (file_exists(public_path($providerPreviousWork->image))) {
+                    unlink(public_path($providerPreviousWork->image));
                 }
-                $imageName = 'images/countries/' . time() . '.' . $request->flag->extension();
-                $request->flag->move(public_path('images/countries'), $imageName);
-                $country->flag = $imageName;
+                $imageName = 'images/provider_previous_works/' . time() . '.' . $request->image->extension();
+                $request->image->move(public_path('images/provider_previous_works'), $imageName);
+                $providerPreviousWork->image = $imageName;
             }
-            $country->save();
+            $providerPreviousWork->save();
+
 
             return response()->json([
                 'status' => 'success',
@@ -190,36 +188,38 @@ class CountryController extends Controller
      * Remove the specified resource from storage.
      */
     public function destroy(string $id)
-    {
-        try {
-            $country = Country::findOrFail($id);
-            if (file_exists(public_path($country->flag))) {
-                unlink(public_path($country->flag));
-            }
-            $country->delete();
+    { {
+            try {
+                $providerPreviousWork = ProviderPreviousWork::findOrFail($id);
 
-            return response()->json([
-                'status' => 'success',
-                'message' => 'Data deleted successfully.',
-            ], 200);
-        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
-            return response()->json([
-                'status' => 'error',
-                'message' => 'Not found.',
-                'error' => $e->getMessage(),
-            ], 401);
-        } catch (\Illuminate\Validation\ValidationException $e) {
-            return response()->json([
-                'status' => 'error',
-                'message' => 'Validation error.',
-                'error' => $e->getMessage(),
-            ], 401);
-        } catch (\Throwable $e) {
-            return response()->json([
-                'status' => 'error',
-                'message' => 'Something went wrong.',
-                'error' => $e->getMessage(),
-            ], 500);
+                if (file_exists(public_path($providerPreviousWork->image))) {
+                    unlink(public_path($providerPreviousWork->image));
+                }
+                $providerPreviousWork->delete();
+
+                return response()->json([
+                    'status' => 'success',
+                    'message' => 'Data deleted successfully.',
+                ], 200);
+            } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
+                return response()->json([
+                    'status' => 'error',
+                    'message' => 'Not found.',
+                    'error' => $e->getMessage(),
+                ], 401);
+            } catch (\Illuminate\Validation\ValidationException $e) {
+                return response()->json([
+                    'status' => 'error',
+                    'message' => 'Validation error.',
+                    'error' => $e->getMessage(),
+                ], 401);
+            } catch (\Throwable $e) {
+                return response()->json([
+                    'status' => 'error',
+                    'message' => 'Something went wrong.',
+                    'error' => $e->getMessage(),
+                ], 500);
+            }
         }
     }
 }

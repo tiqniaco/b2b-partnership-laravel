@@ -17,37 +17,8 @@ class ProviderController extends Controller
     public function index()
     {
         try {
-            $providers = Provider::select(
-                'users.id as user_id',
-                'users.name as name',
-                'users.email as email',
-                'users.country_code as country_code',
-                'users.phone as phone',
-                'users.image as image',
-                'providers.id as provider_id',
-                'providers.commercial_register as commercial_register',
-                'providers.tax_card as tax_card',
-                'providers.bio as bio',
-                'providers.rating as rating',
-                'provider_types.name_ar as provider_type_name_ar',
-                'provider_types.name_en as provider_type_name_en',
-                'specializations.name_ar as specialization_name_ar',
-                'specializations.name_en as specialization_name_en',
-                'sub_specializations.name_ar as sub_specialization_name_ar',
-                'sub_specializations.name_en as sub_specialization_name_en',
-                'countries.name_ar as country_name_ar',
-                'countries.name_en as country_name_en',
-                'governments.name_ar as government_name_ar',
-                'governments.name_en as government_name_en',
-                'providers.created_at as created_at',
-                'providers.updated_at as updated_at',
-            )
-                ->join('users', 'providers.user_id', '=', 'users.id')
-                ->join('provider_types', 'providers.provider_types_id', '=', 'provider_types.id')
-                ->join('sub_specializations', 'providers.sub_specialization_id', '=', 'sub_specializations.id')
-                ->join('governments', 'providers.governments_id', '=', 'governments.id')
-                ->join('countries', 'governments.country_id', '=', 'countries.id')
-                ->join('specializations', 'sub_specializations.parent_id', '=', 'specializations.id')
+
+            $providers = DB::table('provider_details')
                 ->paginate(12);
 
             return response()->json($providers, 200);
@@ -86,47 +57,8 @@ class ProviderController extends Controller
     public function show(string $id)
     {
         try {
-            $allServices = ProviderService::where('provider_id', $id)->get();
-            $rating = 0;
-            foreach ($allServices as $service) {
-                $rating += $service->rating;
-            }
-            $provider = Provider::findOrFail($id);
-            $provider->rating = $rating / $allServices->count();
-            $provider->save();
-
-            $provider = Provider::select(
-                'users.id as user_id',
-                'users.name as name',
-                'users.email as email',
-                'users.country_code as country_code',
-                'users.phone as phone',
-                'users.image as image',
-                'providers.id as provider_id',
-                'providers.commercial_register as commercial_register',
-                'providers.tax_card as tax_card',
-                'providers.bio as bio',
-                'providers.rating as rating',
-                'provider_types.name_ar as provider_type_name_ar',
-                'provider_types.name_en as provider_type_name_en',
-                'specializations.name_ar as specialization_name_ar',
-                'specializations.name_en as specialization_name_en',
-                'sub_specializations.name_ar as sub_specialization_name_ar',
-                'sub_specializations.name_en as sub_specialization_name_en',
-                'countries.name_ar as country_name_ar',
-                'countries.name_en as country_name_en',
-                'governments.name_ar as government_name_ar',
-                'governments.name_en as government_name_en',
-                'providers.created_at as created_at',
-                'providers.updated_at as updated_at',
-            )
-                ->join('users', 'providers.user_id', '=', 'users.id')
-                ->join('provider_types', 'providers.provider_types_id', '=', 'provider_types.id')
-                ->join('sub_specializations', 'providers.sub_specialization_id', '=', 'sub_specializations.id')
-                ->join('governments', 'providers.governments_id', '=', 'governments.id')
-                ->join('countries', 'governments.country_id', '=', 'countries.id')
-                ->join('specializations', 'sub_specializations.parent_id', '=', 'specializations.id')
-                ->where('providers.id', $id)
+            $provider = DB::table('provider_details')
+                ->where('provider_id', $id)
                 ->first();
 
 
@@ -204,6 +136,14 @@ class ProviderController extends Controller
     public function services($id)
     {
         try {
+            $provider = Provider::find($id);
+
+            if (!$provider) {
+                return response()->json([
+                    'status' => 'error',
+                    'message' => 'Provider not found.',
+                ], 404);
+            }
             $userId =  Auth::user()->id;
             $services = ProviderService::select(
                 'provider_services.id',
@@ -228,27 +168,36 @@ class ProviderController extends Controller
                 'sub_specializations.name_ar as sub_specialization_name_ar',
                 'sub_specializations.name_en as sub_specialization_name_en',
                 DB::raw("
-    COALESCE(
-        (SELECT 1 FROM favorite_services 
-         WHERE favorite_services.user_id = $userId 
-           AND favorite_services.provider_service_id = provider_services.id 
-         LIMIT 1), 0
-    ) as is_favorite
-"),
+                    COALESCE(
+                        (SELECT 1 FROM favorite_services 
+                        WHERE favorite_services.user_id = $userId 
+                        AND favorite_services.provider_service_id = provider_services.id 
+                        LIMIT 1), 0
+                    ) as is_favorite
+                "),
                 'provider_services.created_at',
                 'provider_services.updated_at',
             )
                 ->join('governments', 'provider_services.governments_id', '=', 'governments.id')
                 ->join('countries', 'governments.country_id', '=', 'countries.id')
                 ->join('specializations', 'provider_services.sub_specialization_id', '=', 'specializations.id')
-                ->join('sub_specializations', 'specializations.id', '=', 'sub_specializations.parent_id')
+                ->leftJoin('sub_specializations', 'specializations.id', '=', 'sub_specializations.parent_id')                // ->distinct()
                 ->where('provider_services.provider_id', $id)
+                ->orderBy('provider_services.created_at', 'desc')
                 ->get();
+
+            $all = [];
+
+            foreach ($services as $service) {
+                if (!in_array($service->id, array_column($all, 'id'))) {
+                    $all[] = $service;
+                }
+            }
 
             return response()->json([
                 'status' => 'success',
                 'message' => 'Data fetched successfully.',
-                'data' => $services,
+                'data' => $all,
             ], 200);
         } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
             return response()->json([

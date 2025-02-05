@@ -2,8 +2,10 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Provider;
 use App\Models\Specialization;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class SpecializationController extends Controller
 {
@@ -189,6 +191,69 @@ class SpecializationController extends Controller
                 'status' => 'success',
                 'message' => 'Data deleted successfully.',
             ], 200);
+        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Not found.',
+                'error' => $e->getMessage(),
+            ], 401);
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Validation error.',
+                'error' => $e->getMessage(),
+            ], 401);
+        } catch (\Throwable $e) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Something went wrong.',
+                'error' => $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    public function providers(Request $request)
+    {
+        try {
+            $request->validate([
+                "specialization_id" => "nullable|exists:specializations,id",
+                "sub_specialization_id" => "nullable|exists:sub_specializations,id",
+                "country_id" => "nullable|exists:countries,id",
+                "government_id" => "nullable|exists:governments,id",
+                "search" => "nullable|string",
+                "rate" => "nullable|integer|min:0|max:5",
+            ]);
+
+            $providers = DB::table('provider_details_filter_view')
+                ->distinct() // Ensures unique rows
+                ->when($request->filled('specialization_id'), function ($query) use ($request) {
+                    return $query->where('specialization_id', $request->specialization_id);
+                })
+                ->when($request->filled('sub_specialization_id'), function ($query) use ($request) {
+                    return $query->where('sub_specialization_id', $request->sub_specialization_id);
+                })
+                ->when($request->filled('search'), function ($query) use ($request) {
+                    $searchTerm = '%' . $request->search . '%';
+                    return $query->where(function ($q) use ($searchTerm) {
+                        $q->where('name', 'like', $searchTerm)
+                            ->orWhere('provider_service_name_ar', 'like', $searchTerm)
+                            ->orWhere('provider_service_name_en', 'like', $searchTerm);
+                    });
+                })
+                ->when($request->filled('country_id'), function ($query) use ($request) {
+                    return $query->where('country_id', $request->country_id);
+                })
+                ->when($request->filled('government_id'), function ($query) use ($request) {
+                    return $query->where('government_id', $request->government_id);
+                })
+                ->when($request->filled('rate'), function ($query) use ($request) {
+                    return $query->where('rating', '=', $request->rate);
+                })
+                ->orderBy('created_at', 'desc')
+                ->orderBy('rating', 'desc')
+                ->paginate(12);
+
+            return response()->json($providers, 200);
         } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
             return response()->json([
                 'status' => 'error',

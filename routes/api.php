@@ -52,6 +52,7 @@ Route::apiResource('provider-types', ProviderTypeController::class);
 // Specialization Routes
 Route::apiResource('specializations', SpecializationController::class);
 Route::post('specializations/{id}/update', [SpecializationController::class, 'update']);
+Route::post('specializations/providers', [SpecializationController::class, 'providers']);
 
 // Sub Specialization Routes
 Route::apiResource('sub-specializations', SubSpecializationController::class);
@@ -64,6 +65,7 @@ Route::get('providers/{id}/services', [ProviderController::class, 'services'])->
 // Provider Service
 Route::apiResource('provider-service', ProviderServiceController::class);
 Route::post('provider-service/{id}/update', [ProviderServiceController::class, 'update']);
+Route::get("specializations/{id}/services", [ProviderServiceController::class, "specializationsServices"])->middleware(['auth:sanctum']);;
 
 // Provider Service
 Route::apiResource('client-service', ClientServiceController::class);
@@ -92,6 +94,8 @@ Route::prefix('home')->group(function () {
     Route::get('top-services', [\App\Http\Controllers\HomeController::class, 'topServices']);
     Route::get('new-services', [\App\Http\Controllers\HomeController::class, 'newServices']);
     Route::get('new-jobs', [\App\Http\Controllers\HomeController::class, 'newJobs']);
+    Route::get('top-providers', [\App\Http\Controllers\HomeController::class, "topProviders"]);
+    Route::get("countries-top-providers", [\App\Http\Controllers\HomeController::class, "countriesProviders"]);
 });
 
 // Favorites Services
