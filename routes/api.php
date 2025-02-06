@@ -112,3 +112,7 @@ Route::post('toggle-favorite', [FavoriteServiceController::class, 'store']);
 // Request Services
 Route::apiResource('request-services', RequestServicesController::class)->middleware(['auth:sanctum']);
 Route::post('request-services/{id}/update', [RequestServicesController::class, 'update'])->middleware(['auth:sanctum']);
+
+// Request Offers
+Route::apiResource('request-offers', \App\Http\Controllers\RequestOffersController::class)->middleware(['auth:sanctum']);
+Route::patch('request-offers/{id}/update-status', [\App\Http\Controllers\RequestOffersController::class, 'changeOfferStatus'])->middleware(['auth:sanctum']);
