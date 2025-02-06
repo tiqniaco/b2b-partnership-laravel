@@ -21,7 +21,8 @@ return new class extends Migration
             $table->text('address');
             $table->text('description');
             $table->text('image');
-            $table->string('duration');
+            $table->enum('status', ['pending', 'confirmed', 'canceled'])->default('pending');
+            // $table->string('duration');
             $table->timestamps();
         });
     }

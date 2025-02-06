@@ -15,7 +15,7 @@ return new class extends Migration
             $table->id();
             $table->foreignId('provider_id')->constrained('providers')->onDelete('cascade');
             $table->foreignId('request_service_id')->constrained('request_services')->onDelete('cascade');
-            $table->text('offer');
+            $table->text('offer_description');
             $table->enum('status', ['pending', 'accepted', 'rejected', 'completed'])->default('pending');
             $table->double('price');
             $table->timestamps();

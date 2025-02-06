@@ -13,7 +13,8 @@ use App\Http\Controllers\SubSpecializationController;
 use App\Http\Controllers\PHPMailerController;
 use App\Http\Controllers\ProviderServiceController;
 use App\Http\Controllers\ProviderServiceFeatureController;
-use App\Http\Controllers\ProviderServiceReviewController;
+use App\Http\Controllers\ProviderReviewsController;
+use App\Http\Controllers\RequestServicesController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -80,7 +81,7 @@ Route::post('client-service/{id}/update', [ClientServiceController::class, 'upda
 Route::apiResource('provider-service-features', ProviderServiceFeatureController::class);
 
 // Provider Service Reviews
-Route::apiResource('provider-service-reviews', ProviderServiceReviewController::class);
+Route::apiResource('provider-service-reviews', ProviderReviewsController::class);
 
 // OTP
 Route::post('send-otp', [PHPMailerController::class, 'sendOTP']);
@@ -107,3 +108,7 @@ Route::prefix('home')->group(function () {
 // Favorites Services
 Route::get('favorite-services', [FavoriteServiceController::class, 'index']);
 Route::post('toggle-favorite', [FavoriteServiceController::class, 'store']);
+
+// Request Services
+Route::apiResource('request-services', RequestServicesController::class)->middleware(['auth:sanctum']);
+Route::post('request-services/{id}/update', [RequestServicesController::class, 'update'])->middleware(['auth:sanctum']);
