@@ -3,7 +3,7 @@
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\ClientServiceController;
 use App\Http\Controllers\CountryController;
-use App\Http\Controllers\FavoriteServiceController;
+use App\Http\Controllers\FavoriteProvidersController;
 use App\Http\Controllers\GovernmentController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\ProviderController;
@@ -106,8 +106,8 @@ Route::prefix('home')->group(function () {
 });
 
 // Favorites Services
-Route::get('favorite-services', [FavoriteServiceController::class, 'index']);
-Route::post('toggle-favorite', [FavoriteServiceController::class, 'store']);
+Route::get('favorite-providers', [FavoriteProvidersController::class, 'index']);
+Route::post('toggle-favorite', [FavoriteProvidersController::class, 'store']);
 
 // Request Services
 Route::apiResource('request-services', RequestServicesController::class)->middleware(['auth:sanctum']);
