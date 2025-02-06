@@ -5,6 +5,7 @@ use App\Http\Controllers\ClientServiceController;
 use App\Http\Controllers\CountryController;
 use App\Http\Controllers\FavoriteServiceController;
 use App\Http\Controllers\GovernmentController;
+use App\Http\Controllers\HomeController;
 use App\Http\Controllers\ProviderController;
 use App\Http\Controllers\ProviderTypeController;
 use App\Http\Controllers\SpecializationController;
@@ -62,6 +63,10 @@ Route::post('sub-specializations/{id}/update', [SubSpecializationController::cla
 Route::apiResource('providers', ProviderController::class);
 Route::get('providers/{id}/services', [ProviderController::class, 'services'])->middleware(['auth:sanctum']);
 
+// Provider Contacts
+Route::apiResource('provider-contacts', \App\Http\Controllers\ProviderContactController::class);
+Route::get('provider/{id}/contacts', [\App\Http\Controllers\ProviderContactController::class, 'providerContacts']);
+
 // Provider Service
 Route::apiResource('provider-service', ProviderServiceController::class);
 Route::post('provider-service/{id}/update', [ProviderServiceController::class, 'update']);
@@ -91,11 +96,12 @@ Route::post('jobs/{id}/update', [\App\Http\Controllers\JobsController::class, 'u
 
 // Home Slider
 Route::prefix('home')->group(function () {
-    Route::get('top-services', [\App\Http\Controllers\HomeController::class, 'topServices']);
-    Route::get('new-services', [\App\Http\Controllers\HomeController::class, 'newServices']);
-    Route::get('new-jobs', [\App\Http\Controllers\HomeController::class, 'newJobs']);
-    Route::get('top-providers', [\App\Http\Controllers\HomeController::class, "topProviders"]);
-    Route::get("countries-top-providers", [\App\Http\Controllers\HomeController::class, "countriesProviders"]);
+    Route::get('top-services', [HomeController::class, 'topServices']);
+    Route::get('new-services', [HomeController::class, 'newServices']);
+    Route::get('new-jobs', [HomeController::class, 'newJobs']);
+    Route::get('top-providers', [HomeController::class, "topProviders"]);
+    Route::get("countries-top-providers", [HomeController::class, "countriesProviders"]);
+    Route::get("country/{id}/top-providers", [HomeController::class, 'countryTopProviders']);
 });
 
 // Favorites Services

@@ -86,7 +86,12 @@ class PHPMailerController extends Controller
 
             $user = User::where('email', $request->email)->first();
             if ($user->otp == $request->otp) {
-                User::where('email', $request->email)->update(['otp' => null]);
+                User::where('email', $request->email)
+                    ->update([
+                        'otp' => null,
+                        'email_verified_at' => now(),
+                    ]);
+
                 return response()->json([
                     'status' => "success",
                     'message' => "OTP verified successfully",

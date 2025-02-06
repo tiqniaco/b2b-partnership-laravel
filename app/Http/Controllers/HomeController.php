@@ -7,6 +7,7 @@ use App\Models\Provider;
 use App\Models\ProviderService;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Http\Request;
 
 class HomeController extends Controller
 {
@@ -373,6 +374,42 @@ class HomeController extends Controller
                 "message" => "Data fetched successfully",
                 'data' => $formattedData
             ]);
+        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Not found.',
+                'error' => $e->getMessage(),
+            ], 401);
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Validation error.',
+                'error' => $e->getMessage(),
+            ], 401);
+        } catch (\Throwable $e) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Something went wrong.',
+                'error' => $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    public function countryTopProviders($id)
+    {
+        try {
+
+            $providers = DB::table('provider_details')
+                ->where('country_id', $id)
+                ->orderByDesc('rating')
+                ->limit(5)
+                ->get();
+
+            return response()->json([
+                "status" => "success",
+                "message" => "Data fetched successfully",
+                "data" => $providers,
+            ], 200);
         } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
             return response()->json([
                 'status' => 'error',

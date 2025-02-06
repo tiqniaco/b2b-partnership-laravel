@@ -55,6 +55,13 @@ class AuthController extends Controller
                         $user_id = $admin->id;
                         break;
                 }
+
+                if (!$user->email_verified_at) {
+                    return response()->json([
+                        'status' => 'error',
+                        'message' => 'Please verify your email.',
+                    ], 400);
+                }
                 return response()->json([
                     'status' => 'success',
                     'message' => 'Login successfully.',

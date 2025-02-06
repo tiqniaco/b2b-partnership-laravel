@@ -30,7 +30,15 @@ SELECT
     providers.created_at AS created_at,
     providers.updated_at AS updated_at,
     provider_services.name_ar AS provider_service_name_ar,
-    provider_services.name_en AS provider_service_name_en
+    provider_services.name_en AS provider_service_name_en,
+        provider_contacts.phone AS contact_phone,
+    provider_contacts.email AS contact_email,
+    provider_contacts.whatsapp AS contact_whatsapp,
+    provider_contacts.telegram AS contact_telegram,
+    provider_contacts.instagram AS contact_instagram,
+    provider_contacts.facebook AS contact_facebook,
+    provider_contacts.linkedin AS contact_linkedin,
+    provider_contacts.website AS contact_website
 FROM providers
 JOIN users ON providers.user_id = users.id
 JOIN provider_types ON providers.provider_types_id = provider_types.id
@@ -38,5 +46,6 @@ LEFT JOIN sub_specializations ON providers.sub_specialization_id = sub_specializ
 JOIN governments ON providers.governments_id = governments.id
 JOIN countries ON governments.country_id = countries.id
 LEFT JOIN specializations ON sub_specializations.parent_id = specializations.id
-LEFT JOIN provider_services ON providers.id = provider_services.provider_id;
+LEFT JOIN provider_services ON providers.id = provider_services.provider_id
+LEFT JOIN provider_contacts ON providers.id = provider_contacts.provider_id;
 ";
