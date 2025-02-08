@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\ClientsController;
 use App\Http\Controllers\ClientServiceController;
 use App\Http\Controllers\CountryController;
 use App\Http\Controllers\FavoriteProvidersController;
@@ -63,6 +64,7 @@ Route::post('sub-specializations/{id}/update', [SubSpecializationController::cla
 // Provider Routes
 Route::apiResource('providers', ProviderController::class);
 Route::get('providers/{id}/services', [ProviderController::class, 'services'])->middleware(['auth:sanctum']);
+Route::post('providers/{id}/update', [ProviderController::class, 'update'])->middleware(['auth:sanctum']);
 
 // Provider Contacts
 Route::apiResource('provider-contacts', \App\Http\Controllers\ProviderContactController::class);
@@ -116,3 +118,8 @@ Route::post('request-services/{id}/update', [RequestServicesController::class, '
 // Request Offers
 Route::apiResource('request-offers', \App\Http\Controllers\RequestOffersController::class)->middleware(['auth:sanctum']);
 Route::patch('request-offers/{id}/update-status', [\App\Http\Controllers\RequestOffersController::class, 'changeOfferStatus'])->middleware(['auth:sanctum']);
+
+// Clients
+Route::apiResource('clients', ClientsController::class)->middleware(['auth:sanctum']);
+Route::post('clients/{id}/update', [ClientsController::class, 'update'])->middleware(['auth:sanctum']);
+Route::get('clients/{id}/services', [ClientsController::class, 'services'])->middleware(['auth:sanctum']);

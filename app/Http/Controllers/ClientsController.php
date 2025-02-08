@@ -2,14 +2,12 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Provider;
-use App\Models\ProviderService;
+use App\Models\Client;
 use App\Models\User;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 
-class ProviderController extends Controller
+class ClientsController extends Controller
 {
     /**
      * Display a listing of the resource.
@@ -17,11 +15,10 @@ class ProviderController extends Controller
     public function index()
     {
         try {
-
-            $providers = DB::table('provider_details')
+            $clients = DB::table('client_details_view')
                 ->paginate(12);
 
-            return response()->json($providers, 200);
+            return response()->json($clients, 200);
         } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
             return response()->json([
                 'status' => 'error',
@@ -57,16 +54,18 @@ class ProviderController extends Controller
     public function show(string $id)
     {
         try {
-            $provider = DB::table('provider_details')
-                ->where('provider_id', $id)
+            $client = DB::table('client_details_view')
+                ->where('client_id', $id)
                 ->first();
 
-
-            return response()->json([
-                'status' => 'success',
-                'message' => 'Data fetched successfully.',
-                'data' => $provider,
-            ], 200);
+            return response()->json(
+                [
+                    'status' => 'success',
+                    'message' => 'Data fetched successfully.',
+                    'data' => $client
+                ],
+                200
+            );
         } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
             return response()->json([
                 'status' => 'error',
@@ -100,23 +99,18 @@ class ProviderController extends Controller
                 "country_code" => "nullable|string|size:3",
                 "phone" => "nullable|string",
                 "government_id" => "nullable|exists:governments,id",
-                "sub_specialization_id" => "nullable|exists:sub_specializations,id",
-                "provider_types_id" => "nullable|exists:provider_types,id",
-                "bio" => "nullable|string",
                 "image" => "nullable|image|mimes:jpeg,png,jpg,gif,svg",
-                "commercial_register" => "nullable|mimes:pdf",
-                "tax_card" => "nullable|mimes:pdf",
             ]);
 
-            $provider = Provider::findOrFail($id);
-            $user = User::findOrFail($provider->user_id);
+            $client = Client::findOrFail($id);
+            $user = User::findOrFail($client->user_id);
 
             if ($request->hasFile('image')) {
                 if (file_exists(public_path($user->image))) {
                     unlink(public_path($user->image));
                 }
-                $imageName = 'images/providers/' . time() . '.' . $request->image->extension();
-                $request->image->move(public_path('images/providers'), $imageName);
+                $imageName = 'images/clients/' . time() . '.' . $request->image->extension();
+                $request->image->move(public_path('images/clients'), $imageName);
                 $user->image = $imageName;
             }
 
@@ -124,30 +118,10 @@ class ProviderController extends Controller
             $user->email = $request->email ?? $user->email;
             $user->phone = $request->phone ?? $user->phone;
             $user->country_code = $request->country_code ?? $user->country_code;
+            $client->governments_id = $request->government_id ?? $client->governments_id;
 
-            $provider->bio = $request->bio ?? $provider->bio;
-            $provider->governments_id = $request->government_id ?? $provider->governments_id;
-            $provider->sub_specialization_id = $request->sub_specialization_id ?? $provider->sub_specialization_id;
-            $provider->provider_types_id = $request->provider_types_id ?? $provider->provider_types_id;
-            if ($request->hasFile('commercial_register')) {
-                if (file_exists(public_path($provider->commercial_register))) {
-                    unlink(public_path($provider->commercial_register));
-                }
-                $imageName = 'images/providers/' . time() . '.' . $request->commercial_register->extension();
-                $request->commercial_register->move(public_path('images/providers'), $imageName);
-                $provider->commercial_register = $imageName;
-            }
-
-            if ($request->hasFile('tax_card')) {
-                if (file_exists(public_path($provider->tax_card))) {
-                    unlink(public_path($provider->tax_card));
-                }
-                $imageName = 'images/providers/' . time() . '.' . $request->tax_card->extension();
-                $request->tax_card->move(public_path('images/providers'), $imageName);
-                $provider->tax_card = $imageName;
-            }
             $user->save();
-            $provider->save();
+            $client->save();
 
             return response()->json([
                 'status' => 'success',
@@ -180,10 +154,10 @@ class ProviderController extends Controller
     public function destroy(string $id)
     {
         try {
-            $provider = Provider::findOrFail($id);
-            $user = User::findOrFail($provider->user_id);
+            $client = Client::findOrFail($id);
+            $user = User::findOrFail($client->user_id);
 
-            $provider->delete();
+            $client->delete();
             $user->delete();
 
             return response()->json([
@@ -211,72 +185,25 @@ class ProviderController extends Controller
         }
     }
 
-    public function services($id)
+    public function services(Request $request, string $id)
     {
         try {
-            $provider = Provider::find($id);
+            $request->validate([
+                'status' => 'nullable|in:pending,confirmed,canceled',
+            ]);
 
-            if (!$provider) {
-                return response()->json([
-                    'status' => 'error',
-                    'message' => 'Provider not found.',
-                ], 404);
-            }
-            $userId =  Auth::user()->id;
-            $services = ProviderService::select(
-                'provider_services.id',
-                'provider_services.provider_id',
-                'provider_services.name_ar',
-                'provider_services.name_en',
-                'provider_services.address',
-                'provider_services.description',
-                'provider_services.image',
-                'provider_services.price',
-                'provider_services.rating',
-                'provider_services.overview',
-                'provider_services.video',
-                'countries.name_ar as country_name_ar',
-                'countries.name_en as country_name_en',
-                'provider_services.governments_id',
-                'governments.name_ar as government_name_ar',
-                'governments.name_en as government_name_en',
-                'specializations.name_ar as specialization_name_ar',
-                'specializations.name_en as specialization_name_en',
-                'provider_services.sub_specialization_id',
-                'sub_specializations.name_ar as sub_specialization_name_ar',
-                'sub_specializations.name_en as sub_specialization_name_en',
-                DB::raw("
-                    COALESCE(
-                        (SELECT 1 FROM favorite_services 
-                        WHERE favorite_services.user_id = $userId 
-                        AND favorite_services.provider_service_id = provider_services.id 
-                        LIMIT 1), 0
-                    ) as is_favorite
-                "),
-                'provider_services.created_at',
-                'provider_services.updated_at',
-            )
-                ->join('governments', 'provider_services.governments_id', '=', 'governments.id')
-                ->join('countries', 'governments.country_id', '=', 'countries.id')
-                ->join('specializations', 'provider_services.sub_specialization_id', '=', 'specializations.id')
-                ->leftJoin('sub_specializations', 'specializations.id', '=', 'sub_specializations.parent_id')                // ->distinct()
-                ->where('provider_services.provider_id', $id)
-                ->orderBy('provider_services.created_at', 'desc')
-                ->get();
-
-            $all = [];
-
-            foreach ($services as $service) {
-                if (!in_array($service->id, array_column($all, 'id'))) {
-                    $all[] = $service;
-                }
+            if ($request->status == null) {
+                $requestServices = DB::table('request_service_details_view')
+                    ->where('client_id', $id)
+                    ->paginate(12);
+            } else {
+                $requestServices = DB::table('request_service_details_view')
+                    ->where('client_id', $id)
+                    ->where('status', $request->status)
+                    ->paginate(12);
             }
 
-            return response()->json([
-                'status' => 'success',
-                'message' => 'Data fetched successfully.',
-                'data' => $all,
-            ], 200);
+            return response()->json($requestServices, 200);
         } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
             return response()->json([
                 'status' => 'error',
