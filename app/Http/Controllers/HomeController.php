@@ -222,40 +222,13 @@ class HomeController extends Controller
     { {
             try {
                 $userId = Auth::user()->id;
-                $providers = Provider::select(
-                    'users.id as user_id',
-                    'users.name as name',
-                    'users.email as email',
-                    'users.country_code as country_code',
-                    'users.phone as phone',
-                    'users.image as image',
-                    'providers.id as provider_id',
-                    'providers.commercial_register as commercial_register',
-                    'providers.tax_card as tax_card',
-                    'providers.bio as bio',
-                    'providers.rating as rating',
-                    'provider_types.name_ar as provider_type_name_ar',
-                    'provider_types.name_en as provider_type_name_en',
-                    'specializations.name_ar as specialization_name_ar',
-                    'specializations.name_en as specialization_name_en',
-                    'sub_specializations.name_ar as sub_specialization_name_ar',
-                    'sub_specializations.name_en as sub_specialization_name_en',
-                    'countries.name_ar as country_name_ar',
-                    'countries.name_en as country_name_en',
-                    'governments.name_ar as government_name_ar',
-                    'governments.name_en as government_name_en',
-                    'providers.created_at as created_at',
-                    'providers.updated_at as updated_at',
-                    DB::raw("(CASE WHEN EXISTS (SELECT 1 FROM favorites_view WHERE favorites_view.user_id = $userId AND favorites_view.provider_id = providers.id) THEN 1 ELSE 0 END) as is_favorite"),
 
-                )
-                    ->join('users', 'providers.user_id', '=', 'users.id')
-                    ->join('provider_types', 'providers.provider_types_id', '=', 'provider_types.id')
-                    ->join('sub_specializations', 'providers.sub_specialization_id', '=', 'sub_specializations.id')
-                    ->join('governments', 'providers.governments_id', '=', 'governments.id')
-                    ->join('countries', 'governments.country_id', '=', 'countries.id')
-                    ->join('specializations', 'sub_specializations.parent_id', '=', 'specializations.id')
-                    ->orderBy('providers.rating', 'desc')
+                $providers = DB::table('provider_details')
+                    ->select(
+                        'provider_details.*',
+                        DB::raw("(CASE WHEN EXISTS (SELECT 1 FROM favorites_view WHERE favorites_view.user_id = $userId AND favorites_view.provider_id = provider_details.provider_id) THEN 1 ELSE 0 END) as is_favorite")
+                    )
+                    ->orderByDesc('rating')
                     ->limit(5)
                     ->get();
 
@@ -405,7 +378,7 @@ class HomeController extends Controller
             $providers = DB::table('provider_details')
                 ->select(
                     'provider_details.*',
-                    DB::raw("(CASE WHEN EXISTS (SELECT 1 FROM favorites_view WHERE favorites_view.user_id = $userId AND favorites_view.provider_id = provider_id) THEN 1 ELSE 0 END) as is_favorite"),
+                    DB::raw("(CASE WHEN EXISTS (SELECT 1 FROM favorites_view WHERE favorites_view.user_id = $userId AND favorites_view.provider_id = provider_details.provider_id) THEN 1 ELSE 0 END) as is_favorite")
                 )
                 ->where('country_id', $id)
                 ->orderByDesc('rating')

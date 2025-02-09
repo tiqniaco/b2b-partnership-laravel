@@ -12,7 +12,7 @@ class StoreOrderController extends Controller
      */
     public function index()
     {
-        //
+        
     }
 
     /**

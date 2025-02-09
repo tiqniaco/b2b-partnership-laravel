@@ -21,7 +21,7 @@ class ProviderController extends Controller
             $providers = DB::table('provider_details')
                 ->select(
                     'provider_details.*',
-                    DB::raw("(CASE WHEN EXISTS (SELECT 1 FROM favorites_view WHERE favorites_view.user_id = $userId AND favorites_view.provider_id = provider_id) THEN 1 ELSE 0 END) as is_favorite"),
+                    DB::raw("(CASE WHEN EXISTS (SELECT 1 FROM favorites_view WHERE favorites_view.user_id = $userId AND favorites_view.provider_id = provider_details.provider_id) THEN 1 ELSE 0 END) as is_favorite"),
                 )
                 ->paginate(12);
 
@@ -65,7 +65,7 @@ class ProviderController extends Controller
             $provider = DB::table('provider_details')
                 ->select(
                     'provider_details.*',
-                    DB::raw("(CASE WHEN EXISTS (SELECT 1 FROM favorites_view WHERE favorites_view.user_id = $userId AND favorites_view.provider_id = provider_id) THEN 1 ELSE 0 END) as is_favorite"),
+                    DB::raw("(CASE WHEN EXISTS (SELECT 1 FROM favorites_view WHERE favorites_view.user_id = $userId AND favorites_view.provider_id = provider_details.provider_id) THEN 1 ELSE 0 END) as is_favorite"),
                 )
                 ->where('provider_id', $id)
                 ->first();

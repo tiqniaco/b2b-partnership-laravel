@@ -16,6 +16,9 @@ use App\Http\Controllers\ProviderServiceController;
 use App\Http\Controllers\ProviderServiceFeatureController;
 use App\Http\Controllers\ProviderReviewsController;
 use App\Http\Controllers\RequestServicesController;
+use App\Http\Controllers\Store\StoreCartController;
+use App\Http\Controllers\Store\StoreCategoryController;
+use App\Http\Controllers\Store\StoreProductController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -123,3 +126,18 @@ Route::patch('request-offers/{id}/update-status', [\App\Http\Controllers\Request
 Route::apiResource('clients', ClientsController::class)->middleware(['auth:sanctum']);
 Route::post('clients/{id}/update', [ClientsController::class, 'update'])->middleware(['auth:sanctum']);
 Route::get('clients/{id}/services', [ClientsController::class, 'services'])->middleware(['auth:sanctum']);
+
+/// Store Routes
+
+Route::prefix("store")->group(function () {
+    // Store Category routes
+    Route::apiResource('store-categories', StoreCategoryController::class)->middleware(['auth:sanctum']);
+    Route::post('store-categories/{id}/update', [StoreCategoryController::class, 'update'])->middleware(['auth:sanctum']);
+
+    // Store Product routes
+    Route::apiResource('store-products', StoreProductController::class)->middleware(['auth:sanctum']);
+    Route::post('store-products/{id}/update', [StoreProductController::class, 'update'])->middleware(['auth:sanctum']);
+
+    // Store Cart routes
+    Route::apiResource('store-carts', StoreCartController::class)->middleware(['auth:sanctum']);
+});

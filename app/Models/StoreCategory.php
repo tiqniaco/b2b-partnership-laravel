@@ -5,12 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class StoreCart extends Model
+class StoreCategory extends Model
 {
     use HasFactory;
-
-    public function product()
-    {
-        return $this->belongsTo(StoreProduct::class);
-    }
 }
