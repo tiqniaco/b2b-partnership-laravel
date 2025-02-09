@@ -62,7 +62,7 @@ Route::apiResource('sub-specializations', SubSpecializationController::class);
 Route::post('sub-specializations/{id}/update', [SubSpecializationController::class, 'update']);
 
 // Provider Routes
-Route::apiResource('providers', ProviderController::class);
+Route::apiResource('providers', ProviderController::class)->middleware(['auth:sanctum']);
 Route::get('providers/{id}/services', [ProviderController::class, 'services'])->middleware(['auth:sanctum']);
 Route::post('providers/{id}/update', [ProviderController::class, 'update'])->middleware(['auth:sanctum']);
 

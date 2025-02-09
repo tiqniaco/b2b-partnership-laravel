@@ -41,7 +41,6 @@ class HomeController extends Controller
                 'provider_services.sub_specialization_id',
                 'sub_specializations.name_ar as sub_specialization_name_ar',
                 'sub_specializations.name_en as sub_specialization_name_en',
-                DB::raw("(CASE WHEN EXISTS (SELECT 1 FROM favorite_services WHERE favorite_services.user_id = $userId AND favorite_services.provider_service_id = provider_services.id) THEN 1 ELSE 0 END) as is_favorite"),
                 'provider_services.created_at',
                 'provider_services.updated_at',
             )
@@ -105,7 +104,6 @@ class HomeController extends Controller
                 'provider_services.sub_specialization_id',
                 'sub_specializations.name_ar as sub_specialization_name_ar',
                 'sub_specializations.name_en as sub_specialization_name_en',
-                DB::raw("(CASE WHEN EXISTS (SELECT 1 FROM favorite_services WHERE favorite_services.user_id = $userId AND favorite_services.provider_service_id = provider_services.id) THEN 1 ELSE 0 END) as is_favorite"),
                 'provider_services.created_at',
                 'provider_services.updated_at',
             )
@@ -223,6 +221,7 @@ class HomeController extends Controller
     public function topProviders()
     { {
             try {
+                $userId = Auth::user()->id;
                 $providers = Provider::select(
                     'users.id as user_id',
                     'users.name as name',
@@ -247,6 +246,8 @@ class HomeController extends Controller
                     'governments.name_en as government_name_en',
                     'providers.created_at as created_at',
                     'providers.updated_at as updated_at',
+                    DB::raw("(CASE WHEN EXISTS (SELECT 1 FROM favorites_view WHERE favorites_view.user_id = $userId AND favorites_view.provider_id = providers.id) THEN 1 ELSE 0 END) as is_favorite"),
+
                 )
                     ->join('users', 'providers.user_id', '=', 'users.id')
                     ->join('provider_types', 'providers.provider_types_id', '=', 'provider_types.id')
@@ -321,7 +322,7 @@ class HomeController extends Controller
                     'governments.name_ar AS government_name_ar',
                     'governments.name_en AS government_name_en',
                     'providers.created_at AS created_at',
-                    'providers.updated_at AS updated_at'
+                    'providers.updated_at AS updated_at',
                 )
                 ->orderByDesc('providers.rating')  // Order providers by rating (top rated first)
                 ->get()
@@ -332,6 +333,7 @@ class HomeController extends Controller
 
                 // Limit to top 5 providers for each country
                 $topProviders = $countryGroup->take(5)->map(function ($provider) {
+                    $userId = Auth::user()->id;
                     return [
                         'user_id' => $provider->user_id,
                         'name' => $provider->name,
@@ -357,6 +359,7 @@ class HomeController extends Controller
                         'country_name_en' => $provider->country_name_en,
                         'government_name_ar' => $provider->government_name_ar,
                         'government_name_en' => $provider->government_name_en,
+                        // DB::raw("(CASE WHEN EXISTS (SELECT 1 FROM favorites_view WHERE favorites_view.user_id = $userId AND favorites_view.provider_id = provider_id) THEN 1 ELSE 0 END) as is_favorite"),
                         'created_at' => $provider->created_at,
                         'updated_at' => $provider->updated_at,
                     ];
@@ -398,8 +401,12 @@ class HomeController extends Controller
     public function countryTopProviders($id)
     {
         try {
-
+            $userId = Auth::user()->id;
             $providers = DB::table('provider_details')
+                ->select(
+                    'provider_details.*',
+                    DB::raw("(CASE WHEN EXISTS (SELECT 1 FROM favorites_view WHERE favorites_view.user_id = $userId AND favorites_view.provider_id = provider_id) THEN 1 ELSE 0 END) as is_favorite"),
+                )
                 ->where('country_id', $id)
                 ->orderByDesc('rating')
                 ->limit(5)

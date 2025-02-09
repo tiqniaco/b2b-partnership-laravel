@@ -25,18 +25,18 @@ class ProviderServiceController extends Controller
             $userId =  Auth::user()->id;
 
             $providerServices = DB::table('provider_service_details')
-                ->select(
-                    'provider_service_details.*',  // Select all columns from provider_service_details
-                    DB::raw("
-            COALESCE(
-                (SELECT 1 FROM favorite_services 
-                 WHERE favorite_services.user_id = ? 
-                   AND favorite_services.provider_service_id = provider_service_details.id 
-                 LIMIT 1), 0
-            ) AS is_favorite
-        ")
-                )
-                ->addBinding($userId, 'select')  // Add the binding for the parameter
+                //         ->select(
+                //             'provider_service_details.*',  // Select all columns from provider_service_details
+                //             DB::raw("
+                //     COALESCE(
+                //         (SELECT 1 FROM favorites_view 
+                //          WHERE favorites_view.user_id = ? 
+                //            AND favorites_view.provider_id = provider_service_details.id 
+                //          LIMIT 1), 0
+                //     ) AS is_favorite
+                // ")
+                //         )
+                // ->addBinding($userId, 'select')  // Add the binding for the parameter
                 ->paginate(12);
 
             return response()->json(
@@ -140,18 +140,18 @@ class ProviderServiceController extends Controller
             $userId =  Auth::user()->id;
 
             $providerService = DB::table('provider_service_details')
-                ->select(
-                    '*',
-                    DB::raw("
-            COALESCE(
-                (SELECT 1 FROM favorite_services 
-                 WHERE favorite_services.user_id = ? 
-                   AND favorite_services.provider_service_id = provider_service_details.id 
-                 LIMIT 1), 0
-            ) AS is_favorite
-        ")
-                )
-                ->addBinding($userId, 'select')  // Add the binding for the parameter
+                //         ->select(
+                //             '*',
+                //             DB::raw("
+                //     COALESCE(
+                //         (SELECT 1 FROM favorites_view 
+                //          WHERE favorites_view.user_id = ? 
+                //            AND favorites_view.provider_id = provider_service_details.id 
+                //          LIMIT 1), 0
+                //     ) AS is_favorite
+                // ")
+                //         )
+                //         ->addBinding($userId, 'select')  // Add the binding for the parameter
                 ->where('id', $id)
                 ->first();
 
@@ -303,18 +303,18 @@ class ProviderServiceController extends Controller
             $userId =  Auth::user()->id;
 
             $providerServices = DB::table('provider_service_details')
-                ->select(
-                    '*',
-                    DB::raw("
-            COALESCE(
-                (SELECT 1 FROM favorite_services 
-                 WHERE favorite_services.user_id = ? 
-                   AND favorite_services.provider_service_id = provider_service_details.id 
-                 LIMIT 1), 0
-            ) AS is_favorite
-        ")
-                )
-                ->addBinding($userId, 'select')  // Add the binding for the parameter
+                //         ->select(
+                //             '*',
+                //             DB::raw("
+                //     COALESCE(
+                //         (SELECT 1 FROM favorites_view 
+                //          WHERE favorites_view.user_id = ? 
+                //            AND favorites_view.provider_id = provider_service_details.id 
+                //          LIMIT 1), 0
+                //     ) AS is_favorite
+                // ")
+                //         )
+                //         ->addBinding($userId, 'select')  // Add the binding for the parameter
                 ->where('sub_specialization_id', '=', $id)
                 ->paginate(12);
 

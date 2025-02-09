@@ -17,8 +17,12 @@ class ProviderController extends Controller
     public function index()
     {
         try {
-
+            $userId = Auth::user()->id;
             $providers = DB::table('provider_details')
+                ->select(
+                    'provider_details.*',
+                    DB::raw("(CASE WHEN EXISTS (SELECT 1 FROM favorites_view WHERE favorites_view.user_id = $userId AND favorites_view.provider_id = provider_id) THEN 1 ELSE 0 END) as is_favorite"),
+                )
                 ->paginate(12);
 
             return response()->json($providers, 200);
@@ -57,7 +61,12 @@ class ProviderController extends Controller
     public function show(string $id)
     {
         try {
+            $userId = Auth::user()->id;
             $provider = DB::table('provider_details')
+                ->select(
+                    'provider_details.*',
+                    DB::raw("(CASE WHEN EXISTS (SELECT 1 FROM favorites_view WHERE favorites_view.user_id = $userId AND favorites_view.provider_id = provider_id) THEN 1 ELSE 0 END) as is_favorite"),
+                )
                 ->where('provider_id', $id)
                 ->first();
 
@@ -222,60 +231,15 @@ class ProviderController extends Controller
                     'message' => 'Provider not found.',
                 ], 404);
             }
-            $userId =  Auth::user()->id;
-            $services = ProviderService::select(
-                'provider_services.id',
-                'provider_services.provider_id',
-                'provider_services.name_ar',
-                'provider_services.name_en',
-                'provider_services.address',
-                'provider_services.description',
-                'provider_services.image',
-                'provider_services.price',
-                'provider_services.rating',
-                'provider_services.overview',
-                'provider_services.video',
-                'countries.name_ar as country_name_ar',
-                'countries.name_en as country_name_en',
-                'provider_services.governments_id',
-                'governments.name_ar as government_name_ar',
-                'governments.name_en as government_name_en',
-                'specializations.name_ar as specialization_name_ar',
-                'specializations.name_en as specialization_name_en',
-                'provider_services.sub_specialization_id',
-                'sub_specializations.name_ar as sub_specialization_name_ar',
-                'sub_specializations.name_en as sub_specialization_name_en',
-                DB::raw("
-                    COALESCE(
-                        (SELECT 1 FROM favorite_services 
-                        WHERE favorite_services.user_id = $userId 
-                        AND favorite_services.provider_service_id = provider_services.id 
-                        LIMIT 1), 0
-                    ) as is_favorite
-                "),
-                'provider_services.created_at',
-                'provider_services.updated_at',
-            )
-                ->join('governments', 'provider_services.governments_id', '=', 'governments.id')
-                ->join('countries', 'governments.country_id', '=', 'countries.id')
-                ->join('specializations', 'provider_services.sub_specialization_id', '=', 'specializations.id')
-                ->leftJoin('sub_specializations', 'specializations.id', '=', 'sub_specializations.parent_id')                // ->distinct()
-                ->where('provider_services.provider_id', $id)
-                ->orderBy('provider_services.created_at', 'desc')
+            $providerServices = DB::table('provider_service_details')
+                ->where('provider_id', '=', $id)
                 ->get();
 
-            $all = [];
-
-            foreach ($services as $service) {
-                if (!in_array($service->id, array_column($all, 'id'))) {
-                    $all[] = $service;
-                }
-            }
 
             return response()->json([
                 'status' => 'success',
                 'message' => 'Data fetched successfully.',
-                'data' => $all,
+                'data' => $providerServices,
             ], 200);
         } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
             return response()->json([
