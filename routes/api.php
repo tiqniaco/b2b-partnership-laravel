@@ -18,6 +18,7 @@ use App\Http\Controllers\ProviderReviewsController;
 use App\Http\Controllers\RequestServicesController;
 use App\Http\Controllers\Store\StoreCartController;
 use App\Http\Controllers\Store\StoreCategoryController;
+use App\Http\Controllers\Store\StoreOrderController;
 use App\Http\Controllers\Store\StoreProductController;
 use Illuminate\Support\Facades\Route;
 
@@ -140,4 +141,7 @@ Route::prefix("store")->group(function () {
 
     // Store Cart routes
     Route::apiResource('carts', StoreCartController::class)->middleware(['auth:sanctum']);
+
+    // Store Orders routes
+    Route::apiResource('orders', StoreOrderController::class)->middleware(['auth:sanctum']);
 });

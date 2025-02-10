@@ -58,6 +58,12 @@ class StoreOrderController extends Controller
             $userId = Auth::user()->id;
 
             $carts = StoreCart::where('user_id', $userId)->where('order_id', null)->get();
+            if (count($carts) == 0) {
+                return response()->json([
+                    'status' => 'error',
+                    'message' => 'Cart is empty.',
+                ], 400);
+            }
             $totalPrice = 0;
 
             $order = new StoreOrder();
