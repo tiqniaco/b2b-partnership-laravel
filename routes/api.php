@@ -131,13 +131,13 @@ Route::get('clients/{id}/services', [ClientsController::class, 'services'])->mid
 
 Route::prefix("store")->group(function () {
     // Store Category routes
-    Route::apiResource('store-categories', StoreCategoryController::class)->middleware(['auth:sanctum']);
-    Route::post('store-categories/{id}/update', [StoreCategoryController::class, 'update'])->middleware(['auth:sanctum']);
+    Route::apiResource('categories', StoreCategoryController::class)->middleware(['auth:sanctum']);
+    Route::post('categories/{id}/update', [StoreCategoryController::class, 'update'])->middleware(['auth:sanctum']);
 
     // Store Product routes
-    Route::apiResource('store-products', StoreProductController::class)->middleware(['auth:sanctum']);
-    Route::post('store-products/{id}/update', [StoreProductController::class, 'update'])->middleware(['auth:sanctum']);
+    Route::apiResource('products', StoreProductController::class)->middleware(['auth:sanctum']);
+    Route::post('products/{id}/update', [StoreProductController::class, 'update'])->middleware(['auth:sanctum']);
 
     // Store Cart routes
-    Route::apiResource('store-carts', StoreCartController::class)->middleware(['auth:sanctum']);
+    Route::apiResource('carts', StoreCartController::class)->middleware(['auth:sanctum']);
 });

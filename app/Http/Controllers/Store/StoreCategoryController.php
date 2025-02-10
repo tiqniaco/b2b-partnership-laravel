@@ -24,7 +24,7 @@ class StoreCategoryController extends Controller
         } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
             return response()->json([
                 'status' => 'error',
-                'message' => 'Invalid credentials.',
+                'message' => 'Not found.',
                 'error' => $e->getMessage(),
             ], 401);
         } catch (\Illuminate\Validation\ValidationException $e) {
@@ -71,7 +71,7 @@ class StoreCategoryController extends Controller
         } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
             return response()->json([
                 'status' => 'error',
-                'message' => 'Invalid credentials.',
+                'message' => 'Not found.',
                 'error' => $e->getMessage(),
             ], 401);
         } catch (\Illuminate\Validation\ValidationException $e) {
@@ -105,7 +105,7 @@ class StoreCategoryController extends Controller
         } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
             return response()->json([
                 'status' => 'error',
-                'message' => 'Invalid credentials.',
+                'message' => 'Not found.',
                 'error' => $e->getMessage(),
             ], 401);
         } catch (\Illuminate\Validation\ValidationException $e) {
@@ -155,7 +155,7 @@ class StoreCategoryController extends Controller
         } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
             return response()->json([
                 'status' => 'error',
-                'message' => 'Invalid credentials.',
+                'message' => 'Not found.',
                 'error' => $e->getMessage(),
             ], 401);
         } catch (\Illuminate\Validation\ValidationException $e) {
@@ -192,7 +192,7 @@ class StoreCategoryController extends Controller
         } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
             return response()->json([
                 'status' => 'error',
-                'message' => 'Invalid credentials.',
+                'message' => 'Not found.',
                 'error' => $e->getMessage(),
             ], 401);
         } catch (\Illuminate\Validation\ValidationException $e) {

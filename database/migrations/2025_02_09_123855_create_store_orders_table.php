@@ -14,9 +14,9 @@ return new class extends Migration
         Schema::create('store_orders', function (Blueprint $table) {
             $table->id();
             $table->foreignId('user_id')->constrained('users');
-            $table->enum('status', ['pending', 'completed', 'canceled'])->default('pending');
+            $table->enum('status', ['pending', 'approved', 'completed', 'canceled'])->default('pending');
             $table->double('total_price');
-            $table->date('expiration_date')->default(now()->addMonth(1));
+            $table->date('expiration_date')->nullable();
             $table->timestamps();
         });
     }

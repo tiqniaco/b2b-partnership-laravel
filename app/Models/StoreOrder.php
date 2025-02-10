@@ -8,4 +8,14 @@ use Illuminate\Database\Eloquent\Model;
 class StoreOrder extends Model
 {
     use HasFactory;
+
+    public function user()
+    {
+        return $this->belongsTo(User::class);
+    }
+
+    public function carts()
+    {
+        return $this->hasMany(StoreCart::class);
+    }
 }
