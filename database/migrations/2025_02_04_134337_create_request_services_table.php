@@ -20,7 +20,7 @@ return new class extends Migration
             $table->string('title_en', 255);
             $table->text('address');
             $table->text('description');
-            $table->text('image');
+            $table->text('image')->nullable();
             $table->enum('status', ['pending', 'confirmed', 'canceled'])->default('pending');
             // $table->string('duration');
             $table->timestamps();

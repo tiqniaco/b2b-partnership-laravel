@@ -65,7 +65,7 @@ class RequestServicesController extends Controller
                 'title_en' => 'required|string|max:255',
                 'address' => 'required|string',
                 'description' => 'required|string',
-                'image' => 'required|image|mimes:jpeg,png,jpg,gif,svg|max:5000',
+                'image' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:5000',
             ]);
 
             $requestService = new RequestService();
