@@ -12,6 +12,7 @@ use App\Http\Controllers\ProviderTypeController;
 use App\Http\Controllers\SpecializationController;
 use App\Http\Controllers\SubSpecializationController;
 use App\Http\Controllers\PHPMailerController;
+use App\Http\Controllers\ProviderPreviousWorksController;
 use App\Http\Controllers\ProviderServiceController;
 use App\Http\Controllers\ProviderServiceFeatureController;
 use App\Http\Controllers\ProviderReviewsController;
@@ -88,6 +89,10 @@ Route::apiResource('provider-service-features', ProviderServiceFeatureController
 
 // Provider Service Reviews
 Route::apiResource('provider-service-reviews', ProviderReviewsController::class);
+
+// Provider Previous Works
+Route::apiResource('provider-previous-works', ProviderPreviousWorksController::class);
+Route::post("provider-previous-works/{id}/update", [ProviderPreviousWorksController::class, "update"]);
 
 // OTP
 Route::post('send-otp', [PHPMailerController::class, 'sendOTP']);
