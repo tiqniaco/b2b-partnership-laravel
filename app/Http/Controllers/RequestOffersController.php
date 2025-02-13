@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\RequestOffer;
+use App\Models\RequestService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -251,6 +252,12 @@ class RequestOffersController extends Controller
 
             $requestOffer->status = $request->status;
             $requestOffer->save();
+
+            if ($request->status == 'rejected' || $request->status == 'accepted') {
+                $requestService = RequestService::findOrFail($requestOffer->request_service_id);
+                $requestService->status = 'confirmed';
+                $requestService->save();
+            }
 
             return response()->json([
                 'status' => 'success',
