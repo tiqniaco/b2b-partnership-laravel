@@ -12,11 +12,36 @@ class RequestServicesController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
         try {
+            $request->validate([
+                'specialization_id' => 'nullable|exists:specializations,id',
+                'sub_specialization_id' => 'nullable|exists:sub_specializations,id',
+                'country_id' => 'nullable|exists:countries,id',
+                'government_id' => 'nullable|exists:governments,id',
+                'search' => 'nullable|string',
+            ]);
+
             $requestServices = DB::table('request_service_details_view')
                 ->where('status', 'pending')
+                ->when($request->filled('specialization_id'), function ($query) use ($request) {
+                    return $query->where('specialization_id', $request->specialization_id);
+                })
+                ->when($request->filled('sub_specialization_id'), function ($query) use ($request) {
+                    return $query->where('sub_specialization_id', $request->sub_specialization_id);
+                })
+                ->when($request->filled('country_id'), function ($query) use ($request) {
+                    return $query->where('country_id', $request->country_id);
+                })
+                ->when($request->filled('government_id'), function ($query) use ($request) {
+                    return $query->where('government_id', $request->government_id);
+                })
+                ->when($request->filled('search'), function ($query) use ($request) {
+                    return $query->where('title_ar', 'like', '%' . $request->search . '%')
+                        ->orWhere('title_en', 'like', '%' . $request->search . '%');
+                })
+                ->orderBy('created_at', 'desc')
                 ->paginate(12);
 
             return response()->json(
