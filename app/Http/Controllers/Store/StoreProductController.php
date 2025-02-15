@@ -11,11 +11,38 @@ class StoreProductController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
         try {
-            $products = StoreProduct::paginate(12);
-
+            $request->validate([
+                'category_id' => 'nullable|exists:store_categories,id',
+                'search' => 'nullable|string',
+            ]);
+            $categoryId = $request->category_id ?? null;
+            if ($categoryId == null) {
+                $products = StoreProduct::when($request->filled('search'), function ($query) use ($request) {
+                    $searchTerm = '%' . $request->search . '%';
+                    return $query->where(function ($q) use ($searchTerm) {
+                        $q->where('title_ar', 'like', $searchTerm)
+                            ->orWhere('title_en', 'like', $searchTerm)
+                            ->orWhere('description_ar', 'like', $searchTerm)
+                            ->orWhere('description_en', 'like', $searchTerm);
+                    });
+                })
+                    ->paginate(12);
+            } else {
+                $products = StoreProduct::where('category_id', '=', $categoryId)
+                    ->when($request->filled('search'), function ($query) use ($request) {
+                        $searchTerm = '%' . $request->search . '%';
+                        return $query->where(function ($q) use ($searchTerm) {
+                            $q->where('title_ar', 'like', $searchTerm)
+                                ->orWhere('title_en', 'like', $searchTerm)
+                                ->orWhere('description_ar', 'like', $searchTerm)
+                                ->orWhere('description_en', 'like', $searchTerm);
+                        });
+                    })
+                    ->paginate(12);
+            }
             return response()->json(
                 $products,
                 200,

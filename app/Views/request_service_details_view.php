@@ -1,6 +1,6 @@
 <?php
 $query = "
-CREATE VIEW request_service_details_view AS
+CREATE OR REPLACE VIEW request_service_details_view AS
 SELECT 
 	request_services.id,
 	request_services.title_ar,
@@ -13,7 +13,7 @@ SELECT
     users.id AS user_id,
     users.name AS name,
     users.email AS email,
-    users.country_code AS country_code,
+    users.country_code AS user_country_code,
     users.phone AS phone,
     users.image AS client_image,
     specializations.id AS specialization_id,
@@ -23,6 +23,8 @@ SELECT
     sub_specializations.name_ar AS sub_specialization_name_ar,
     sub_specializations.name_en AS sub_specialization_name_en,
     countries.id AS country_id,
+    countries.flag AS country_flag,
+    countries.code AS country_code,
     countries.name_ar AS country_name_ar,
     countries.name_en AS country_name_en,
     governments.id AS government_id,
