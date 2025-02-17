@@ -146,6 +146,7 @@ Route::prefix("store")->group(function () {
 
     // Store Cart routes
     Route::apiResource('carts', StoreCartController::class)->middleware(['auth:sanctum']);
+    Route::post('cart/clear', [StoreCartController::class, 'clear'])->middleware(['auth:sanctum']);
 
     // Store Orders routes
     Route::apiResource('orders', StoreOrderController::class)->middleware(['auth:sanctum']);

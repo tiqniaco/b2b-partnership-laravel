@@ -69,12 +69,15 @@ class StoreOrderController extends Controller
             $order = new StoreOrder();
             foreach ($carts as $cart) {
                 $totalPrice += $cart->product->price;
-                $cart->order_id = $order->id;
-                $cart->save();
             }
             $order->user_id = $userId;
             $order->total_price = $totalPrice;
             $order->save();
+
+            foreach ($carts as $cart) {
+                $cart->order_id = $order->id;
+                $cart->save();
+            }
 
             return response()->json([
                 'status' => 'success',

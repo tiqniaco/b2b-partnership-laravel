@@ -191,7 +191,7 @@ class StoreProductController extends Controller
                 'image' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg',
             ]);
 
-            $product = new StoreProduct();
+            $product = StoreProduct::findOrFail($id);
             $product->category_id = $request->category_id ?? $product->category_id;
             $product->title_ar = $request->title_ar ?? $product->title_ar;
             $product->title_en = $request->title_en ?? $product->title_en;
@@ -209,6 +209,7 @@ class StoreProductController extends Controller
             $product->discount = $request->discount ?? $product->discount;
             if ($request->hasFile('image')) {
                 if (file_exists(public_path($product->image))) {
+
                     unlink(public_path($product->image));
                 }
                 $imageName = 'images/store_products/' . time() . '.' . $request->image->extension();
