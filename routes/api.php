@@ -3,6 +3,7 @@
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\ClientsController;
 use App\Http\Controllers\ClientServiceController;
+use App\Http\Controllers\ComplaintController;
 use App\Http\Controllers\CountryController;
 use App\Http\Controllers\FavoriteProvidersController;
 use App\Http\Controllers\GovernmentController;
@@ -12,6 +13,7 @@ use App\Http\Controllers\ProviderTypeController;
 use App\Http\Controllers\SpecializationController;
 use App\Http\Controllers\SubSpecializationController;
 use App\Http\Controllers\PHPMailerController;
+use App\Http\Controllers\PreviousWorkImageController;
 use App\Http\Controllers\ProviderPreviousWorksController;
 use App\Http\Controllers\ProviderServiceController;
 use App\Http\Controllers\ProviderServiceFeatureController;
@@ -76,23 +78,27 @@ Route::apiResource('provider-contacts', \App\Http\Controllers\ProviderContactCon
 Route::get('provider/{id}/contacts', [\App\Http\Controllers\ProviderContactController::class, 'providerContacts']);
 
 // Provider Service
-Route::apiResource('provider-service', ProviderServiceController::class);
-Route::post('provider-service/{id}/update', [ProviderServiceController::class, 'update']);
+Route::apiResource('provider-service', ProviderServiceController::class)->middleware(['auth:sanctum']);
+Route::post('provider-service/{id}/update', [ProviderServiceController::class, 'update'])->middleware(['auth:sanctum']);
 Route::get("specializations/{id}/services", [ProviderServiceController::class, "specializationsServices"])->middleware(['auth:sanctum']);;
 
 // Provider Service
-Route::apiResource('client-service', ClientServiceController::class);
-Route::post('client-service/{id}/update', [ClientServiceController::class, 'update']);
+Route::apiResource('client-service', ClientServiceController::class)->middleware(['auth:sanctum']);
+Route::post('client-service/{id}/update', [ClientServiceController::class, 'update'])->middleware(['auth:sanctum']);
 
 // Provider Service Features
-Route::apiResource('provider-service-features', ProviderServiceFeatureController::class);
+Route::apiResource('provider-service-features', ProviderServiceFeatureController::class)->middleware(['auth:sanctum']);
 
 // Provider Service Reviews
-Route::apiResource('provider-service-reviews', ProviderReviewsController::class);
+Route::apiResource('provider-service-reviews', ProviderReviewsController::class)->middleware(['auth:sanctum']);
 
 // Provider Previous Works
-Route::apiResource('provider-previous-works', ProviderPreviousWorksController::class);
+Route::apiResource('provider-previous-works', ProviderPreviousWorksController::class)->middleware(['auth:sanctum'])->middleware(['auth:sanctum']);
 Route::post("provider-previous-works/{id}/update", [ProviderPreviousWorksController::class, "update"]);
+
+// Previous Works images
+Route::apiResource('previous-work-images', PreviousWorkImageController::class)->middleware(['auth:sanctum']);
+Route::post('previous-work-images/{id}/update', [PreviousWorkImageController::class, 'update'])->middleware(['auth:sanctum']);
 
 // OTP
 Route::post('send-otp', [PHPMailerController::class, 'sendOTP']);
@@ -151,3 +157,7 @@ Route::prefix("store")->group(function () {
     // Store Orders routes
     Route::apiResource('orders', StoreOrderController::class)->middleware(['auth:sanctum']);
 });
+
+/// Complaint Routes
+Route::apiResource('complaints', ComplaintController::class)->except("show")->middleware(['auth:sanctum']);
+Route::get('complaints/users', [ComplaintController::class, "getComplaintsUsers"])->middleware();

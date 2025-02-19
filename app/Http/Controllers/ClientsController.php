@@ -3,6 +3,9 @@
 namespace App\Http\Controllers;
 
 use App\Models\Client;
+use App\Models\Complaint;
+use App\Models\RequestService;
+use App\Models\StoreOrder;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -58,11 +61,21 @@ class ClientsController extends Controller
                 ->where('client_id', $id)
                 ->first();
 
+            $jobsCount = 0;
+            $shoppingCount = StoreOrder::where('user_id', $client->user_id)->count();
+            $servicesCount = RequestService::where('client_id', $id)->count();
+            $complaintsCount = Complaint::where('user_id', $client->user_id)->count();
+
+
             return response()->json(
                 [
                     'status' => 'success',
                     'message' => 'Data fetched successfully.',
-                    'data' => $client
+                    'jobsCount' => $jobsCount,
+                    'shoppingCount' => $shoppingCount,
+                    'servicesCount' => $servicesCount,
+                    'complaintsCount' => $complaintsCount,
+                    'data' => $client,
                 ],
                 200
             );
