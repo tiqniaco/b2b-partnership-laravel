@@ -2,8 +2,10 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Complaint;
 use App\Models\Provider;
 use App\Models\ProviderService;
+use App\Models\StoreOrder;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -70,10 +72,20 @@ class ProviderController extends Controller
                 ->where('provider_id', $id)
                 ->first();
 
+            $jobsCount = 0;
+            $shoppingCount = StoreOrder::where('user_id', $provider->user_id)->count();
+            $servicesCount = ProviderService::where('provider_id', $id)->count();
+            $complaintsCount = Complaint::where('user_id', $provider->user_id)->count();
+
+
 
             return response()->json([
                 'status' => 'success',
                 'message' => 'Data fetched successfully.',
+                'jobsCount' => $jobsCount,
+                'shoppingCount' => $shoppingCount,
+                'servicesCount' => $servicesCount,
+                'complaintsCount' => $complaintsCount,
                 'data' => $provider,
             ], 200);
         } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
