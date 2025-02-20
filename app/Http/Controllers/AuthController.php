@@ -18,14 +18,38 @@ class AuthController extends Controller
     {
         try {
             $request->validate([
-                'email' => 'required|email|exists:users,email',
-                'password' => 'required|min:6',
+                'login' => 'required',
+                'password' => 'required'
             ]);
+            $login = $request->login;
+            $email = "";
 
-            $credentials = $request->only('email', 'password');
+            // Check if login is an email
+            if (filter_var($login, FILTER_VALIDATE_EMAIL)) {
+                $email = $login;
+            } else {
+                // Assume login is a phone number
+                $user = User::where(function ($query) use ($login) {
+                    $query->where('phone', $login)
+                        ->orWhereRaw("CONCAT(country_code, phone) = ?", [$login])
+                        ->orWhereRaw("CONCAT('+', country_code, phone) = ?", [$login]);
+                })->first();
+                if ($user) {
+                    $email = $user->email;
+                } else {
+                    return response()->json([
+                        'status' => 'error',
+                        'message' => 'User not found.',
+                    ], 400);
+                }
+            }
+            $credentials = [
+                'email' => $email,
+                'password' => $request->password,
+            ];
 
             if (Auth::attempt($credentials)) {
-                $user = User::where('email', $request->email)->first();
+                $user = User::where('email', $email)->first();
                 if ($user->role == 'provider' && $user->status == 'inactive') {
                     return response()->json([
                         'status' => 'error',
