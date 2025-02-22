@@ -23,6 +23,7 @@ use App\Http\Controllers\Store\StoreCartController;
 use App\Http\Controllers\Store\StoreCategoryController;
 use App\Http\Controllers\Store\StoreOrderController;
 use App\Http\Controllers\Store\StoreProductController;
+use App\Http\Controllers\NotificationController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -162,3 +163,7 @@ Route::prefix("store")->group(function () {
 /// Complaint Routes
 Route::apiResource('complaints', ComplaintController::class)->except("show")->middleware(['auth:sanctum']);
 Route::get('complaints/users', [ComplaintController::class, "getComplaintsUsers"])->middleware();
+
+// Notifications Routes
+Route::post('send-notification', [NotificationController::class, 'store']);
+Route::get('notifications', [NotificationController::class, 'index']);
