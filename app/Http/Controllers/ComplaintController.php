@@ -21,9 +21,14 @@ class ComplaintController extends Controller
 
             $userId = $request->user_id ?? Auth::user()->id;
             $complaints = Complaint::where('user_id', $userId)
-                ->paginate(20);
+                ->orderBy('created_at', 'desc')
+                ->get();
 
-            return response()->json($complaints, 200);
+            return response()->json([
+                'status' => 'success',
+                'message' => 'Data fetched successfully.',
+                'data' => $complaints,
+            ], 200);
         } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
             return response()->json([
                 'status' => 'error',
@@ -53,7 +58,7 @@ class ComplaintController extends Controller
         try {
             $userId = Auth::user()->id;
             $request->validate([
-                'content' => 'required|string',
+                // 'content' => 'required|string',
                 'content_type' => 'required|in:text,image,voice',
             ]);
             switch ($request->content_type) {

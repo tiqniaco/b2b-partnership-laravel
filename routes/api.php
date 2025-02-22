@@ -44,6 +44,7 @@ Route::prefix("auth")->group(function () {
     Route::post('update-profile', [AuthController::class, 'updateProfile'])->middleware('auth:sanctum');
     Route::post('reset-password', [AuthController::class, 'resetPassword'])->middleware('auth:sanctum');
     Route::post('forget-password', [AuthController::class, 'forgetPassword']);
+    Route::post('delete-account', [AuthController::class, 'deleteAccount'])->middleware('auth:sanctum');
 });
 
 // Country Routes
