@@ -46,6 +46,9 @@ Route::prefix("auth")->group(function () {
     Route::post('reset-password', [AuthController::class, 'resetPassword'])->middleware('auth:sanctum');
     Route::post('forget-password', [AuthController::class, 'forgetPassword']);
     Route::post('delete-account', [AuthController::class, 'deleteAccount'])->middleware('auth:sanctum');
+    Route::post('get-verify-code', [AuthController::class, 'getVerifyCode']);
+    Route::post('switch-provider-account', [AuthController::class, 'switchProviderAccount'])->middleware('auth:sanctum');
+    Route::post('switch-client-account', [AuthController::class, 'switchClientAccount'])->middleware('auth:sanctum');
 });
 
 // Country Routes
