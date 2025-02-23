@@ -17,11 +17,17 @@ class StoreOrderController extends Controller
     {
         try {
             $request->validate([
-                'status' => 'nullable|in:pending,approved,delivered,cancelled',
+                'status' => 'nullable|in:pending,approved,completed,canceled',
             ]);
             $userId = Auth::user()->id;
 
-            $orders = StoreOrder::where('user_id', $userId)->get();
+            if ($request->status) {
+                $orders = StoreOrder::where('user_id', $userId)
+                    ->where('status', $request->status)
+                    ->get();
+            } else {
+                $orders = StoreOrder::where('user_id', $userId)->get();
+            }
 
             return response()->json([
                 'status' => 'success',

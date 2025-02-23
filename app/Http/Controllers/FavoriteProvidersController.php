@@ -22,6 +22,10 @@ class FavoriteProvidersController extends Controller
                 ->where('user_id', $request->user_id)
                 ->get();
 
+            foreach ($favoriteProviders as $favoriteProvider) {
+                $favoriteProvider->is_favorite = "1";
+            }
+
             if ($favoriteProviders->isEmpty()) {
                 return response()->json([
                     'status' => 'success',
