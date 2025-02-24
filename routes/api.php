@@ -137,7 +137,7 @@ Route::post('request-services/{id}/update', [RequestServicesController::class, '
 
 // Request Offers
 Route::apiResource('request-offers', \App\Http\Controllers\RequestOffersController::class)->middleware(['auth:sanctum']);
-Route::patch('request-offers/{id}/update-status', [\App\Http\Controllers\RequestOffersController::class, 'changeOfferStatus'])->middleware(['auth:sanctum']);
+Route::patch('request-offers/{id}/accept-offer', [\App\Http\Controllers\RequestOffersController::class, 'acceptOffer'])->middleware(['auth:sanctum']);
 
 // Clients
 Route::apiResource('clients', ClientsController::class)->middleware(['auth:sanctum']);

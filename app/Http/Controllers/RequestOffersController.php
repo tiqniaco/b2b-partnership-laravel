@@ -21,6 +21,8 @@ class RequestOffersController extends Controller
             ]);
             $offers = DB::table('request_offers_details_view')
                 ->where('request_service_id', $request->request_service_id)
+                ->whereIn('request_offer_status', ['accepted', 'pending'])
+                ->orderBy('request_offer_created_at', 'desc')
                 ->paginate(12);
 
             return response()->json(
@@ -234,7 +236,7 @@ class RequestOffersController extends Controller
         }
     }
 
-    public function changeOfferStatus(Request $request, $id)
+    public function acceptOffer($id)
     {
         try {
             if (Auth::user()->role == 'provider') {
@@ -244,24 +246,27 @@ class RequestOffersController extends Controller
                 ], 403);
             }
 
-            $request->validate([
-                'status' => 'required|in:accepted,rejected,completed',
-            ]);
+            // $request->validate([
+            //     'status' => 'required|in:accepted,rejected,completed',
+            // ]);
 
             $requestOffer = RequestOffer::findOrFail($id);
 
-            $requestOffer->status = $request->status;
+            $requestOffer->status = "accepted";
             $requestOffer->save();
 
-            if ($request->status == 'rejected' || $request->status == 'accepted') {
-                $requestService = RequestService::findOrFail($requestOffer->request_service_id);
-                $requestService->status = 'confirmed';
-                $requestService->save();
-            }
+            RequestOffer::where('request_service_id', $requestOffer->request_service_id)
+                ->where('id', '!=', $id)
+                ->get()
+                ->each(function ($item) {
+                    $item->status = "rejected";
+                    $item->save();
+                });
+
 
             return response()->json([
                 'status' => 'success',
-                'message' => 'Status updated successfully.',
+                'message' => 'Data updated successfully.',
             ], 201);
         } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
             return response()->json([
