@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Provider;
 use App\Models\RequestOffer;
 use App\Models\RequestService;
 use Illuminate\Http\Request;
@@ -255,6 +256,10 @@ class RequestOffersController extends Controller
             $requestOffer->status = "accepted";
             $requestOffer->save();
 
+            $service = RequestService::where('id', $requestOffer->request_service_id)->first();
+            $service->status = "confirmed";
+            $service->save();
+
             RequestOffer::where('request_service_id', $requestOffer->request_service_id)
                 ->where('id', '!=', $id)
                 ->get()
@@ -268,6 +273,49 @@ class RequestOffersController extends Controller
                 'status' => 'success',
                 'message' => 'Data updated successfully.',
             ], 201);
+        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Not found.',
+                'error' => $e->getMessage(),
+            ], 401);
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Validation error.',
+                'error' => $e->getMessage(),
+            ], 401);
+        } catch (\Throwable $e) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Something went wrong.',
+                'error' => $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    public function providerOffers(Request $request)
+    {
+        try {
+            $request->validate([
+                'request_service_id' => 'required|exists:request_services,id',
+            ]);
+
+            $provider = Provider::where("user_id", Auth::user()->id)->first();
+
+            $offers = DB::table("request_offers_details_view")
+                ->where("provider_id", $provider->id)
+                ->where("request_service_id", $request->request_service_id)
+                ->get();
+
+            return response()->json(
+                [
+                    'status' => 'success',
+                    'message' => 'Data fetched successfully.',
+                    'data' => $offers
+                ],
+                200
+            );
         } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
             return response()->json([
                 'status' => 'error',

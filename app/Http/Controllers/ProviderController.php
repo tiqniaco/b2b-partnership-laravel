@@ -118,7 +118,7 @@ class ProviderController extends Controller
             $request->validate([
                 "name" => "nullable|string",
                 "email" => "nullable|email",
-                "country_code" => "nullable|string|size:3",
+                "country_code" => "nullable|string|max:3",
                 "phone" => "nullable|string",
                 "government_id" => "nullable|exists:governments,id",
                 "sub_specialization_id" => "nullable|exists:sub_specializations,id",

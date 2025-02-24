@@ -20,12 +20,12 @@ class PHPMailerController extends Controller
                 // 'body' => 'required',
             ]);
 
-            if (!$this->checkEmail($request->email)) {
-                return response()->json([
-                    'status' => "error",
-                    'message' => "Email does not exist.",
-                ], 400);
-            }
+            // if (!$this->checkEmail($request->email)) {
+            //     return response()->json([
+            //         'status' => "error",
+            //         'message' => "Email does not exist.",
+            //     ], 400);
+            // }
 
             $otp = $this->generateOTP();
 
@@ -57,6 +57,7 @@ class PHPMailerController extends Controller
                 return response()->json([
                     'status' => "success",
                     'message' => "Email has been sent successfully",
+                    'otp' => $otp,
                 ], 200);
             }
         } catch (\Throwable $th) {

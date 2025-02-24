@@ -24,6 +24,7 @@ use App\Http\Controllers\Store\StoreCategoryController;
 use App\Http\Controllers\Store\StoreOrderController;
 use App\Http\Controllers\Store\StoreProductController;
 use App\Http\Controllers\NotificationController;
+use App\Http\Controllers\RequestOffersController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -136,8 +137,9 @@ Route::apiResource('request-services', RequestServicesController::class)->middle
 Route::post('request-services/{id}/update', [RequestServicesController::class, 'update'])->middleware(['auth:sanctum']);
 
 // Request Offers
-Route::apiResource('request-offers', \App\Http\Controllers\RequestOffersController::class)->middleware(['auth:sanctum']);
-Route::patch('request-offers/{id}/accept-offer', [\App\Http\Controllers\RequestOffersController::class, 'acceptOffer'])->middleware(['auth:sanctum']);
+Route::apiResource('request-offers', RequestOffersController::class)->middleware(['auth:sanctum']);
+Route::patch('request-offers/{id}/accept-offer', [RequestOffersController::class, 'acceptOffer'])->middleware(['auth:sanctum']);
+Route::post('provider-offers', [RequestOffersController::class, 'providerOffers'])->middleware(['auth:sanctum']);
 
 // Clients
 Route::apiResource('clients', ClientsController::class)->middleware(['auth:sanctum']);

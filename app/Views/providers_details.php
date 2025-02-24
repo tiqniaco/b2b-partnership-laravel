@@ -1,7 +1,7 @@
 <?php
 
 $query = "
-CREATE VIEW provider_details AS
+CREATE OR REPLACE VIEW provider_details AS
 SELECT 
     users.id AS user_id,
     users.name AS name,
@@ -14,6 +14,7 @@ SELECT
     providers.tax_card AS tax_card,
     providers.bio AS bio,
     providers.rating AS rating,
+    provider_types.id AS provider_type_id,
     provider_types.name_ar AS provider_type_name_ar,
     provider_types.name_en AS provider_type_name_en,
     specializations.id AS specialization_id,
