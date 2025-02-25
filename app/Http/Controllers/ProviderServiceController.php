@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\ProviderService;
+use App\Models\ProviderServiceFeature;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -82,6 +83,10 @@ class ProviderServiceController extends Controller
                 'price' => 'nullable|numeric',
                 'overview' => 'required|string|max:255',
                 'video' => 'nullable|string|max:255',
+                'features_ar' => 'required|array',
+                'features_en' => 'required|array',
+                'features_ar.*' => 'required|string|max:255',
+                'features_en.*' => 'required|string|max:255',
             ]);
 
             $providerService = new ProviderService();
@@ -102,6 +107,15 @@ class ProviderServiceController extends Controller
             }
 
             $providerService->save();
+
+            foreach ($request->features_ar as $index => $feature_ar) {
+                $feature = new ProviderServiceFeature();
+                $feature->provider_service_id = $providerService->id;
+                $feature->feature_ar = $feature_ar;
+                $feature->feature_en = $request->features_en[$index];
+                $feature->save();
+            }
+
 
             return response()->json(
                 [
