@@ -67,6 +67,7 @@ class ProviderServiceFeatureController extends Controller
             return response()->json([
                 'status' => 'success',
                 'message' => 'Data created successfully.',
+                'data' => $features,
             ], 201);
         } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
             return response()->json([

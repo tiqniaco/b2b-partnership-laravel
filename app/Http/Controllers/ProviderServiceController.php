@@ -78,10 +78,10 @@ class ProviderServiceController extends Controller
                 'name_ar' => 'required|string|max:255',
                 'name_en' => 'required|string|max:255',
                 'address' => 'nullable|string|max:255',
-                'description' => 'required|string|max:255',
+                'description' => 'required|string',
                 'image' => 'required|image|mimes:jpeg,png,jpg,gif,svg|max:5000',
                 'price' => 'nullable|numeric',
-                'overview' => 'required|string|max:255',
+                'overview' => 'required|string',
                 'video' => 'nullable|string|max:255',
                 'features_ar' => 'required|array',
                 'features_en' => 'required|array',
@@ -214,10 +214,10 @@ class ProviderServiceController extends Controller
                 'name_ar' => 'nullable|string|max:255',
                 'name_en' => 'nullable|string|max:255',
                 'address' => 'nullable|string|max:255',
-                'description' => 'nullable|string|max:255',
+                'description' => 'nullable|string',
                 'image' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:5000',
                 'price' => 'nullable|numeric',
-                'overview' => 'nullable|string|max:255',
+                'overview' => 'nullable|string',
                 'video' => 'nullable|string|max:255',
             ]);
 
@@ -242,7 +242,7 @@ class ProviderServiceController extends Controller
             return response()->json(
                 [
                     'status' => 'success',
-                    'message' => 'Data created successfully.',
+                    'message' => 'Data updated successfully.',
                     'data' => $providerService,
                 ],
                 201
