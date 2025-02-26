@@ -527,7 +527,7 @@ class AuthController extends Controller
             } else {
                 return response()->json([
                     'status' => "error",
-                    'message' => "You don't have any client yet.",
+                    'message' => "no client",
                 ], 400);
             }
         } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
@@ -577,7 +577,7 @@ class AuthController extends Controller
             } else {
                 return response()->json([
                     'status' => "error",
-                    'message' => "You don't have any client yet.",
+                    'message' => "You don't have any provider yet.",
                 ], 400);
             }
         } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
