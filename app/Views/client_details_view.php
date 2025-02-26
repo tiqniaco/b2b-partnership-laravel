@@ -1,7 +1,7 @@
 <?php
 
 $query = "
-CREATE VIEW client_details_view AS
+CREATE OR REPLACE VIEW client_details_view AS
 SELECT 
     users.id AS user_id,
     users.name AS name,
@@ -17,7 +17,8 @@ SELECT
     governments.name_ar AS government_name_ar,
     governments.name_en AS government_name_en,
     clients.created_at AS created_at,
-    clients.updated_at AS updated_at
+    clients.updated_at AS updated_at,
+    clients.provider_id AS provider_id
 FROM 
     clients
 JOIN 
