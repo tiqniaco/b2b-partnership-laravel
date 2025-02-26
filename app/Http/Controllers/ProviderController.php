@@ -6,6 +6,7 @@ use App\Models\Complaint;
 use App\Models\Provider;
 use App\Models\ProviderService;
 use App\Models\StoreOrder;
+use App\Models\StoreProduct;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -73,8 +74,8 @@ class ProviderController extends Controller
                 ->first();
 
             $jobsCount = 0;
-            $shoppingCount = StoreOrder::where('user_id', $provider->user_id)->count();
-            $servicesCount = ProviderService::where('provider_id', $id)->count();
+            $shoppingCount = StoreProduct::count();
+            $ordersCount = StoreOrder::where('user_id', $provider->user_id)->count();
             $complaintsCount = Complaint::where('user_id', $provider->user_id)->count();
 
 
@@ -84,7 +85,7 @@ class ProviderController extends Controller
                 'message' => 'Data fetched successfully.',
                 'jobsCount' => $jobsCount,
                 'shoppingCount' => $shoppingCount,
-                'servicesCount' => $servicesCount,
+                'ordersCount' => $ordersCount,
                 'complaintsCount' => $complaintsCount,
                 'data' => $provider,
             ], 200);
