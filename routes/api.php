@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\AdminController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\ClientsController;
 use App\Http\Controllers\ClientServiceController;
@@ -172,3 +173,7 @@ Route::get('complaints/users', [ComplaintController::class, "getComplaintsUsers"
 // Notifications Routes
 Route::post('send-notification', [NotificationController::class, 'store']);
 Route::get('notifications', [NotificationController::class, 'index']);
+
+// Admin Routes
+Route::apiResource('admins', AdminController::class)->middleware(['auth:sanctum']);
+Route::post('admins/{id}/update', [AdminController::class, 'update'])->middleware(['auth:sanctum']);
