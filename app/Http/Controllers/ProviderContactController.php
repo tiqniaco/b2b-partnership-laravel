@@ -56,14 +56,14 @@ class ProviderContactController extends Controller
 
             $contacts = ProviderContact::where('provider_id', $request->provider_id)->first();
             if ($contacts) {
-                $contacts->phone = $request->phone ?? $contacts->phone;
-                $contacts->email = $request->email ?? $contacts->email;
-                $contacts->whatsapp = $request->whatsapp ?? $contacts->whatsapp;
-                $contacts->telegram = $request->telegram ?? $contacts->telegram;
-                $contacts->instagram = $request->instagram ?? $contacts->instagram;
-                $contacts->facebook = $request->facebook ?? $contacts->facebook;
-                $contacts->linkedin = $request->linkedin ?? $contacts->linkedin;
-                $contacts->website = $request->website ?? $contacts->website;
+                $contacts->phone = $request->phone ?? null;
+                $contacts->email = $request->email ?? null;
+                $contacts->whatsapp = $request->whatsapp ?? null;
+                $contacts->telegram = $request->telegram ?? null;
+                $contacts->instagram = $request->instagram ?? null;
+                $contacts->facebook = $request->facebook ?? null;
+                $contacts->linkedin = $request->linkedin ?? null;
+                $contacts->website = $request->website ?? null;
                 $contacts->save();
 
                 return response()->json([
