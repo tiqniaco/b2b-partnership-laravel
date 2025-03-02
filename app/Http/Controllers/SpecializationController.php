@@ -134,7 +134,6 @@ class SpecializationController extends Controller
                 'name_en' => 'nullable|string',
                 'name_ar' => 'nullable|string',
                 'image' => "nullable|image|mimes:jpeg,png,jpg,gif,svg",
-
             ]);
 
             $specialization = Specialization::findOrFail($id);

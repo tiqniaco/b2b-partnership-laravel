@@ -50,7 +50,7 @@ class ProviderTypeController extends Controller
             $request->validate([
                 'name_en' => 'required|string',
                 'name_ar' => 'required|string',
-            ], 200);
+            ]);
 
             $providerType = new ProviderType();
             $providerType->name_en = $request->name_en;
@@ -125,7 +125,7 @@ class ProviderTypeController extends Controller
             $request->validate([
                 'name_en' => 'nullable|string',
                 'name_ar' => 'nullable|string',
-            ], 200);
+            ]);
 
             $providerType = ProviderType::findOrFail($id);
             $providerType->name_en = $request->name_en ?? $providerType->name_en;
