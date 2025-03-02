@@ -53,7 +53,7 @@ class SubSpecializationController extends Controller
             $request->validate([
                 'name_en' => 'required|string',
                 'name_ar' => 'required|string',
-                'image' => "required|image|mimes:jpeg,png,jpg,gif,svg",
+                'image' => "nullable|image|mimes:jpeg,png,jpg,gif,svg",
                 'specialization_id' => 'required|exists:specializations,id',
             ]);
 
@@ -184,8 +184,10 @@ class SubSpecializationController extends Controller
     {
         try {
             $subSpecialization = SubSpecialization::findOrFail($id);
-            if (file_exists(public_path($subSpecialization->image))) {
-                unlink(public_path($subSpecialization->image));
+            if ($subSpecialization->image) {
+                if (file_exists(public_path($subSpecialization->image))) {
+                    unlink(public_path($subSpecialization->image));
+                }
             }
             $subSpecialization->delete();
 
