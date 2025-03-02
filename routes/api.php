@@ -164,6 +164,7 @@ Route::prefix("store")->group(function () {
 
     // Store Orders routes
     Route::apiResource('orders', StoreOrderController::class)->middleware(['auth:sanctum']);
+    Route::get('admin-orders', [StoreOrderController::class, 'adminOrders'])->middleware(['auth:sanctum']);
 });
 
 /// Complaint Routes

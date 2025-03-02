@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Store;
 use App\Http\Controllers\Controller;
 use App\Models\StoreCart;
 use App\Models\StoreOrder;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -158,7 +159,7 @@ class StoreOrderController extends Controller
     {
         try {
             $request->validate([
-                'status' => 'nullable|in:pending,approved,delivered,cancelled',
+                'status' => 'nullable|in:pending,approved,completed,canceled',
             ]);
 
             $order = StoreOrder::findOrFail($id);
@@ -212,6 +213,51 @@ class StoreOrderController extends Controller
                 'message' => 'Not found.',
                 'error' => $e->getMessage(),
             ], 401);
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Validation error.',
+                'error' => $e->getMessage(),
+            ], 401);
+        } catch (\Throwable $e) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Something went wrong.',
+                'error' => $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    public function adminOrders(Request $request)
+    {
+        try {
+            $request->validate([
+                'status' => 'nullable|in:pending,approved,completed,canceled',
+            ]);
+            $user = User::findOrFail(Auth::user()->id);
+            if ($user->role != "admin") {
+                return response()->json([
+                    'status' => 'error',
+                    'message' => 'You don\'t have permission.',
+                ], 403);
+            }
+
+            if ($request->status) {
+                $orders = StoreOrder::where('status', $request->status)
+                    ->orderBy('created_at', 'desc')
+                    ->paginate(20);
+            } else {
+                $orders = StoreOrder::orderBy('created_at', 'desc')
+                    ->paginate(20);
+            }
+
+            return response()->json($orders, 200);
+        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Not found.',
+                'error' => $e->getMessage(),
+            ], 404);
         } catch (\Illuminate\Validation\ValidationException $e) {
             return response()->json([
                 'status' => 'error',
