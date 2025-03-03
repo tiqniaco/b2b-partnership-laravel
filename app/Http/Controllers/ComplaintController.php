@@ -159,10 +159,20 @@ class ComplaintController extends Controller
         try {
             $users = DB::select("SELECT id, name, email, image, country_code, phone, role FROM users WHERE id IN (SELECT DISTINCT user_id FROM complaints);");
             // $users = DB::table("users")->where("id", "in", "(SELECT DISTINCT user_id FROM complaints);")->get();
+            $providers = [];
+            $clients = [];
+            foreach ($users as $user) {
+                if ($user->role == "provider") {
+                    $providers[] = $user;
+                } else {
+                    $clients[] = $user;
+                }
+            }
             return  response()->json([
                 "status" => "success",
                 "message" => "data fetched successfully",
-                "data" => $users,
+                'providers' => $providers,
+                'clients' => $clients,
             ]);
         } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
             return response()->json([

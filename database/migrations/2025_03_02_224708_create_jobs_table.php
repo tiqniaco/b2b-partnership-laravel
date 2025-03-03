@@ -16,7 +16,7 @@ return new class extends Migration
             $table->string('title');
             $table->text('description');
             $table->text('skills');
-            $table->integer('experience');
+            $table->text('experience');
             $table->string('contract_type');
             $table->date('expiry_date');
             $table->enum('status', ['hired', 'searching'])->default('searching');

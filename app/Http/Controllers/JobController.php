@@ -78,13 +78,13 @@ class JobController extends Controller
                 'title' => 'required|string',
                 'description' => 'required|string',
                 'skills' => 'required|string',
-                'experience' => 'required|integer',
+                'experience' => 'required|string',
                 'contract_type' => 'required|string',
                 'expiry_date' => 'required|date',
-                'gender' => 'required|enum:male,female,any',
+                'gender' => 'required|in:male,female,any',
                 'salary' => 'nullable|integer',
                 'employer_id' => 'required|integer|exists:providers,id',
-                'governments_id' => 'required|integer|exists:governments,id',
+                'government_id' => 'required|integer|exists:governments,id',
                 'sub_specialization_id' => 'required|integer|exists:sub_specializations,id',
             ]);
 
@@ -98,7 +98,7 @@ class JobController extends Controller
             $job->gender = $request->gender;
             $job->salary = $request->salary;
             $job->employer_id = $request->employer_id;
-            $job->governments_id = $request->governments_id;
+            $job->government_id = $request->government_id;
             $job->sub_specializations_id = $request->sub_specialization_id;
             $job->save();
 
@@ -173,10 +173,10 @@ class JobController extends Controller
                 'title' => 'nullable|string',
                 'description' => 'nullable|string',
                 'skills' => 'nullable|string',
-                'experience' => 'nullable|integer',
+                'experience' => 'nullable|string',
                 'contract_type' => 'nullable|string',
                 'expiry_date' => 'nullable|date',
-                'gender' => 'nullable|enum:male,female,any',
+                'gender' => 'nullable|in:male,female,any',
                 'salary' => 'nullable|integer',
                 'status' => 'nullable|in:hired,searching',
                 'employer_id' => 'nullable|integer|exists:providers,id',
