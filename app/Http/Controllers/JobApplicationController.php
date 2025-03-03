@@ -2,76 +2,58 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\SubSpecialization;
+use App\Models\Client;
+use App\Models\JobApplication;
 use Illuminate\Http\Request;
 
-class SubSpecializationController extends Controller
+class JobApplicationController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
-    public function index(Request $request)
+    public function apply(Request $request)
     {
         try {
             $request->validate([
-                'specialization_id' => 'required|exists:specializations,id',
-            ]);
-            $subSpecialization = SubSpecialization::where('parent_id', $request->specialization_id)->get();
-
-            return response()->json([
-                'status' => 'success',
-                'message' => 'Data fetched successfully.',
-                'data' => $subSpecialization,
-            ], 200);
-        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
-            return response()->json([
-                'status' => 'error',
-                'message' => 'Not found.',
-                'error' => $e->getMessage(),
-            ], 404);
-        } catch (\Illuminate\Validation\ValidationException $e) {
-            return response()->json([
-                'status' => 'error',
-                'message' => 'Validation error.',
-                'error' => $e->getMessage(),
-            ], 401);
-        } catch (\Throwable $e) {
-            return response()->json([
-                'status' => 'error',
-                'message' => 'Something went wrong.',
-                'error' => $e->getMessage(),
-            ], 500);
-        }
-    }
-
-    /**
-     * Store a newly created resource in storage.
-     */
-    public function store(Request $request)
-    {
-        try {
-            $request->validate([
-                'name_en' => 'required|string',
-                'name_ar' => 'required|string',
-                'image' => "nullable|image|mimes:jpeg,png,jpg,gif,svg",
-                'specialization_id' => 'required|exists:specializations,id',
+                'job_id' => 'required|integer|exists:jobs,id',
+                'years_of_experience' => 'required|integer|min:0',
+                'cover_letter' => 'nullable|string',
+                'resume' => 'nullable|file|mimes:pdf,doc,docx',
+                'skills' => 'nullable|string',
+                'available_to_start_date' => 'nullable|date',
+                'expected_salary' => 'nullable|integer|min:0',
+                'why_ideal_candidate' => 'nullable|string',
             ]);
 
-            $subSpecialization = new SubSpecialization();
-            $subSpecialization->name_en = $request->name_en;
-            $subSpecialization->name_ar = $request->name_ar;
-            if ($request->hasFile('image')) {
-                $imageName = 'images/sub_specializations/' . time() . '.' . $request->image->extension();
-                $request->image->move(public_path('images/sub_specializations'), $imageName);
-                $subSpecialization->image = $imageName;
+
+            // التحقق من الحد الأقصى اليومي للتقديمات
+            $client = Client::where('user_id', auth()->id())->first();
+            $dailyApplications = JobApplication::where('client_id', $client->id)
+                ->whereDate('created_at', today())
+                ->count();
+
+            if ($dailyApplications >= 5) { // العدد الأقصى للتقديمات اليومية
+                return response()->json(['message' => 'You have reached your daily application limit'], 403);
             }
-            $subSpecialization->parent_id = $request->specialization_id;
-            $subSpecialization->save();
+
+            $application = new JobApplication();
+            $application->client_id = $client->id;
+            $application->job_id = $request->job_id;
+            $application->years_of_experience = $request->years_of_experience;
+            $application->cover_letter = $request->cover_letter;
+            if ($request->hasFile('resume')) {
+                $file = $request->file('resume');
+                $fileName = time() . '.' . $file->getClientOriginalExtension();
+                $file->move(public_path('files/job_applications'), $fileName);
+                $application->resume = 'files/job_applications/' . $fileName;
+            }
+            $application->skills = $request->skills;
+            $application->available_to_start_date = $request->available_to_start_date;
+            $application->expected_salary = $request->expected_salary;
+            $application->why_ideal_candidate = $request->why_ideal_candidate;
+            $application->save();
 
             return response()->json([
                 'status' => 'success',
-                'message' => 'Data created successfully.',
-            ], 200);
+                'message' => 'Application submitted successfully',
+            ], 201);
         } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
             return response()->json([
                 'status' => 'error',
@@ -93,68 +75,19 @@ class SubSpecializationController extends Controller
         }
     }
 
-    /**
-     * Display the specified resource.
-     */
-    public function show(string $id)
-    {
-        try {
-            $subSpecialization = SubSpecialization::findOrFail($id);
-
-            return response()->json([
-                'status' => 'success',
-                'message' => 'Data fetched successfully.',
-                'data' => $subSpecialization,
-            ], 200);
-        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
-            return response()->json([
-                'status' => 'error',
-                'message' => 'Not found.',
-                'error' => $e->getMessage(),
-            ], 404);
-        } catch (\Illuminate\Validation\ValidationException $e) {
-            return response()->json([
-                'status' => 'error',
-                'message' => 'Validation error.',
-                'error' => $e->getMessage(),
-            ], 401);
-        } catch (\Throwable $e) {
-            return response()->json([
-                'status' => 'error',
-                'message' => 'Something went wrong.',
-                'error' => $e->getMessage(),
-            ], 500);
-        }
-    }
-
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, string $id)
+    public function clientApplications(Request $request)
     {
         try {
             $request->validate([
-                'name_en' => 'nullable|string',
-                'name_ar' => 'nullable|string',
-                'image' => "nullable|image|mimes:jpeg,png,jpg,gif,svg",
+                'client_id' => 'required|integer|exists:clients,id',
             ]);
 
-            $subSpecialization = SubSpecialization::findOrFail($id);
-            $subSpecialization->name_en = $request->name_en ?? $subSpecialization->name_en;
-            $subSpecialization->name_ar = $request->name_ar ?? $subSpecialization->name_ar;
-            if ($request->hasFile('image')) {
-                if (file_exists(public_path($subSpecialization->image))) {
-                    unlink(public_path($subSpecialization->image));
-                }
-                $imageName = 'images/sub_specializations/' . time() . '.' . $request->image->extension();
-                $request->image->move(public_path('images/sub_specializations'), $imageName);
-                $subSpecialization->image = $imageName;
-            }
-            $subSpecialization->save();
+            $applications = JobApplication::where('client_id', $request->client_id)->get();
 
             return response()->json([
                 'status' => 'success',
-                'message' => 'Data updated successfully.',
+                'message' => 'Applications retrieved successfully',
+                'data' => $applications,
             ], 200);
         } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
             return response()->json([
@@ -177,23 +110,89 @@ class SubSpecializationController extends Controller
         }
     }
 
-    /**
-     * Remove the specified resource from storage.
-     */
+    public function jobApplications(Request $request)
+    {
+        try {
+            $request->validate([
+                'job_id' => 'required|integer|exists:jobs,id',
+            ]);
+
+            $applications = JobApplication::where('job_id', $request->job_id)->get();
+
+            return response()->json([
+                'status' => 'success',
+                'message' => 'Applications retrieved successfully',
+                'data' => $applications,
+            ], 200);
+        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Not found.',
+                'error' => $e->getMessage(),
+            ], 404);
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Validation error.',
+                'error' => $e->getMessage(),
+            ], 401);
+        } catch (\Throwable $e) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Something went wrong.',
+                'error' => $e->getMessage(),
+            ], 500);
+        }
+    }
+
     public function destroy(string $id)
     {
         try {
-            $subSpecialization = SubSpecialization::findOrFail($id);
-            if ($subSpecialization->image) {
-                if (file_exists(public_path($subSpecialization->image))) {
-                    unlink(public_path($subSpecialization->image));
+            $application = JobApplication::findOrFail($id);
+            if ($application->resume) {
+                if (file_exists(public_path($application->resume))) {
+                    unlink(public_path($application->resume));
                 }
             }
-            $subSpecialization->delete();
-
+            $application->delete();
             return response()->json([
                 'status' => 'success',
-                'message' => 'Data deleted successfully.',
+                'message' => 'Application deleted successfully.',
+            ], 200);
+        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Not found.',
+                'error' => $e->getMessage(),
+            ], 404);
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Validation error.',
+                'error' => $e->getMessage(),
+            ], 401);
+        } catch (\Throwable $e) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Something went wrong.',
+                'error' => $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    public function updateStatus(Request $request, string $id)
+    {
+        try {
+            $request->validate([
+                'status' => 'required|in:pending,accepted,rejected',
+            ]);
+
+            $application = JobApplication::findOrFail($id);
+            $application->status = $request->status;
+            $application->save();
+            return response()->json([
+                'status' => 'success',
+                'message' => 'Application status updated successfully.',
             ], 200);
         } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
             return response()->json([

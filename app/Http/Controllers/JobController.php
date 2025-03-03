@@ -2,10 +2,11 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\SubSpecialization;
+use App\Models\Job;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
-class SubSpecializationController extends Controller
+class JobController extends Controller
 {
     /**
      * Display a listing of the resource.
@@ -14,15 +15,38 @@ class SubSpecializationController extends Controller
     {
         try {
             $request->validate([
-                'specialization_id' => 'required|exists:specializations,id',
+                'specialization_id' => 'nullable|exists:specializations,id',
+                'sub_specialization_id' => 'nullable|exists:sub_specializations,id',
+                'country_id' => 'nullable|exists:countries,id',
+                'government_id' => 'nullable|exists:governments,id',
+                'contract_type' => 'nullable|string',
+                'expiry_date' => 'nullable|date',
             ]);
-            $subSpecialization = SubSpecialization::where('parent_id', $request->specialization_id)->get();
 
-            return response()->json([
-                'status' => 'success',
-                'message' => 'Data fetched successfully.',
-                'data' => $subSpecialization,
-            ], 200);
+            $jobs = DB::table('job_details_view')
+                ->where('status', "searching")
+                ->when(request()->filled('specialization_id'), function ($query) {
+                    return $query->where('specialization_id', request()->specialization_id);
+                })
+                ->when(request()->filled('sub_specialization_id'), function ($query) {
+                    return $query->where('sub_specialization_id', request()->sub_specialization_id);
+                })
+                ->when(request()->filled('country_id'), function ($query) {
+                    return $query->where('country_id', request()->country_id);
+                })
+                ->when(request()->filled('government_id'), function ($query) {
+                    return $query->where('government_id', request()->government_id);
+                })
+                ->when(request()->filled('contract_type'), function ($query) {
+                    return $query->where('contract_type', request()->contract_type);
+                })
+                ->when(request()->filled('expiry_date'), function ($query) {
+                    return $query->whereDate('expiry_date', '>=', request()->expiry_date);
+                })
+                ->orderBy('job_created_at', 'desc')
+                ->paginate(12);
+
+            return response()->json($jobs, 200);
         } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
             return response()->json([
                 'status' => 'error',
@@ -51,26 +75,36 @@ class SubSpecializationController extends Controller
     {
         try {
             $request->validate([
-                'name_en' => 'required|string',
-                'name_ar' => 'required|string',
-                'image' => "nullable|image|mimes:jpeg,png,jpg,gif,svg",
-                'specialization_id' => 'required|exists:specializations,id',
+                'title' => 'required|string',
+                'description' => 'required|string',
+                'skills' => 'required|string',
+                'experience' => 'required|integer',
+                'contract_type' => 'required|string',
+                'expiry_date' => 'required|date',
+                'gender' => 'required|enum:male,female,any',
+                'salary' => 'nullable|integer',
+                'employer_id' => 'required|integer|exists:providers,id',
+                'governments_id' => 'required|integer|exists:governments,id',
+                'sub_specialization_id' => 'required|integer|exists:sub_specializations,id',
             ]);
 
-            $subSpecialization = new SubSpecialization();
-            $subSpecialization->name_en = $request->name_en;
-            $subSpecialization->name_ar = $request->name_ar;
-            if ($request->hasFile('image')) {
-                $imageName = 'images/sub_specializations/' . time() . '.' . $request->image->extension();
-                $request->image->move(public_path('images/sub_specializations'), $imageName);
-                $subSpecialization->image = $imageName;
-            }
-            $subSpecialization->parent_id = $request->specialization_id;
-            $subSpecialization->save();
+            $job = new Job();
+            $job->title = $request->title;
+            $job->description = $request->description;
+            $job->skills = $request->skills;
+            $job->experience = $request->experience;
+            $job->contract_type = $request->contract_type;
+            $job->expiry_date = $request->expiry_date;
+            $job->gender = $request->gender;
+            $job->salary = $request->salary;
+            $job->employer_id = $request->employer_id;
+            $job->governments_id = $request->governments_id;
+            $job->sub_specializations_id = $request->sub_specialization_id;
+            $job->save();
 
             return response()->json([
                 'status' => 'success',
-                'message' => 'Data created successfully.',
+                'message' => 'Job created successfully.',
             ], 200);
         } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
             return response()->json([
@@ -99,12 +133,14 @@ class SubSpecializationController extends Controller
     public function show(string $id)
     {
         try {
-            $subSpecialization = SubSpecialization::findOrFail($id);
+            $jobs = DB::table('job_details_view')
+                ->where('id', $id)
+                ->first();
 
             return response()->json([
                 'status' => 'success',
                 'message' => 'Data fetched successfully.',
-                'data' => $subSpecialization,
+                'data' => $jobs
             ], 200);
         } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
             return response()->json([
@@ -134,27 +170,38 @@ class SubSpecializationController extends Controller
     {
         try {
             $request->validate([
-                'name_en' => 'nullable|string',
-                'name_ar' => 'nullable|string',
-                'image' => "nullable|image|mimes:jpeg,png,jpg,gif,svg",
+                'title' => 'nullable|string',
+                'description' => 'nullable|string',
+                'skills' => 'nullable|string',
+                'experience' => 'nullable|integer',
+                'contract_type' => 'nullable|string',
+                'expiry_date' => 'nullable|date',
+                'gender' => 'nullable|enum:male,female,any',
+                'salary' => 'nullable|integer',
+                'status' => 'nullable|in:hired,searching',
+                'employer_id' => 'nullable|integer|exists:providers,id',
+                'governments_id' => 'nullable|integer|exists:governments,id',
+                'sub_specialization_id' => 'nullable|integer|exists:sub_specializations,id',
             ]);
 
-            $subSpecialization = SubSpecialization::findOrFail($id);
-            $subSpecialization->name_en = $request->name_en ?? $subSpecialization->name_en;
-            $subSpecialization->name_ar = $request->name_ar ?? $subSpecialization->name_ar;
-            if ($request->hasFile('image')) {
-                if (file_exists(public_path($subSpecialization->image))) {
-                    unlink(public_path($subSpecialization->image));
-                }
-                $imageName = 'images/sub_specializations/' . time() . '.' . $request->image->extension();
-                $request->image->move(public_path('images/sub_specializations'), $imageName);
-                $subSpecialization->image = $imageName;
-            }
-            $subSpecialization->save();
+            $job = Job::findOrFail($id);
+            $job->title = $request->title ?? $job->title;
+            $job->description = $request->description ?? $job->description;
+            $job->skills = $request->skills ?? $job->skills;
+            $job->experience = $request->experience ?? $job->experience;
+            $job->contract_type = $request->contract_type ?? $job->contract_type;
+            $job->expiry_date = $request->expiry_date ?? $job->expiry_date;
+            $job->gender = $request->gender ?? $job->gender;
+            $job->status = $request->status ?? $job->status;
+            $job->salary = $request->salary;
+            $job->employer_id = $request->employer_id ?? $job->employer_id;
+            $job->governments_id = $request->governments_id ?? $job->governments_id;
+            $job->sub_specializations_id = $request->sub_specialization_id ?? $job->sub_specializations_id;
+            $job->save();
 
             return response()->json([
                 'status' => 'success',
-                'message' => 'Data updated successfully.',
+                'message' => 'Job updated successfully.',
             ], 200);
         } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
             return response()->json([
@@ -183,14 +230,8 @@ class SubSpecializationController extends Controller
     public function destroy(string $id)
     {
         try {
-            $subSpecialization = SubSpecialization::findOrFail($id);
-            if ($subSpecialization->image) {
-                if (file_exists(public_path($subSpecialization->image))) {
-                    unlink(public_path($subSpecialization->image));
-                }
-            }
-            $subSpecialization->delete();
-
+            $job = Job::findOrFail($id);
+            $job->delete();
             return response()->json([
                 'status' => 'success',
                 'message' => 'Data deleted successfully.',

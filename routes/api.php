@@ -9,6 +9,7 @@ use App\Http\Controllers\CountryController;
 use App\Http\Controllers\FavoriteProvidersController;
 use App\Http\Controllers\GovernmentController;
 use App\Http\Controllers\HomeController;
+use App\Http\Controllers\JobApplicationController;
 use App\Http\Controllers\ProviderController;
 use App\Http\Controllers\ProviderTypeController;
 use App\Http\Controllers\SpecializationController;
@@ -26,6 +27,7 @@ use App\Http\Controllers\Store\StoreOrderController;
 use App\Http\Controllers\Store\StoreProductController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\RequestOffersController;
+use App\Http\Controllers\SavedJobController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -116,8 +118,17 @@ Route::apiResource('banners', \App\Http\Controllers\BannerController::class);
 Route::post('banners/{id}/update', [\App\Http\Controllers\BannerController::class, 'update']);
 
 // Jobs
-Route::apiResource('jobs', \App\Http\Controllers\JobsController::class);
-Route::post('jobs/{id}/update', [\App\Http\Controllers\JobsController::class, 'update']);
+Route::apiResource('jobs', \App\Http\Controllers\JobController::class)->middleware(['auth:sanctum']);;
+
+// Job Applications
+Route::post('job-application', [JobApplicationController::class, 'apply'])->middleware(['auth:sanctum']);
+Route::get('client/job-application', [JobApplicationController::class, 'clientApplications'])->middleware(['auth:sanctum']);
+Route::get('job-applications', [JobApplicationController::class, 'jobApplications'])->middleware(['auth:sanctum']);
+Route::delete('job-applications/{id}', [JobApplicationController::class, 'destroy'])->middleware(['auth:sanctum']);
+Route::post('job-applications/{id}/update-status', [JobApplicationController::class, 'updateStatus'])->middleware(['auth:sanctum']);
+
+// Saved Jobs
+Route::apiResource('saved-jobs', SavedJobController::class)->middleware(['auth:sanctum']);
 
 // Home Slider
 Route::prefix('home')->group(function () {

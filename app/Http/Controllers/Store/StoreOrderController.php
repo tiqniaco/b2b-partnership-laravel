@@ -40,7 +40,7 @@ class StoreOrderController extends Controller
                 'status' => 'error',
                 'message' => 'Not found.',
                 'error' => $e->getMessage(),
-            ], 401);
+            ], 404);
         } catch (\Illuminate\Validation\ValidationException $e) {
             return response()->json([
                 'status' => 'error',
@@ -95,7 +95,7 @@ class StoreOrderController extends Controller
                 'status' => 'error',
                 'message' => 'Not found.',
                 'error' => $e->getMessage(),
-            ], 401);
+            ], 404);
         } catch (\Illuminate\Validation\ValidationException $e) {
             return response()->json([
                 'status' => 'error',
@@ -136,7 +136,7 @@ class StoreOrderController extends Controller
                 'status' => 'error',
                 'message' => 'Not found.',
                 'error' => $e->getMessage(),
-            ], 401);
+            ], 404);
         } catch (\Illuminate\Validation\ValidationException $e) {
             return response()->json([
                 'status' => 'error',
@@ -178,7 +178,7 @@ class StoreOrderController extends Controller
                 'status' => 'error',
                 'message' => 'Not found.',
                 'error' => $e->getMessage(),
-            ], 401);
+            ], 404);
         } catch (\Illuminate\Validation\ValidationException $e) {
             return response()->json([
                 'status' => 'error',
@@ -212,7 +212,7 @@ class StoreOrderController extends Controller
                 'status' => 'error',
                 'message' => 'Not found.',
                 'error' => $e->getMessage(),
-            ], 401);
+            ], 404);
         } catch (\Illuminate\Validation\ValidationException $e) {
             return response()->json([
                 'status' => 'error',
