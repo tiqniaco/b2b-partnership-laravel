@@ -3,6 +3,10 @@
 namespace App\Http\Controllers;
 
 use App\Models\Admin;
+use App\Models\Complaint;
+use App\Models\Job;
+use App\Models\RequestService;
+use App\Models\StoreOrder;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -51,6 +55,7 @@ class AdminController extends Controller
             $admin = DB::table("admin_details_view")
                 ->where('admin_id', $id)
                 ->first();
+
             if (!$admin) {
                 return response()->json([
                     'status' => 'error',
@@ -58,8 +63,18 @@ class AdminController extends Controller
                 ], 404);
             }
 
+            $jobsCount = Job::count();
+            $shoppingCount = StoreOrder::count();
+            $servicesCount = RequestService::count();
+            $complaintsCount = Complaint::count();
+
+
             return response()->json([
                 'status' => 'success',
+                'jobsCount' => $jobsCount,
+                'shoppingCount' => $shoppingCount,
+                'servicesCount' => $servicesCount,
+                'complaintsCount' => $complaintsCount,
                 'data' => $admin
             ], 200);
         } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
@@ -102,8 +117,10 @@ class AdminController extends Controller
             $user = User::findOrFail($admin->user_id);
 
             if ($request->hasFile('image')) {
-                if (file_exists(public_path($user->image))) {
-                    unlink(public_path($user->image));
+                if ($user->image) {
+                    if (file_exists(public_path($user->image))) {
+                        unlink(public_path($user->image));
+                    }
                 }
                 $imageName = 'images/admins/' . time() . '.' . $request->image->extension();
                 $request->image->move(public_path('images/admins'), $imageName);

@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Client;
 use App\Models\Complaint;
+use App\Models\JobApplication;
 use App\Models\RequestService;
 use App\Models\StoreOrder;
 use App\Models\User;
@@ -61,7 +62,7 @@ class ClientsController extends Controller
                 ->where('client_id', $id)
                 ->first();
 
-            $jobsCount = 0;
+            $jobsCount = JobApplication::where('client_id', $id)->count();
             $shoppingCount = StoreOrder::where('user_id', $client->user_id)->count();
             $servicesCount = RequestService::where('client_id', $id)->count();
             $complaintsCount = Complaint::where('user_id', $client->user_id)->count();

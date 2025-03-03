@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Complaint;
+use App\Models\Job;
 use App\Models\Provider;
 use App\Models\ProviderService;
 use App\Models\StoreOrder;
@@ -73,7 +74,7 @@ class ProviderController extends Controller
                 ->where('provider_id', $id)
                 ->first();
 
-            $jobsCount = 0;
+            $jobsCount = Job::where('employer_id', $provider->provider_id)->count();
             $shoppingCount = StoreProduct::count();
             $ordersCount = StoreOrder::where('user_id', $provider->user_id)->count();
             $complaintsCount = Complaint::where('user_id', $provider->user_id)->count();
