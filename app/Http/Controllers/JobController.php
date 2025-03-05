@@ -256,4 +256,41 @@ class JobController extends Controller
             ], 500);
         }
     }
+
+    public function providerJobs(Request $request)
+    {
+        try {
+            $request->validate([
+                'provider_id' => 'required|exists:providers,id',
+            ]);
+
+            $jobs = DB::table('job_details_view')
+                ->where('employer_id', $request->provider_id)
+                ->get();
+
+            return response()->json([
+                'status' => 'success',
+                'message' => 'Data fetched successfully.',
+                'data' => $jobs,
+            ], 200);
+        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Not found.',
+                'error' => $e->getMessage(),
+            ], 404);
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Validation error.',
+                'error' => $e->getMessage(),
+            ], 401);
+        } catch (\Throwable $e) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Something went wrong.',
+                'error' => $e->getMessage(),
+            ], 500);
+        }
+    }
 }

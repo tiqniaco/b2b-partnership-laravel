@@ -10,6 +10,7 @@ use App\Http\Controllers\FavoriteProvidersController;
 use App\Http\Controllers\GovernmentController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\JobApplicationController;
+use App\Http\Controllers\JobController;
 use App\Http\Controllers\ProviderController;
 use App\Http\Controllers\ProviderTypeController;
 use App\Http\Controllers\SpecializationController;
@@ -118,7 +119,8 @@ Route::apiResource('banners', \App\Http\Controllers\BannerController::class);
 Route::post('banners/{id}/update', [\App\Http\Controllers\BannerController::class, 'update']);
 
 // Jobs
-Route::apiResource('jobs', \App\Http\Controllers\JobController::class)->middleware(['auth:sanctum']);;
+Route::apiResource('jobs', JobController::class)->middleware(['auth:sanctum']);
+Route::get('provider-jobs', [JobController::class, 'providerJobs'])->middleware(['auth:sanctum']);
 
 // Job Applications
 Route::post('job-application', [JobApplicationController::class, 'apply'])->middleware(['auth:sanctum']);
