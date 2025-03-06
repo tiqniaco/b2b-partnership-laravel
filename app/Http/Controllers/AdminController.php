@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Admin;
 use App\Models\Complaint;
 use App\Models\Job;
+use App\Models\Provider;
 use App\Models\RequestService;
 use App\Models\StoreOrder;
 use App\Models\User;
@@ -177,6 +178,72 @@ class AdminController extends Controller
                 'status' => 'success',
                 'message' => 'Data deleted successfully.',
             ]);
+        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Not found.',
+                'error' => $e->getMessage(),
+            ], 404);
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Validation error.',
+                'error' => $e->getMessage(),
+            ], 401);
+        } catch (\Throwable $e) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Something went wrong.',
+                'error' => $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    public function waitingProviders()
+    {
+        try {
+            $providers = DB::table('provider_details')
+                ->where('status', "inactive")
+                ->paginate(12);
+
+            return response()->json($providers, 200);
+        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Not found.',
+                'error' => $e->getMessage(),
+            ], 404);
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Validation error.',
+                'error' => $e->getMessage(),
+            ], 401);
+        } catch (\Throwable $e) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Something went wrong.',
+                'error' => $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    public function acceptProvider(Request $request)
+    {
+        try {
+            $request->validate([
+                "provider_id" => "required|exists:providers,id",
+            ]);
+            $provider = Provider::findOrFail($request->provider_id);
+            $user = User::findOrFail($provider->user_id);
+
+            $user->status = "active";
+            $user->save();
+
+            return response()->json([
+                'status' => 'success',
+                'message' => 'Provider accepted successfully.',
+            ], 200);
         } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
             return response()->json([
                 'status' => 'error',

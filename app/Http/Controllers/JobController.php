@@ -15,6 +15,7 @@ class JobController extends Controller
     {
         try {
             $request->validate([
+                'search' => 'nullable|string',
                 'specialization_id' => 'nullable|exists:specializations,id',
                 'sub_specialization_id' => 'nullable|exists:sub_specializations,id',
                 'country_id' => 'nullable|exists:countries,id',
@@ -25,6 +26,10 @@ class JobController extends Controller
 
             $jobs = DB::table('job_details_view')
                 ->where('status', "searching")
+                ->when(request()->filled('search'), function ($query) {
+                    return $query->where('title', 'like', '%' . request()->search . '%')
+                        ->orWhere('name', 'like', '%' . request()->search . '%');
+                })
                 ->when(request()->filled('specialization_id'), function ($query) {
                     return $query->where('specialization_id', request()->specialization_id);
                 })

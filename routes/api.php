@@ -191,3 +191,5 @@ Route::get('notifications', [NotificationController::class, 'index']);
 // Admin Routes
 Route::apiResource('admins', AdminController::class)->middleware(['auth:sanctum']);
 Route::post('admins/{id}/update', [AdminController::class, 'update'])->middleware(['auth:sanctum']);
+Route::get('admin/waiting-providers', [AdminController::class, 'waitingProviders'])->middleware(['auth:sanctum']);
+Route::post('admin/accept-provider', [AdminController::class, 'acceptProvider'])->middleware(['auth:sanctum']);

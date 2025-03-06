@@ -9,6 +9,7 @@ SELECT
     users.country_code AS country_code,
     users.phone AS phone,
     users.image AS image,
+    users.status AS status,
     providers.id AS provider_id,
     providers.commercial_register AS commercial_register,
     providers.tax_card AS tax_card,
