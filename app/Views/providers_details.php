@@ -15,6 +15,7 @@ SELECT
     providers.tax_card AS tax_card,
     providers.bio AS bio,
     providers.rating AS rating,
+    providers.verified_code AS provider_verified_code,
     provider_types.id AS provider_type_id,
     provider_types.name_ar AS provider_type_name_ar,
     provider_types.name_en AS provider_type_name_en,

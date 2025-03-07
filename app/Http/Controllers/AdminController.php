@@ -203,7 +203,7 @@ class AdminController extends Controller
     {
         try {
             $providers = DB::table('provider_details')
-                ->where('status', "inactive")
+                ->where('provider_verified_code', null)
                 ->paginate(12);
 
             return response()->json($providers, 200);
@@ -235,14 +235,55 @@ class AdminController extends Controller
                 "provider_id" => "required|exists:providers,id",
             ]);
             $provider = Provider::findOrFail($request->provider_id);
-            $user = User::findOrFail($provider->user_id);
+            $provider->verified_code = "1";
+            $provider->save();
 
+            $user = User::findOrFail($provider->user_id);
             $user->status = "active";
             $user->save();
 
             return response()->json([
                 'status' => 'success',
                 'message' => 'Provider accepted successfully.',
+            ], 200);
+        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Not found.',
+                'error' => $e->getMessage(),
+            ], 404);
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Validation error.',
+                'error' => $e->getMessage(),
+            ], 401);
+        } catch (\Throwable $e) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Something went wrong.',
+                'error' => $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    public function rejectProvider(Request $request)
+    {
+        try {
+            $request->validate([
+                "provider_id" => "required|exists:providers,id",
+            ]);
+            $provider = Provider::findOrFail($request->provider_id);
+            $provider->verified_code = "0";
+            $provider->save();
+
+            $user = User::findOrFail($provider->user_id);
+            $user->status = "inactive";
+            $user->save();
+
+            return response()->json([
+                'status' => 'success',
+                'message' => 'Provider rejected successfully.',
             ], 200);
         } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
             return response()->json([
