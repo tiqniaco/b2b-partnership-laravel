@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Client;
 use App\Models\JobApplication;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class JobApplicationController extends Controller
 {
@@ -80,9 +81,16 @@ class JobApplicationController extends Controller
         try {
             $request->validate([
                 'client_id' => 'required|integer|exists:clients,id',
+                'status' => 'nullable|in:pending,accepted,rejected',
             ]);
 
-            $applications = JobApplication::where('client_id', $request->client_id)->get();
+            $applications = DB::table("client_job_application_view")
+                ->where('client_id', $request->client_id)
+                ->when($request->status, function ($query) use ($request) {
+                    return $query->where('application_status', $request->status);
+                })
+                ->orderBy('created_at', 'desc')
+                ->get();
 
             return response()->json([
                 'status' => 'success',
@@ -117,7 +125,10 @@ class JobApplicationController extends Controller
                 'job_id' => 'required|integer|exists:jobs,id',
             ]);
 
-            $applications = JobApplication::where('job_id', $request->job_id)->get();
+            $applications = DB::table("client_job_application_view")
+                ->where('job_id', $request->job_id)
+                ->orderBy('created_at', 'desc')
+                ->get();
 
             return response()->json([
                 'status' => 'success',
