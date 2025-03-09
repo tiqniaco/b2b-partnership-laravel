@@ -52,7 +52,7 @@ class CountryController extends Controller
             $request->validate([
                 'name_en' => 'required|string',
                 'name_ar' => 'required|string',
-                'flag' => "required|image|mimes:jpeg,png,jpg,gif,svg",
+                'flag' => "required|string",
                 'code' => 'required|string|max:10',
                 'phone_length' => 'required|integer',
             ]);
@@ -62,11 +62,12 @@ class CountryController extends Controller
             $country->name_ar = $request->name_ar;
             $country->code = $request->code;
             $country->phone_length = $request->phone_length;
-            if ($request->hasFile('flag')) {
-                $imageName = 'images/countries/' . time() . '.' . $request->flag->extension();
-                $request->flag->move(public_path('images/countries'), $imageName);
-                $country->flag = $imageName;
-            }
+            $country->flag = $request->flag;
+            // if ($request->hasFile('flag')) {
+            //     $imageName = 'images/countries/' . time() . '.' . $request->flag->extension();
+            //     $request->flag->move(public_path('images/countries'), $imageName);
+            //     $country->flag = $imageName;
+            // }
             $country->save();
 
             return response()->json([
@@ -137,7 +138,7 @@ class CountryController extends Controller
             $request->validate([
                 'name_en' => 'nullable|string',
                 'name_ar' => 'nullable|string',
-                'flag' => "image|mimes:jpeg,png,jpg,gif,svg",
+                'flag' => "nullable|string",
                 'code' => 'nullable|string|max:10',
                 'phone_length' => 'nullable|integer',
             ]);
@@ -147,14 +148,15 @@ class CountryController extends Controller
             $country->name_ar = $request->name_ar ?? $country->name_ar;
             $country->code = $request->code ?? $country->code;
             $country->phone_length = $request->phone_length ?? $country->phone_length;
-            if ($request->hasFile('flag')) {
-                if (file_exists(public_path($country->flag))) {
-                    unlink(public_path($country->flag));
-                }
-                $imageName = 'images/countries/' . time() . '.' . $request->flag->extension();
-                $request->flag->move(public_path('images/countries'), $imageName);
-                $country->flag = $imageName;
-            }
+            $country->flag = $request->flag ?? $country->flag;
+            // if ($request->hasFile('flag')) {
+            //     if (file_exists(public_path($country->flag))) {
+            //         unlink(public_path($country->flag));
+            //     }
+            //     $imageName = 'images/countries/' . time() . '.' . $request->flag->extension();
+            //     $request->flag->move(public_path('images/countries'), $imageName);
+            //     $country->flag = $imageName;
+            // }
             $country->save();
 
             return response()->json([
@@ -189,9 +191,9 @@ class CountryController extends Controller
     {
         try {
             $country = Country::findOrFail($id);
-            if (file_exists(public_path($country->flag))) {
-                unlink(public_path($country->flag));
-            }
+            // if (file_exists(public_path($country->flag))) {
+            //     unlink(public_path($country->flag));
+            // }
             $country->delete();
 
             return response()->json([
