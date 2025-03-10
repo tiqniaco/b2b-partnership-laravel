@@ -61,9 +61,9 @@ JOIN
 JOIN 
     provider_types ON providers.provider_types_id = provider_types.id
 JOIN 
-    sub_specializations ON providers.sub_specialization_id = sub_specializations.id
+    sub_specializations ON jobs.sub_specializations_id = sub_specializations.id
 JOIN 
-    governments ON providers.governments_id = governments.id
+    governments ON jobs.government_id = governments.id
 JOIN 
     countries ON governments.country_id = countries.id
 JOIN 

@@ -200,7 +200,7 @@ class JobController extends Controller
             $job->status = $request->status ?? $job->status;
             $job->salary = $request->salary;
             $job->employer_id = $request->employer_id ?? $job->employer_id;
-            $job->governments_id = $request->governments_id ?? $job->governments_id;
+            $job->government_id = $request->governments_id ?? $job->government_id;
             $job->sub_specializations_id = $request->sub_specialization_id ?? $job->sub_specializations_id;
             $job->save();
 

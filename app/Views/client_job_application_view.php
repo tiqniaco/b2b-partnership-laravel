@@ -22,12 +22,18 @@ SELECT
     jobs.gender AS job_gender,
     jobs.salary AS job_salary,
     jobs.status AS job_status,
-    users.id AS user_id,
-    users.name AS provider_name,
-    users.email AS provider_email,
-    users.country_code AS provider_country_code,
-    users.phone AS provider_phone,
-    users.image AS provider_image,
+    p.id AS provider_user_id,
+    p.name AS provider_name,
+    p.email AS provider_email,
+    p.country_code AS provider_country_code,
+    p.phone AS provider_phone,
+    p.image AS provider_image,
+    c.id AS client_user_id, 
+    c.name AS client_name,
+    c.email AS client_email,    
+    c.country_code AS client_country_code,  
+    c.phone AS client_phone,
+    c.image AS client_image,
     providers.rating AS provider_rating,
     job_applications.created_at,
     job_applications.updated_at
@@ -38,6 +44,10 @@ JOIN
 JOIN
     providers ON jobs.employer_id = providers.id
 JOIN 
-    users ON providers.user_id = users.id;
+    users as p ON providers.user_id = p.id
+JOIN
+    clients ON job_applications.client_id = clients.id
+JOIN
+    users as c ON clients.user_id = c.id;
 
 ";
