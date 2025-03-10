@@ -128,6 +128,8 @@ Route::get('client/job-application', [JobApplicationController::class, 'clientAp
 Route::get('job-applications', [JobApplicationController::class, 'jobApplications'])->middleware(['auth:sanctum']);
 Route::delete('job-applications/{id}', [JobApplicationController::class, 'destroy'])->middleware(['auth:sanctum']);
 Route::post('job-applications/{id}/update-status', [JobApplicationController::class, 'updateStatus'])->middleware(['auth:sanctum']);
+Route::get('job-applications/search', [JobApplicationController::class, 'searchJobApplication'])->middleware(['auth:sanctum']);
+
 
 // Saved Jobs
 Route::apiResource('saved-jobs', SavedJobController::class)->middleware(['auth:sanctum']);
