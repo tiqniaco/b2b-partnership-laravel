@@ -8,6 +8,7 @@ use App\Models\StoreOrder;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 
 class StoreOrderController extends Controller
 {
@@ -119,6 +120,10 @@ class StoreOrderController extends Controller
         try {
             $order = StoreOrder::findOrFail($id);
             $carts = StoreCart::where('order_id', $order->id)->get();
+            $client = DB::table('client_details_view')
+                ->where('user_id', $order->user_id)
+                ->first();
+
             $items = [];
 
             foreach ($carts as $cart) {
@@ -128,6 +133,7 @@ class StoreOrderController extends Controller
             return response()->json([
                 'status' => 'success',
                 'message' => 'Data fetched successfully.',
+                'client' => $client,
                 'data' => $order,
                 'items' => $items,
             ], 200);
