@@ -66,6 +66,79 @@ class NotificationController extends Controller
         return $response->json();
     }
 
+    function sendNotification($topic, $title, $body, $data = [])
+    {
+        try {
+
+            // مسار ملف JSON الخاص بـ Service Account
+            $serviceAccountFile = storage_path('firebase-service-account.json');
+
+            // قراءة البيانات من ملف JSON
+            $serviceAccount = json_decode(file_get_contents($serviceAccountFile), true);
+
+            // إعداد توكين JWT
+            $nowSeconds = time();
+            $payload = [
+                'iss' => $serviceAccount['client_email'],
+                'sub' => $serviceAccount['client_email'],
+                'aud' => 'https://oauth2.googleapis.com/token',
+                'iat' => $nowSeconds,
+                'exp' => $nowSeconds + 3600,
+                'scope' => 'https://www.googleapis.com/auth/firebase.messaging',
+            ];
+
+            $jwt = JWT::encode($payload, $serviceAccount['private_key'], 'RS256');
+
+            // الحصول على توكين OAuth 2.0
+            $response = Http::asForm()->post('https://oauth2.googleapis.com/token', [
+                'grant_type' => 'urn:ietf:params:oauth:grant-type:jwt-bearer',
+                'assertion' => $jwt,
+            ]);
+
+            $accessToken = $response->json()['access_token'];
+
+            // إعداد هيكل الطلب
+            $message = [
+                'message' => [
+                    'topic' => $topic,
+                    'notification' => [
+                        'title' => $title,
+                        'body' => $body,
+                    ],
+                    'data' => (object) $data,
+                ],
+            ];
+
+            // إرسال الطلب إلى FCM
+            $projectId = $serviceAccount['project_id'];
+            $fcmUrl = "https://fcm.googleapis.com/v1/projects/$projectId/messages:send";
+
+            $response = Http::withToken($accessToken)
+                ->post($fcmUrl, $message);
+            // إرجاع الاستجابة
+            // $response->json();
+
+            $notification = new Notification();
+
+            $notification->title = $title;
+            $notification->topic = $topic;
+            $notification->message = $body;
+            $notification->payload = json_encode($data);
+
+            $notification->save();
+
+            return response()->json([
+                'status' => "success",
+                'message' => 'Notification created successfully',
+            ], 200);
+        } catch (\Throwable $th) {
+            return response()->json([
+                'status' => "error",
+                'message' => $th->getMessage(),
+            ], 500);
+        }
+    }
+
     public function send(Request $request)
     {
         try {
@@ -132,7 +205,7 @@ class NotificationController extends Controller
             ]);
 
             if ($request->role == 'admin') {
-                $notifications = DB::select("SELECT * FROM notifications WHERE topic = \"admin\" ORDER BY created_at DESC");
+                $notifications = DB::select("SELECT * FROM notifications WHERE topic = \"admins\" ORDER BY created_at DESC");
 
                 return response()->json([
                     'status' => "success",
@@ -141,7 +214,7 @@ class NotificationController extends Controller
             }
 
             if ($request->role == 'client') {
-                $notifications = DB::select("SELECT * FROM notifications WHERE topic = \"client{$request->id}\" OR topic = \"clients\" OR topic = \"all\" ORDER BY created_at DESC");
+                $notifications = DB::select("SELECT * FROM notifications WHERE topic = \"user{$request->id}\" OR topic = \"clients\" OR topic = \"all\" ORDER BY created_at DESC");
 
 
                 return response()->json([
@@ -151,7 +224,7 @@ class NotificationController extends Controller
             }
 
             if ($request->role == 'provider') {
-                $notifications = DB::select("SELECT * FROM notifications WHERE topic = \"provider{$request->id}\" OR topic = \"providers\" OR topic = \"all\" ORDER BY created_at DESC");
+                $notifications = DB::select("SELECT * FROM notifications WHERE topic = \"user{$request->id}\" OR topic = \"providers\" OR topic = \"all\" ORDER BY created_at DESC");
 
                 return response()->json([
                     'status' => "success",

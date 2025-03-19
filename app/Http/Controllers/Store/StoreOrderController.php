@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Store;
 
 use App\Http\Controllers\Controller;
+use App\Http\Controllers\NotificationController;
 use App\Models\StoreCart;
 use App\Models\StoreOrder;
 use App\Models\User;
@@ -12,6 +13,12 @@ use Illuminate\Support\Facades\DB;
 
 class StoreOrderController extends Controller
 {
+    public $notification;
+
+    public function __construct()
+    {
+        $this->notification = new NotificationController();
+    }
     /**
      * Display a listing of the resource.
      */
@@ -86,6 +93,16 @@ class StoreOrderController extends Controller
                 $cart->order_id = $order->id;
                 $cart->save();
             }
+
+            $this->notification->sendNotification(
+                topic: "admins",
+                title: "New Order",
+                body: "New order created",
+                data: [
+                    'order_id' => $order->id,
+                    'user_id' => $order->user_id
+                ]
+            );
 
             return response()->json([
                 'status' => 'success',
@@ -174,6 +191,18 @@ class StoreOrderController extends Controller
             }
             $order->status = $request->status ?? $order->status;
             $order->save();
+
+
+
+            $this->notification->sendNotification(
+                topic: "user" . $order->user_id,
+                title: "Order Status",
+                body: "Order $order->id status updated, new status is $order->status",
+                data: [
+                    'order_id' => $order->id,
+                    'user_id' => $order->user_id
+                ]
+            );
 
             return response()->json([
                 'status' => 'success',
