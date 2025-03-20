@@ -215,6 +215,7 @@ class SpecializationController extends Controller
     {
         try {
             $request->validate([
+                'user_id' => 'nullable|exists:users,id',
                 "specialization_id" => "nullable|exists:specializations,id",
                 "sub_specialization_id" => "nullable|exists:sub_specializations,id",
                 "country_id" => "nullable|exists:countries,id",
@@ -223,8 +224,19 @@ class SpecializationController extends Controller
                 "rate" => "nullable|integer|min:0|max:5",
             ]);
 
-            $providers = DB::table('provider_details_filter_view')
-                ->distinct() // Ensures unique rows
+            $userId = $request->user_id;
+
+            if ($userId) {
+                $providers =  DB::table('provider_details_filter_view')
+                    ->select(
+                        'provider_details_filter_view.*',
+                        DB::raw("(CASE WHEN EXISTS (SELECT 1 FROM favorites_view WHERE favorites_view.user_id = $userId AND favorites_view.provider_id = provider_details_filter_view.provider_id) THEN 1 ELSE 0 END) as is_favorite")
+                    );
+            } else {
+                $providers = DB::table('provider_details_filter_view');
+            }
+
+            $providers = $providers->distinct()
                 ->when($request->filled('specialization_id'), function ($query) use ($request) {
                     return $query->where('specialization_id', $request->specialization_id);
                 })
