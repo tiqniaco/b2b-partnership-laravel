@@ -226,14 +226,21 @@ class HomeController extends Controller
 
             $userId = $request->user_id;
 
-            $providers = DB::table('provider_details')
-                ->select(
-                    'provider_details.*',
-                    DB::raw("(CASE WHEN EXISTS (SELECT 1 FROM favorites_view WHERE favorites_view.user_id = $userId AND favorites_view.provider_id = provider_details.provider_id) THEN 1 ELSE 0 END) as is_favorite")
-                )
-                ->orderByDesc('rating')
-                ->limit(5)
-                ->get();
+            if ($userId) {
+                $providers = DB::table('provider_details')
+                    ->select(
+                        'provider_details.*',
+                        DB::raw("(CASE WHEN EXISTS (SELECT 1 FROM favorites_view WHERE favorites_view.user_id = $userId AND favorites_view.provider_id = provider_details.provider_id) THEN 1 ELSE 0 END) as is_favorite")
+                    )
+                    ->orderByDesc('rating')
+                    ->limit(5)
+                    ->get();
+            } else {
+                $providers = DB::table('provider_details')
+                    ->orderByDesc('rating')
+                    ->limit(5)
+                    ->get();
+            }
 
             return response()->json([
                 'status' => 'success',
@@ -381,15 +388,23 @@ class HomeController extends Controller
             ]);
 
             $userId = $request->user_id;
-            $providers = DB::table('provider_details')
-                ->select(
-                    'provider_details.*',
-                    DB::raw("(CASE WHEN EXISTS (SELECT 1 FROM favorites_view WHERE favorites_view.user_id = $userId AND favorites_view.provider_id = provider_details.provider_id) THEN 1 ELSE 0 END) as is_favorite")
-                )
-                ->where('country_id', $id)
-                ->orderByDesc('rating')
-                ->limit(5)
-                ->get();
+            if ($userId) {
+                $providers = DB::table('provider_details')
+                    ->select(
+                        'provider_details.*',
+                        DB::raw("(CASE WHEN EXISTS (SELECT 1 FROM favorites_view WHERE favorites_view.user_id = $userId AND favorites_view.provider_id = provider_details.provider_id) THEN 1 ELSE 0 END) as is_favorite")
+                    )
+                    ->where('country_id', $id)
+                    ->orderByDesc('rating')
+                    ->limit(5)
+                    ->get();
+            } else {
+                $providers = DB::table('provider_details')
+                    ->where('country_id', $id)
+                    ->orderByDesc('rating')
+                    ->limit(5)
+                    ->get();
+            }
 
             return response()->json([
                 "status" => "success",

@@ -29,12 +29,17 @@ class ProviderController extends Controller
                 'user_id' => 'nullable|exists:users,id',
             ]);
             $userId = $request->user_id;
-            $providers = DB::table('provider_details')
-                ->select(
-                    'provider_details.*',
-                    DB::raw("(CASE WHEN EXISTS (SELECT 1 FROM favorites_view WHERE favorites_view.user_id = $userId AND favorites_view.provider_id = provider_details.provider_id) THEN 1 ELSE 0 END) as is_favorite"),
-                )
-                ->paginate(12);
+            if ($userId) {
+                $providers = DB::table('provider_details')
+                    ->select(
+                        'provider_details.*',
+                        DB::raw("(CASE WHEN EXISTS (SELECT 1 FROM favorites_view WHERE favorites_view.user_id = $userId AND favorites_view.provider_id = provider_details.provider_id) THEN 1 ELSE 0 END) as is_favorite"),
+                    )
+                    ->paginate(12);
+            } else {
+                $providers = DB::table('provider_details')
+                    ->paginate(12);
+            }
 
             return response()->json($providers, 200);
         } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
@@ -73,13 +78,19 @@ class ProviderController extends Controller
     {
         try {
             $userId = Auth::user()->id;
-            $provider = DB::table('provider_details')
-                ->select(
-                    'provider_details.*',
-                    DB::raw("(CASE WHEN EXISTS (SELECT 1 FROM favorites_view WHERE favorites_view.user_id = $userId AND favorites_view.provider_id = provider_details.provider_id) THEN 1 ELSE 0 END) as is_favorite"),
-                )
-                ->where('provider_id', $id)
-                ->first();
+            if ($userId) {
+                $provider = DB::table('provider_details')
+                    ->select(
+                        'provider_details.*',
+                        DB::raw("(CASE WHEN EXISTS (SELECT 1 FROM favorites_view WHERE favorites_view.user_id = $userId AND favorites_view.provider_id = provider_details.provider_id) THEN 1 ELSE 0 END) as is_favorite"),
+                    )
+                    ->where('provider_id', $id)
+                    ->first();
+            } else {
+                $provider = DB::table('provider_details')
+                    ->where('provider_id', $id)
+                    ->first();
+            }
 
             $jobsCount = Job::where('employer_id', $provider->provider_id)->count();
             $shoppingCount = StoreProduct::count();
