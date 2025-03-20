@@ -79,7 +79,7 @@ Route::apiResource('sub-specializations', SubSpecializationController::class);
 Route::post('sub-specializations/{id}/update', [SubSpecializationController::class, 'update']);
 
 // Provider Routes
-Route::apiResource('providers', ProviderController::class)->middleware(['auth:sanctum']);
+Route::apiResource('providers', ProviderController::class);
 Route::get('providers/{id}/services', [ProviderController::class, 'services'])->middleware(['auth:sanctum']);
 Route::post('providers/{id}/update', [ProviderController::class, 'update'])->middleware(['auth:sanctum']);
 
@@ -88,26 +88,26 @@ Route::apiResource('provider-contacts', \App\Http\Controllers\ProviderContactCon
 Route::get('provider/{id}/contacts', [\App\Http\Controllers\ProviderContactController::class, 'providerContacts']);
 
 // Provider Service
-Route::apiResource('provider-service', ProviderServiceController::class)->middleware(['auth:sanctum']);
+Route::apiResource('provider-service', ProviderServiceController::class);
 Route::post('provider-service/{id}/update', [ProviderServiceController::class, 'update'])->middleware(['auth:sanctum']);
-Route::get("specializations/{id}/services", [ProviderServiceController::class, "specializationsServices"])->middleware(['auth:sanctum']);;
+Route::get("specializations/{id}/services", [ProviderServiceController::class, "specializationsServices"]);
 
-// Provider Service
+// Client Service
 Route::apiResource('client-service', ClientServiceController::class)->middleware(['auth:sanctum']);
 Route::post('client-service/{id}/update', [ClientServiceController::class, 'update'])->middleware(['auth:sanctum']);
 
 // Provider Service Features
-Route::apiResource('provider-service-features', ProviderServiceFeatureController::class)->middleware(['auth:sanctum']);
+Route::apiResource('provider-service-features', ProviderServiceFeatureController::class);
 
 // Provider Service Reviews
-Route::apiResource('provider-service-reviews', ProviderReviewsController::class)->middleware(['auth:sanctum']);
+Route::apiResource('provider-service-reviews', ProviderReviewsController::class);
 
 // Provider Previous Works
-Route::apiResource('provider-previous-works', ProviderPreviousWorksController::class)->middleware(['auth:sanctum'])->middleware(['auth:sanctum']);
+Route::apiResource('provider-previous-works', ProviderPreviousWorksController::class);
 Route::post("provider-previous-works/{id}/update", [ProviderPreviousWorksController::class, "update"]);
 
 // Previous Works images
-Route::apiResource('previous-work-images', PreviousWorkImageController::class)->middleware(['auth:sanctum']);
+Route::apiResource('previous-work-images', PreviousWorkImageController::class);
 Route::post('previous-work-images/{id}/update', [PreviousWorkImageController::class, 'update'])->middleware(['auth:sanctum']);
 
 // OTP
@@ -119,7 +119,7 @@ Route::apiResource('banners', \App\Http\Controllers\BannerController::class);
 Route::post('banners/{id}/update', [\App\Http\Controllers\BannerController::class, 'update']);
 
 // Jobs
-Route::apiResource('jobs', JobController::class)->middleware(['auth:sanctum']);
+Route::apiResource('jobs', JobController::class);
 Route::get('provider-jobs', [JobController::class, 'providerJobs'])->middleware(['auth:sanctum']);
 
 // Job Applications
@@ -166,11 +166,11 @@ Route::get('clients/{id}/services', [ClientsController::class, 'services'])->mid
 
 Route::prefix("store")->group(function () {
     // Store Category routes
-    Route::apiResource('categories', StoreCategoryController::class)->middleware(['auth:sanctum']);
+    Route::apiResource('categories', StoreCategoryController::class);
     Route::post('categories/{id}/update', [StoreCategoryController::class, 'update'])->middleware(['auth:sanctum']);
 
     // Store Product routes
-    Route::apiResource('products', StoreProductController::class)->middleware(['auth:sanctum']);
+    Route::apiResource('products', StoreProductController::class);
     Route::post('products/{id}/update', [StoreProductController::class, 'update'])->middleware(['auth:sanctum']);
 
     // Store Cart routes

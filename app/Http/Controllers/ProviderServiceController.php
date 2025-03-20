@@ -13,7 +13,7 @@ class ProviderServiceController extends Controller
 
     public function __construct()
     {
-        $this->middleware('auth:sanctum');
+        $this->middleware('auth:sanctum', ['except' => ['index', 'show']]);
     }
 
     /**
@@ -23,21 +23,8 @@ class ProviderServiceController extends Controller
     {
         try {
 
-            $userId =  Auth::user()->id;
 
             $providerServices = DB::table('provider_service_details')
-                //         ->select(
-                //             'provider_service_details.*',  // Select all columns from provider_service_details
-                //             DB::raw("
-                //     COALESCE(
-                //         (SELECT 1 FROM favorites_view 
-                //          WHERE favorites_view.user_id = ? 
-                //            AND favorites_view.provider_id = provider_service_details.id 
-                //          LIMIT 1), 0
-                //     ) AS is_favorite
-                // ")
-                //         )
-                // ->addBinding($userId, 'select')  // Add the binding for the parameter
                 ->paginate(12);
 
             return response()->json(
@@ -151,21 +138,8 @@ class ProviderServiceController extends Controller
     public function show(string $id)
     {
         try {
-            $userId =  Auth::user()->id;
 
             $providerService = DB::table('provider_service_details')
-                //         ->select(
-                //             '*',
-                //             DB::raw("
-                //     COALESCE(
-                //         (SELECT 1 FROM favorites_view 
-                //          WHERE favorites_view.user_id = ? 
-                //            AND favorites_view.provider_id = provider_service_details.id 
-                //          LIMIT 1), 0
-                //     ) AS is_favorite
-                // ")
-                //         )
-                //         ->addBinding($userId, 'select')  // Add the binding for the parameter
                 ->where('id', $id)
                 ->first();
 
@@ -313,22 +287,7 @@ class ProviderServiceController extends Controller
     public function specializationsServices($id)
     {
         try {
-
-            $userId =  Auth::user()->id;
-
             $providerServices = DB::table('provider_service_details')
-                //         ->select(
-                //             '*',
-                //             DB::raw("
-                //     COALESCE(
-                //         (SELECT 1 FROM favorites_view 
-                //          WHERE favorites_view.user_id = ? 
-                //            AND favorites_view.provider_id = provider_service_details.id 
-                //          LIMIT 1), 0
-                //     ) AS is_favorite
-                // ")
-                //         )
-                //         ->addBinding($userId, 'select')  // Add the binding for the parameter
                 ->where('sub_specialization_id', '=', $id)
                 ->paginate(12);
 

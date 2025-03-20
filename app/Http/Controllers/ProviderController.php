@@ -5,7 +5,6 @@ namespace App\Http\Controllers;
 use App\Models\Complaint;
 use App\Models\Job;
 use App\Models\Provider;
-use App\Models\ProviderService;
 use App\Models\StoreOrder;
 use App\Models\StoreProduct;
 use App\Models\User;
@@ -15,13 +14,21 @@ use Illuminate\Support\Facades\DB;
 
 class ProviderController extends Controller
 {
+
+    public function __construct()
+    {
+        $this->middleware('auth:sanctum', ['except' => ['index', 'show']]);
+    }
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
         try {
-            $userId = Auth::user()->id;
+            $request->validate([
+                'user_id' => 'nullable|exists:users,id',
+            ]);
+            $userId = $request->user_id;
             $providers = DB::table('provider_details')
                 ->select(
                     'provider_details.*',

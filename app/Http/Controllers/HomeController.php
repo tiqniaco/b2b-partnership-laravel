@@ -11,10 +11,10 @@ use Illuminate\Http\Request;
 
 class HomeController extends Controller
 {
-    public function __construct()
-    {
-        $this->middleware('auth:sanctum');
-    }
+    // public function __construct()
+    // {
+    //     $this->middleware('auth:sanctum');
+    // }
 
     public function topServices()
     {
@@ -217,10 +217,14 @@ class HomeController extends Controller
             ], 500);
         }
     }
-    public function topProviders()
+    public function topProviders(Request $request)
     {
         try {
-            $userId = Auth::user()->id;
+            $request->validate([
+                'user_id' => 'nullable|exists:users,id',
+            ]);
+
+            $userId = $request->user_id;
 
             $providers = DB::table('provider_details')
                 ->select(
@@ -369,10 +373,14 @@ class HomeController extends Controller
         }
     }
 
-    public function countryTopProviders($id)
+    public function countryTopProviders(Request $request, $id)
     {
         try {
-            $userId = Auth::user()->id;
+            $request->validate([
+                'user_id' => 'nullable|exists:users,id',
+            ]);
+
+            $userId = $request->user_id;
             $providers = DB::table('provider_details')
                 ->select(
                     'provider_details.*',
