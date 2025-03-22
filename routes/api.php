@@ -80,7 +80,7 @@ Route::post('sub-specializations/{id}/update', [SubSpecializationController::cla
 
 // Provider Routes
 Route::apiResource('providers', ProviderController::class);
-Route::get('providers/{id}/services', [ProviderController::class, 'services'])->middleware(['auth:sanctum']);
+Route::get('providers/{id}/services', [ProviderController::class, 'services']);
 Route::post('providers/{id}/update', [ProviderController::class, 'update'])->middleware(['auth:sanctum']);
 
 // Provider Contacts

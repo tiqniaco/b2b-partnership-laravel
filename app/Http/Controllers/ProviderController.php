@@ -17,7 +17,7 @@ class ProviderController extends Controller
 
     public function __construct()
     {
-        $this->middleware('auth:sanctum', ['except' => ['index', 'show']]);
+        $this->middleware('auth:sanctum', ['except' => ['index', 'show', 'services']]);
     }
     /**
      * Display a listing of the resource.
@@ -74,10 +74,13 @@ class ProviderController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(string $id)
+    public function show(Request $request, string $id)
     {
         try {
-            $userId = Auth::user()->id;
+            $request->validate([
+                'user_id' => 'nullable|exists:users,id',
+            ]);
+            $userId = $request->user_id;
             if ($userId) {
                 $provider = DB::table('provider_details')
                     ->select(
