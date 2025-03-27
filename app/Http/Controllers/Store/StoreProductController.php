@@ -3,14 +3,17 @@
 namespace App\Http\Controllers\Store;
 
 use App\Http\Controllers\Controller;
+use App\Models\ProductDescriptionContent;
+use App\Models\ProductDescriptionTitle;
 use App\Models\StoreProduct;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class StoreProductController extends Controller
 {
     public function __construct()
     {
-        $this->middleware('auth:sanctum', ['except' => ['index', 'show']]);
+        $this->middleware('auth:sanctum', ['except' => ['index', 'show', 'topSelling']]);
     }
     /**
      * Display a listing of the resource.
@@ -85,10 +88,16 @@ class StoreProductController extends Controller
                 'title_en' => 'required|string',
                 'description_ar' => 'required|string',
                 'description_en' => 'required|string',
-                'file' => 'required|file|mimes:pdf,doc,docx,excel,csv,txt,zip,rar,ppt,pptx,jpg,jpeg,png,gif,svg|max:50000',
+                'file' => 'nullable|file|mimes:pdf,doc,docx,excel,csv,txt,zip,rar,ppt,pptx,jpg,jpeg,png,gif,svg|max:50000',
                 'price' => 'required|numeric',
                 'discount' => 'nullable|numeric',
                 'image' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg',
+                'description_titles' => 'required|array',
+                'description_titles.*.title_ar' => 'required|string',
+                'description_titles.*.title_en' => 'required|string',
+                'description_titles.*.contents' => 'required|array',
+                'description_titles.*.contents.*.content_ar' => 'required|string',
+                'description_titles.*.contents.*.content_en' => 'required|string',
             ]);
 
             $product = new StoreProduct();
@@ -110,6 +119,21 @@ class StoreProductController extends Controller
                 $product->image = $imageName;
             }
             $product->save();
+
+            foreach ($request->description_titles as $title) {
+                $descriptionTitle = new ProductDescriptionTitle();
+                $descriptionTitle->product_id = $product->id;
+                $descriptionTitle->title_ar = $title['title_ar'];
+                $descriptionTitle->title_en = $title['title_en'];
+                $descriptionTitle->save();
+                foreach ($title['contents'] as $content) {
+                    $descriptionContent = new ProductDescriptionContent();
+                    $descriptionContent->title_id = $descriptionTitle->id;
+                    $descriptionContent->content_ar = $content['content_ar'];
+                    $descriptionContent->content_en = $content['content_en'];
+                    $descriptionContent->save();
+                }
+            }
 
             return response()->json(
                 [
@@ -142,16 +166,24 @@ class StoreProductController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(string $id)
+    public function show(string $id): \Illuminate\Http\JsonResponse
     {
         try {
             $product = StoreProduct::findOrFail($id);
+
+            $descriptions = ProductDescriptionTitle::where('product_id', '=', $product->id)
+                ->get();
+
+            foreach ($descriptions as $description) {
+                $description->contents;
+            }
 
             return response()->json(
                 [
                     'status' => 'success',
                     'message' => 'Data fetched successfully.',
                     'data' => $product,
+                    'descriptions' => $descriptions,
                 ],
                 200,
             );
@@ -269,6 +301,47 @@ class StoreProductController extends Controller
                 ],
                 200,
             );
+        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Not found.',
+                'error' => $e->getMessage(),
+            ], 404);
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Validation error.',
+                'error' => $e->getMessage(),
+            ], 401);
+        } catch (\Throwable $e) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Something went wrong.',
+                'error' => $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    public function topSelling(Request $request)
+    {
+        try {
+            $request->validate([
+                'category_id' => 'nullable|exists:store_categories,id',
+            ]);
+            $products = DB::table("top_selling_products_view")
+                ->when($request->filled('category_id'), function ($query) use ($request) {
+                    return $query->where('category_id', '=', $request->category_id);
+                })
+                ->orderBy('total_sales', 'desc')
+                ->take(10)
+            ->get();
+
+
+            return response()->json([
+                'status' => 'success',
+                'message' => 'Data fetched successfully.',
+                'data' => $products,
+            ], 200);
         } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
             return response()->json([
                 'status' => 'error',

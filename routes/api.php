@@ -14,6 +14,8 @@ use App\Http\Controllers\JobController;
 use App\Http\Controllers\ProviderController;
 use App\Http\Controllers\ProviderTypeController;
 use App\Http\Controllers\SpecializationController;
+use App\Http\Controllers\Store\ProductDescriptionContentController;
+use App\Http\Controllers\Store\ProductDescriptionTitleController;
 use App\Http\Controllers\SubSpecializationController;
 use App\Http\Controllers\PHPMailerController;
 use App\Http\Controllers\PreviousWorkImageController;
@@ -172,6 +174,9 @@ Route::prefix("store")->group(function () {
     // Store Product routes
     Route::apiResource('products', StoreProductController::class);
     Route::post('products/{id}/update', [StoreProductController::class, 'update'])->middleware(['auth:sanctum']);
+    Route::get("top-selling-products", [StoreProductController::class, "topSelling"]);
+    Route::apiResource('product-description-titles', ProductDescriptionTitleController::class);
+    Route::apiResource('product-description-contents', ProductDescriptionContentController::class);
 
     // Store Cart routes
     Route::apiResource('carts', StoreCartController::class)->middleware(['auth:sanctum']);
