@@ -15,6 +15,7 @@ class StoreProductController extends Controller
     {
         $this->middleware('auth:sanctum', ['except' => ['index', 'show', 'topSelling']]);
     }
+
     /**
      * Display a listing of the resource.
      */
@@ -92,6 +93,8 @@ class StoreProductController extends Controller
                 'price' => 'required|numeric',
                 'discount' => 'nullable|numeric',
                 'image' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg',
+                "terms_and_conditions_en" => "nullable|text",
+                "terms_and_conditions_ar" => "nullable|text",
                 'description_titles' => 'required|array',
                 'description_titles.*.title_ar' => 'required|string',
                 'description_titles.*.title_en' => 'required|string',
@@ -106,6 +109,8 @@ class StoreProductController extends Controller
             $product->title_en = $request->title_en;
             $product->description_ar = $request->description_ar;
             $product->description_en = $request->description_en;
+            $product->terms_and_conditions_ar = $request->terms_and_conditions_ar;
+            $product->terms_and_conditions_en = $request->terms_and_conditions_en;
             if ($request->hasFile('file')) {
                 $fileName = 'files/store_products/' . time() . '.' . $request->file->extension();
                 $request->file->move(public_path('files/store_products'), $fileName);
@@ -225,6 +230,9 @@ class StoreProductController extends Controller
                 'price' => 'nullable|numeric',
                 'discount' => 'nullable|numeric',
                 'image' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg',
+                "terms_and_conditions_en" => "nullable|text",
+                "terms_and_conditions_ar" => "nullable|text",
+
             ]);
 
             $product = StoreProduct::findOrFail($id);
@@ -233,6 +241,8 @@ class StoreProductController extends Controller
             $product->title_en = $request->title_en ?? $product->title_en;
             $product->description_ar = $request->description_ar ?? $product->description_ar;
             $product->description_en = $request->description_en ?? $product->description_en;
+            $product->terms_and_conditions_ar = $request->terms_and_conditions_ar ?? $product->terms_and_conditions_ar;
+            $product->terms_and_conditions_en = $request->terms_and_conditions_en ?? $product->terms_and_conditions_en;
             if ($request->hasFile('file')) {
                 if (file_exists(public_path($product->file))) {
                     unlink(public_path($product->file));
@@ -334,7 +344,7 @@ class StoreProductController extends Controller
                 })
                 ->orderBy('total_sales', 'desc')
                 ->take(10)
-            ->get();
+                ->get();
 
 
             return response()->json([

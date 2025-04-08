@@ -185,6 +185,10 @@ Route::prefix("store")->group(function () {
     // Store Orders routes
     Route::apiResource('orders', StoreOrderController::class)->middleware(['auth:sanctum']);
     Route::get('admin-orders', [StoreOrderController::class, 'adminOrders'])->middleware(['auth:sanctum']);
+
+    // Contact Us
+    Route::get('contact-us', [\App\Http\Controllers\Store\ShopContactUsController::class, 'index']);
+    Route::post('contact-us', [\App\Http\Controllers\Store\ShopContactUsController::class, 'store'])->middleware(['auth:sanctum']);
 });
 
 /// Complaint Routes

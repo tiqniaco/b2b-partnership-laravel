@@ -89,7 +89,7 @@ class StoreOrderController extends Controller
 
             $order = new StoreOrder();
             foreach ($carts as $cart) {
-                $totalPrice += $cart->product->price;
+                $totalPrice += $cart->product->price - (($cart->product->discount * $cart->product->price) / 100);
             }
             $order->user_id = $userId;
             $order->total_price = $totalPrice;
