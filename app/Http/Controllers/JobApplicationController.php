@@ -3,12 +3,21 @@
 namespace App\Http\Controllers;
 
 use App\Models\Client;
+use App\Models\Job;
 use App\Models\JobApplication;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
 class JobApplicationController extends Controller
 {
+
+    public $notification;
+
+    public function __construct()
+    {
+        $this->notification = new NotificationController();
+    }
+
     public function apply(Request $request)
     {
         try {
@@ -50,6 +59,16 @@ class JobApplicationController extends Controller
             $application->expected_salary = $request->expected_salary;
             $application->why_ideal_candidate = $request->why_ideal_candidate;
             $application->save();
+
+            $job = DB::table('job_details_view')
+                ->where('id', $request->job_id)
+                ->first();
+
+            $this->notification->sendNotification(
+                topic: "user" . $job->user_id,
+                title: "New Application",
+                body: "You have a new application for " . $job->title,
+            );
 
             return response()->json([
                 'status' => 'success',
@@ -205,6 +224,26 @@ class JobApplicationController extends Controller
             $application = JobApplication::findOrFail($id);
             $application->status = $request->status;
             $application->save();
+
+            $view = DB::table('client_job_application_view')
+                ->where('job_application_id', $id)
+                ->first();
+
+            if ($request->status == 'accepted') {
+                $this->notification->sendNotification(
+                    topic: "user" . $view->client_user_id,
+                    title: "Application Status Update",
+                    body: "Your application for job " . $view->job_title . " has been accepted.",
+                );
+            } elseif ($request->status == 'rejected') {
+                $this->notification->sendNotification(
+                    topic: "user" . $view->client_user_id,
+                    title: "Application Status Update",
+                    body: "Your application for job " . $view->job_title . " has been rejected.",
+                );
+            }
+
+
             return response()->json([
                 'status' => 'success',
                 'message' => 'Application status updated successfully.',

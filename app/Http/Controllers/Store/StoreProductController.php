@@ -8,6 +8,7 @@ use App\Models\ProductDescriptionTitle;
 use App\Models\StoreProduct;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use function Laravel\Prompts\search;
 
 class StoreProductController extends Controller
 {
@@ -27,7 +28,7 @@ class StoreProductController extends Controller
                 'search' => 'nullable|string',
             ]);
             $categoryId = $request->category_id ?? null;
-            if ($categoryId == null) {
+            if ($request->search !== null) {
                 $products = StoreProduct::when($request->filled('search'), function ($query) use ($request) {
                     $searchTerm = '%' . $request->search . '%';
                     return $query->where(function ($q) use ($searchTerm) {
@@ -337,14 +338,29 @@ class StoreProductController extends Controller
         try {
             $request->validate([
                 'category_id' => 'nullable|exists:store_categories,id',
+                'search' => 'nullable|string',
             ]);
-            $products = DB::table("top_selling_products_view")
-                ->when($request->filled('category_id'), function ($query) use ($request) {
-                    return $query->where('category_id', '=', $request->category_id);
+
+            if ($request->search !== null) {
+                $products = StoreProduct::when($request->filled('search'), function ($query) use ($request) {
+                    $searchTerm = '%' . $request->search . '%';
+                    return $query->where(function ($q) use ($searchTerm) {
+                        $q->where('title_ar', 'like', $searchTerm)
+                            ->orWhere('title_en', 'like', $searchTerm)
+                            ->orWhere('description_ar', 'like', $searchTerm)
+                            ->orWhere('description_en', 'like', $searchTerm);
+                    });
                 })
-                ->orderBy('total_sales', 'desc')
-                ->take(10)
-                ->get();
+                    ->get();
+            } else {
+                $products = DB::table("top_selling_products_view")
+                    ->when($request->filled('category_id'), function ($query) use ($request) {
+                        return $query->where('category_id', '=', $request->category_id);
+                    })
+                    ->orderBy('total_sales', 'desc')
+                    ->take(10)
+                    ->get();
+            }
 
 
             return response()->json([

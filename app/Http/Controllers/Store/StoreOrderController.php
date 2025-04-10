@@ -112,8 +112,8 @@ class StoreOrderController extends Controller
                 title: "New Order",
                 body: "New order created",
                 data: [
-                    'order_id' => $order->id,
-                    'user_id' => $order->user_id
+                    'order_id' => (string)$order->id,
+                    'user_id' => (string)$order->user_id
                 ]
             );
 
@@ -209,10 +209,10 @@ class StoreOrderController extends Controller
             $this->notification->sendNotification(
                 topic: "user" . $order->user_id,
                 title: "Order Status",
-                body: "Order $order->id status updated, new status is $order->status",
+                body: "Order " . $order->id . " status updated, new status is " . $order->status,
                 data: [
-                    'order_id' => $order->id,
-                    'user_id' => $order->user_id
+                    'order_id' => (string)$order->id,
+                    'user_id' => (string)$order->user_id
                 ]
             );
 

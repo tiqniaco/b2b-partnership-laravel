@@ -13,7 +13,12 @@ use Illuminate\Support\Facades\Hash;
 
 class AuthController extends Controller
 {
+    public $notification;
 
+    public function __construct()
+    {
+        $this->notification = new NotificationController();
+    }
 
     public function login(Request $request)
     {
@@ -156,7 +161,7 @@ class AuthController extends Controller
             $user->phone = $request->phone;
             $user->country_code = $request->country_code;
             $user->role = $request->role;
-            if ($request->role ==  'provider') {
+            if ($request->role == 'provider') {
                 $user->status = 'inactive';
             }
             if ($request->hasFile('image')) {
@@ -206,6 +211,11 @@ class AuthController extends Controller
                     $provider->bio = $request->bio;
                     $provider->save();
                     $roleId = $provider->id;
+                    $this->notification->sendNotification(
+                        topic: "admin",
+                        title: "New Provider Registration",
+                        body: "A new provider has been registered, check it now.",
+                    );
                     break;
                 case 'admin':
                     $user->assignRole('admin');
@@ -437,12 +447,21 @@ class AuthController extends Controller
     {
         try {
             $user = User::where('id', Auth::user()->id)->first();
+            $name = $user->name;
             if ($user->image) {
                 if (file_exists(public_path($user->image))) {
                     unlink(public_path($user->image));
                 }
             }
+
             $user->delete();
+
+//            $this->notification->sendNotification(
+//                topic: "admin",
+//                title: "Account Deleted",
+//                body: "Account of $name has been deleted.",
+//            );
+
             return response()->json([
                 'status' => "success",
                 'message' => "Account Deleted Successfully",
@@ -500,6 +519,7 @@ class AuthController extends Controller
             ], 500);
         }
     }
+
 
     public function switchProviderAccount(Request $request)
     {

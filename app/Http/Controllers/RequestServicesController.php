@@ -10,6 +10,13 @@ use Illuminate\Support\Facades\Redis;
 
 class RequestServicesController extends Controller
 {
+    public $notification;
+
+    public function __construct()
+    {
+        $this->notification = new NotificationController();
+    }
+
     /**
      * Display a listing of the resource.
      */
@@ -108,6 +115,12 @@ class RequestServicesController extends Controller
                 $requestService->image = $imageName;
             }
             $requestService->save();
+
+            $this->notification->sendNotification(
+                topic: "providers",
+                title: "New Client Service",
+                body: "New service request from client with title: " . $requestService->title_en,
+            );
 
             return response()->json([
                 'status' => 'success',

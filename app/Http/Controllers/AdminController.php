@@ -14,6 +14,14 @@ use Illuminate\Support\Facades\DB;
 
 class AdminController extends Controller
 {
+
+    public $notification;
+
+    public function __construct()
+    {
+        $this->notification = new NotificationController();
+    }
+
     /**
      * Display a listing of the resource.
      */
@@ -242,6 +250,12 @@ class AdminController extends Controller
             $user->status = "active";
             $user->save();
 
+            $this->notification->sendNotification(
+                topic: "user" . $provider->user_id,
+                title: "Provider Accepted",
+                body: "Your request has been accepted.",
+            );
+
             return response()->json([
                 'status' => 'success',
                 'message' => 'Provider accepted successfully.',
@@ -280,6 +294,12 @@ class AdminController extends Controller
             $user = User::findOrFail($provider->user_id);
             $user->status = "inactive";
             $user->save();
+
+            $this->notification->sendNotification(
+                topic: "user" . $provider->user_id,
+                title: "Provider Rejected",
+                body: "Your request has been rejected.",
+            );
 
             return response()->json([
                 'status' => 'success',

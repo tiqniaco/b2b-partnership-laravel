@@ -51,7 +51,7 @@ class NotificationController extends Controller
                     'title' => $title,
                     'body' => $body,
                 ],
-                'data' => (object) $data,
+                'data' => (object)$data,
             ],
         ];
 
@@ -102,10 +102,10 @@ class NotificationController extends Controller
                 'message' => [
                     'topic' => $topic,
                     'notification' => [
-                        'title' => $title,
-                        'body' => $body,
+                        'title' => "$title",
+                        'body' => "$body",
                     ],
-                    'data' => (object) $data,
+                    'data' => (object)$data,
                 ],
             ];
 
@@ -115,22 +115,30 @@ class NotificationController extends Controller
 
             $response = Http::withToken($accessToken)
                 ->post($fcmUrl, $message);
-            // إرجاع الاستجابة
-            // $response->json();
 
-            $notification = new Notification();
+            if ($response->successful()) {
+                $notification = new Notification();
 
-            $notification->title = $title;
-            $notification->topic = $topic;
-            $notification->message = $body;
-            $notification->payload = json_encode($data);
+                $notification->title = $title;
+                $notification->topic = $topic;
+                $notification->message = $body;
+                $notification->payload = json_encode($data);
 
-            $notification->save();
+                $notification->save();
+
+                return response()->json([
+                    'status' => "success",
+                    'message' => 'Notification created successfully',
+                ], 200);
+
+            }
 
             return response()->json([
-                'status' => "success",
-                'message' => 'Notification created successfully',
-            ], 200);
+                'status' => "error",
+                'message' => 'Something went wrong',
+            ], 500);
+
+
         } catch (\Throwable $th) {
             return response()->json([
                 'status' => "error",
