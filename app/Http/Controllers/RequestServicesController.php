@@ -83,15 +83,15 @@ class RequestServicesController extends Controller
     public function store(Request $request)
     {
         try {
-            if (Auth::user()->role == 'provider') {
-                return response()->json([
-                    'status' => 'error',
-                    'message' => 'You are not allowed to create a request service.',
-                ], 403);
-            }
+//            if (Auth::user()->role == 'provider') {
+//                return response()->json([
+//                    'status' => 'error',
+//                    'message' => 'You are not allowed to create a request service.',
+//                ], 403);
+//            }
 
             $request->validate([
-                'client_id' => 'required|exists:clients,id',
+                'user_id' => 'required|exists:users,id',
                 'governments_id' => 'required|exists:governments,id',
                 'sub_specialization_id' => 'required|exists:sub_specializations,id',
                 'title_ar' => 'required|string|max:255',
@@ -102,7 +102,7 @@ class RequestServicesController extends Controller
             ]);
 
             $requestService = new RequestService();
-            $requestService->client_id = $request->client_id;
+            $requestService->user_id = $request->user_id;
             $requestService->governments_id = $request->governments_id;
             $requestService->sub_specialization_id = $request->sub_specialization_id;
             $requestService->title_ar = $request->title_ar;
@@ -117,7 +117,7 @@ class RequestServicesController extends Controller
             $requestService->save();
 
             $this->notification->sendNotification(
-                topic: "providers",
+                topic: "all",
                 title: "New Client Service",
                 body: "New service request from client with title: " . $requestService->title_en,
             );
@@ -157,6 +157,13 @@ class RequestServicesController extends Controller
                 ->where('id', $id)
                 ->first();
 
+            if (!$requestService) {
+                return response()->json([
+                    'status' => 'error',
+                    'message' => 'Not found.',
+                ], 404);
+            }
+
             return response()->json(
                 [
                     'status' => 'success',
@@ -193,7 +200,7 @@ class RequestServicesController extends Controller
     {
         try {
             $request->validate([
-                'client_id' => 'nullable|exists:clients,id',
+                'user_id' => 'nullable|exists:users,id',
                 'governments_id' => 'nullable|exists:governments,id',
                 'sub_specialization_id' => 'nullable|exists:sub_specializations,id',
                 'title_ar' => 'nullable|string|max:255',
@@ -205,7 +212,7 @@ class RequestServicesController extends Controller
             ]);
 
             $requestService = RequestService::findOrFail($id);
-            $requestService->client_id = $request->client_id ?? $requestService->client_id;
+            $requestService->user_id = $request->user_id ?? $requestService->user_id;
             $requestService->governments_id = $request->governments_id ?? $requestService->governments_id;
             $requestService->sub_specialization_id = $request->sub_specialization_id ?? $requestService->sub_specialization_id;
             $requestService->title_ar = $request->title_ar ?? $requestService->title_ar;

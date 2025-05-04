@@ -149,6 +149,7 @@ class AuthController extends Controller
                 'sub_specialization_id' => 'nullable|exists:sub_specializations,id',
                 'provider_type_id' => 'nullable|exists:provider_types,id',
                 'commercial_register' => 'nullable|mimes:pdf',
+                
                 'tax_card' => 'nullable|mimes:pdf',
                 'bio' => 'nullable|string',
                 'provider_id' => 'nullable|exists:providers,id',

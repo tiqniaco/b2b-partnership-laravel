@@ -19,6 +19,7 @@ class ProviderController extends Controller
     {
         $this->middleware('auth:sanctum', ['except' => ['index', 'show', 'services']]);
     }
+
     /**
      * Display a listing of the resource.
      */
@@ -95,11 +96,10 @@ class ProviderController extends Controller
                     ->first();
             }
 
-            $jobsCount = Job::where('employer_id', $provider->provider_id)->count();
+            $jobsCount = Job::where('employer_id', $provider->user_id)->count();
             $shoppingCount = StoreProduct::count();
             $ordersCount = StoreOrder::where('user_id', $provider->user_id)->count();
             $complaintsCount = Complaint::where('user_id', $provider->user_id)->count();
-
 
 
             return response()->json([

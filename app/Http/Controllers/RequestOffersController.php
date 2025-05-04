@@ -57,25 +57,27 @@ class RequestOffersController extends Controller
     public function store(Request $request)
     {
         try {
-            if (Auth::user()->role == 'client') {
-                return response()->json([
-                    'status' => 'error',
-                    'message' => 'You are not allowed to create a offer for a service.',
-                ], 403);
-            }
+//            if (Auth::user()->role == 'client') {
+//                return response()->json([
+//                    'status' => 'error',
+//                    'message' => 'You are not allowed to create a offer for a service.',
+//                ], 403);
+//            }
 
             $request->validate([
-                'provider_id' => 'required|exists:providers,id',
+                'user_id' => 'required|exists:users,id',
                 'request_service_id' => 'required|exists:request_services,id',
                 'offer_description' => 'required|string',
                 'price' => 'required|numeric',
+                'duration' => 'required|numeric',
             ]);
 
             $requestOffer = new RequestOffer();
-            $requestOffer->provider_id = $request->provider_id;
+            $requestOffer->user_id = $request->user_id;
             $requestOffer->request_service_id = $request->request_service_id;
             $requestOffer->offer_description = $request->offer_description;
             $requestOffer->price = $request->price;
+            $requestOffer->duration = $request->duration;
             $requestOffer->save();
 
             return response()->json([
@@ -148,25 +150,27 @@ class RequestOffersController extends Controller
     public function update(Request $request, string $id)
     {
         try {
-            if (Auth::user()->role == 'client') {
-                return response()->json([
-                    'status' => 'error',
-                    'message' => 'You are not allowed to create a offer for a service.',
-                ], 403);
-            }
+//            if (Auth::user()->role == 'client') {
+//                return response()->json([
+//                    'status' => 'error',
+//                    'message' => 'You are not allowed to create a offer for a service.',
+//                ], 403);
+//            }
 
             $request->validate([
-                'provider_id' => 'nullable|exists:providers,id',
+                'user_id' => 'nullable|exists:users,id',
                 'request_service_id' => 'nullable|exists:request_services,id',
                 'offer_description' => 'nullable|string',
                 'price' => 'nullable|numeric',
+                'duration' => 'nullable|numeric',
             ]);
 
             $requestOffer = RequestOffer::findOrFail($id);
-            $requestOffer->provider_id = $request->provider_id ?? $requestOffer->provider_id;
+            $requestOffer->user_id = $request->user_id ?? $requestOffer->user_id;
             $requestOffer->request_service_id = $request->request_service_id ?? $requestOffer->request_service_id;
             $requestOffer->offer_description = $request->offer_description ?? $requestOffer->offer_description;
             $requestOffer->price = $request->price ?? $requestOffer->price;
+            $requestOffer->duration = $request->duration ?? $requestOffer->duration;
             $requestOffer->save();
 
             return response()->json([
@@ -200,12 +204,12 @@ class RequestOffersController extends Controller
     public function destroy(string $id)
     {
         try {
-            if (Auth::user()->role == 'client') {
-                return response()->json([
-                    'status' => 'error',
-                    'message' => 'You are not allowed to create a offer for a service.',
-                ], 403);
-            }
+//            if (Auth::user()->role == 'client') {
+//                return response()->json([
+//                    'status' => 'error',
+//                    'message' => 'You are not allowed to create a offer for a service.',
+//                ], 403);
+//            }
 
 
             $requestOffer = RequestOffer::findOrFail($id);
@@ -240,18 +244,31 @@ class RequestOffersController extends Controller
     public function acceptOffer($id)
     {
         try {
-            if (Auth::user()->role == 'provider') {
+//            if (Auth::user()->role == 'provider') {
+//                return response()->json([
+//                    'status' => 'error',
+//                    'message' => 'You are not allowed to create a offer for a service.',
+//                ], 403);
+//            }
+
+//             $request->validate([
+//                 'status' => 'required|in:accepted,rejected,completed',
+//             ]);
+
+            $requestOffer = RequestOffer::findOrFail($id);
+            if ($requestOffer->status === "accepted") {
                 return response()->json([
                     'status' => 'error',
-                    'message' => 'You are not allowed to create a offer for a service.',
+                    'message' => 'This offer is already accepted.',
                 ], 403);
             }
 
-            // $request->validate([
-            //     'status' => 'required|in:accepted,rejected,completed',
-            // ]);
-
-            $requestOffer = RequestOffer::findOrFail($id);
+            if ($requestOffer->user_id !== Auth::user()->id) {
+                return response()->json([
+                    'status' => 'error',
+                    'message' => 'You are not allowed to accept this offer.',
+                ], 403);
+            }
 
             $requestOffer->status = "accepted";
             $requestOffer->save();
@@ -294,17 +311,15 @@ class RequestOffersController extends Controller
         }
     }
 
-    public function providerOffers(Request $request)
+    public function userOffers(Request $request)
     {
         try {
             $request->validate([
                 'request_service_id' => 'required|exists:request_services,id',
             ]);
 
-            $provider = Provider::where("user_id", Auth::user()->id)->first();
-
             $offers = DB::table("request_offers_details_view")
-                ->where("provider_id", $provider->id)
+                ->where("user_id", Auth::user()->id)
                 ->where("request_service_id", $request->request_service_id)
                 ->get();
 

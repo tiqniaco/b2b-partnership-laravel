@@ -1,7 +1,7 @@
 <?php
 $query = "
 CREATE OR REPLACE VIEW request_service_details_view AS
-SELECT 
+SELECT
 	request_services.id,
 	request_services.title_ar,
     request_services.title_en,
@@ -9,7 +9,6 @@ SELECT
     request_services.description,
     request_services.image,
     request_services.status,
-    request_services.client_id,
     users.id AS user_id,
     users.name AS name,
     users.email AS email,
@@ -32,18 +31,16 @@ SELECT
     governments.name_en AS government_name_en,
     request_services.created_at AS created_at,
     request_services.updated_at AS updated_at
-FROM 
+FROM
     request_services
-JOIN 
-    clients ON request_services.client_id = clients.id 
-JOIN 
-    users ON clients.user_id = users.id
-JOIN 
+JOIN
+    users ON request_services.user_id = users.id
+JOIN
     sub_specializations ON request_services.sub_specialization_id = sub_specializations.id
-JOIN 
+JOIN
     governments ON request_services.governments_id = governments.id
-JOIN 
+JOIN
     countries ON governments.country_id = countries.id
-JOIN 
+JOIN
     specializations ON sub_specializations.parent_id = specializations.id;
 ";

@@ -62,9 +62,9 @@ class ClientsController extends Controller
                 ->where('client_id', $id)
                 ->first();
 
-            $jobsCount = JobApplication::where('client_id', $id)->count();
+            $jobsCount = JobApplication::where('user_id', $client->user_id)->count();
             $shoppingCount = StoreOrder::where('user_id', $client->user_id)->count();
-            $servicesCount = RequestService::where('client_id', $id)->count();
+            $servicesCount = RequestService::where('user_id', $client->user_id)->count();
             $complaintsCount = Complaint::where('user_id', $client->user_id)->count();
 
 
