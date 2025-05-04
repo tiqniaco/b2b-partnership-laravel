@@ -208,11 +208,11 @@ class ClientsController extends Controller
 
             if ($request->status == null) {
                 $requestServices = DB::table('request_service_details_view')
-                    ->where('client_id', $id)
+                    ->where('user_id', $id)
                     ->paginate(12);
             } else {
                 $requestServices = DB::table('request_service_details_view')
-                    ->where('client_id', $id)
+                    ->where('user_id', $id)
                     ->where('status', $request->status)
                     ->paginate(12);
             }

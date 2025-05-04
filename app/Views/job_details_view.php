@@ -2,7 +2,7 @@
 
 $query = "
 CREATE OR REPLACE VIEW job_details_view AS
-SELECT 
+SELECT
     jobs.id,
     jobs.title,
     jobs.description,
@@ -52,22 +52,72 @@ SELECT
     providers.updated_at AS provider_updated_at,
     jobs.created_at AS job_created_at,
     jobs.updated_at AS job_updated_at
-FROM 
+FROM
     jobs
-JOIN 
+JOIN
     providers ON jobs.employer_id = providers.id
-JOIN 
+JOIN
     users ON providers.user_id = users.id
-JOIN 
+JOIN
     provider_types ON providers.provider_types_id = provider_types.id
-JOIN 
+JOIN
     sub_specializations ON jobs.sub_specializations_id = sub_specializations.id
-JOIN 
+JOIN
     governments ON jobs.government_id = governments.id
-JOIN 
+JOIN
     countries ON governments.country_id = countries.id
-JOIN 
+JOIN
     specializations ON sub_specializations.parent_id = specializations.id
-LEFT JOIN 
+LEFT JOIN
     provider_contacts ON providers.id = provider_contacts.provider_id;
+";
+
+
+/// Update the view
+$queryUpdate = "
+CREATE OR REPLACE VIEW job_details_view AS
+SELECT
+    jobs.id,
+    jobs.title,
+    jobs.description,
+    jobs.skills,
+    jobs.experience,
+    jobs.contract_type,
+    jobs.expiry_date,
+    jobs.gender,
+    jobs.salary,
+    jobs.employer_id,
+    jobs.status,
+    users.id AS user_id,
+    users.name AS name,
+    users.email AS email,
+    users.country_code AS country_code,
+    users.phone AS phone,
+    users.image AS image,
+    specializations.id AS specialization_id,
+    specializations.name_ar AS specialization_name_ar,
+    specializations.name_en AS specialization_name_en,
+    sub_specializations.id AS sub_specialization_id,
+    sub_specializations.name_ar AS sub_specialization_name_ar,
+    sub_specializations.name_en AS sub_specialization_name_en,
+    countries.id AS country_id,
+    countries.name_ar AS country_name_ar,
+    countries.name_en AS country_name_en,
+    governments.id AS government_id,
+    governments.name_ar AS government_name_ar,
+    governments.name_en AS government_name_en,
+    jobs.created_at AS job_created_at,
+    jobs.updated_at AS job_updated_at
+FROM
+    jobs
+JOIN
+    users ON jobs.employer_id = users.id
+JOIN
+    sub_specializations ON jobs.sub_specializations_id = sub_specializations.id
+JOIN
+    governments ON jobs.government_id = governments.id
+JOIN
+    countries ON governments.country_id = countries.id
+JOIN
+    specializations ON sub_specializations.parent_id = specializations.id;
 ";

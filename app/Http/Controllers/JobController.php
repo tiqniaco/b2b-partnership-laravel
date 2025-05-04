@@ -12,6 +12,7 @@ class JobController extends Controller
     {
         $this->middleware('auth:sanctum', ['except' => ['index', 'show']]);
     }
+
     /**
      * Display a listing of the resource.
      */
@@ -92,7 +93,7 @@ class JobController extends Controller
                 'expiry_date' => 'required|date',
                 'gender' => 'required|in:male,female,any',
                 'salary' => 'nullable|integer',
-                'employer_id' => 'required|integer|exists:providers,id',
+                'employer_id' => 'required|integer|exists:users,id',
                 'government_id' => 'required|integer|exists:governments,id',
                 'sub_specialization_id' => 'required|integer|exists:sub_specializations,id',
             ]);
@@ -270,7 +271,7 @@ class JobController extends Controller
     {
         try {
             $request->validate([
-                'provider_id' => 'required|exists:providers,id',
+                'provider_id' => 'required|exists:users,id',
             ]);
 
             $jobs = DB::table('job_details_view')
