@@ -99,12 +99,12 @@ class JobApplicationController extends Controller
     {
         try {
             $request->validate([
-                'client_id' => 'required|integer|exists:clients,id',
+                'user_id' => 'required|integer|exists:users,id',
                 'status' => 'nullable|in:pending,accepted,rejected',
             ]);
 
             $applications = DB::table("client_job_application_view")
-                ->where('client_id', $request->client_id)
+                ->where('user_id', $request->user_id)
                 ->when($request->status, function ($query) use ($request) {
                     return $query->where('application_status', $request->status);
                 })
