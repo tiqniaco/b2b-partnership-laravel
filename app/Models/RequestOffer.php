@@ -8,4 +8,9 @@ use Illuminate\Database\Eloquent\Model;
 class RequestOffer extends Model
 {
     use HasFactory;
+
+    public function requestService()
+    {
+        return $this->belongsTo(RequestService::class);
+    }
 }

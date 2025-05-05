@@ -15,6 +15,7 @@ SELECT
     users.country_code AS user_country_code,
     users.phone AS phone,
     users.image AS client_image,
+    users.role AS user_role,
     specializations.id AS specialization_id,
     specializations.name_ar AS specialization_name_ar,
     specializations.name_en AS specialization_name_en,

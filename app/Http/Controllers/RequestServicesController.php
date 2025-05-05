@@ -32,7 +32,7 @@ class RequestServicesController extends Controller
             ]);
 
             $requestServices = DB::table('request_service_details_view')
-                ->where('status', 'pending')
+                ->where('status', '<>', 'Canceled')
                 ->when($request->filled('specialization_id'), function ($query) use ($request) {
                     return $query->where('specialization_id', $request->specialization_id);
                 })
@@ -51,6 +51,7 @@ class RequestServicesController extends Controller
                 })
                 ->orderBy('created_at', 'desc')
                 ->paginate(12);
+
 
             return response()->json(
                 $requestServices,
@@ -208,7 +209,7 @@ class RequestServicesController extends Controller
                 'address' => 'nullable|string',
                 'description' => 'nullable|string',
                 'image' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:5000',
-                'status' => 'nullable|in:pending,confirmed,canceled',
+                'status' => 'nullable|in:Pending,Closed,Canceled',
             ]);
 
             $requestService = RequestService::findOrFail($id);

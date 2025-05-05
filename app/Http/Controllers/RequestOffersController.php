@@ -24,10 +24,14 @@ class RequestOffersController extends Controller
                 ->where('request_service_id', $request->request_service_id)
                 ->whereIn('request_offer_status', ['accepted', 'pending'])
                 ->orderBy('request_offer_created_at', 'desc')
-                ->paginate(12);
+                ->get();
 
             return response()->json(
-                $offers,
+                [
+                    'status' => 'success',
+                    'message' => 'Data fetched successfully.',
+                    'data' => $offers
+                ],
                 200
             );
         } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
@@ -68,8 +72,8 @@ class RequestOffersController extends Controller
                 'user_id' => 'required|exists:users,id',
                 'request_service_id' => 'required|exists:request_services,id',
                 'offer_description' => 'required|string',
-                'price' => 'required|numeric',
-                'duration' => 'required|numeric',
+                'price' => 'required|string',
+                'duration' => 'required|string',
             ]);
 
             $requestOffer = new RequestOffer();
@@ -161,8 +165,8 @@ class RequestOffersController extends Controller
                 'user_id' => 'nullable|exists:users,id',
                 'request_service_id' => 'nullable|exists:request_services,id',
                 'offer_description' => 'nullable|string',
-                'price' => 'nullable|numeric',
-                'duration' => 'nullable|numeric',
+                'price' => 'nullable|string',
+                'duration' => 'nullable|string',
             ]);
 
             $requestOffer = RequestOffer::findOrFail($id);
@@ -263,7 +267,7 @@ class RequestOffersController extends Controller
                 ], 403);
             }
 
-            if ($requestOffer->user_id !== Auth::user()->id) {
+            if ($requestOffer->requestService->user_id != Auth::user()->id) {
                 return response()->json([
                     'status' => 'error',
                     'message' => 'You are not allowed to accept this offer.',
@@ -274,7 +278,7 @@ class RequestOffersController extends Controller
             $requestOffer->save();
 
             $service = RequestService::where('id', $requestOffer->request_service_id)->first();
-            $service->status = "confirmed";
+            $service->status = "Closed";
             $service->save();
 
             RequestOffer::where('request_service_id', $requestOffer->request_service_id)
