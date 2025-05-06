@@ -2,7 +2,7 @@
 
 $query = "
 CREATE OR REPLACE VIEW provider_details AS
-SELECT 
+SELECT
     users.id AS user_id,
     users.name AS name,
     users.email AS email,
@@ -16,6 +16,9 @@ SELECT
     providers.bio AS bio,
     providers.rating AS rating,
     providers.verified_code AS provider_verified_code,
+    providers.commercial_register_number,
+    providers.tax_card_number,
+    providers.vat,
     provider_types.id AS provider_type_id,
     provider_types.name_ar AS provider_type_name_ar,
     provider_types.name_en AS provider_type_name_en,
@@ -41,20 +44,20 @@ SELECT
     provider_contacts.website AS contact_website,
     providers.created_at AS created_at,
     providers.updated_at AS updated_at
-FROM 
+FROM
     providers
-JOIN 
+JOIN
     users ON providers.user_id = users.id
-JOIN 
+JOIN
     provider_types ON providers.provider_types_id = provider_types.id
-JOIN 
+JOIN
     sub_specializations ON providers.sub_specialization_id = sub_specializations.id
-JOIN 
+JOIN
     governments ON providers.governments_id = governments.id
-JOIN 
+JOIN
     countries ON governments.country_id = countries.id
-JOIN 
+JOIN
     specializations ON sub_specializations.parent_id = specializations.id
-LEFT JOIN 
+LEFT JOIN
     provider_contacts ON providers.id = provider_contacts.provider_id;
 ";
