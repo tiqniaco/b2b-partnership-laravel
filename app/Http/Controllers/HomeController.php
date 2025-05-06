@@ -217,6 +217,7 @@ class HomeController extends Controller
             ], 500);
         }
     }
+
     public function topProviders(Request $request)
     {
         try {
@@ -224,7 +225,11 @@ class HomeController extends Controller
                 'user_id' => 'nullable|exists:users,id',
             ]);
 
-            $userId = $request->user_id;
+            $userId = null;
+
+            if ($request->user_id) {
+                $userId = $request->user_id;
+            }
 
             if ($userId) {
                 $providers = DB::table('provider_details')
@@ -386,8 +391,13 @@ class HomeController extends Controller
             $request->validate([
                 'user_id' => 'nullable|exists:users,id',
             ]);
+            $userId = null;
+            
 
-            $userId = $request->user_id;
+            if ($request->user_id) {
+                $userId = $request->user_id;
+            }
+
             if ($userId) {
                 $providers = DB::table('provider_details')
                     ->select(

@@ -149,10 +149,13 @@ class AuthController extends Controller
                 'sub_specialization_id' => 'nullable|exists:sub_specializations,id',
                 'provider_type_id' => 'nullable|exists:provider_types,id',
                 'commercial_register' => 'nullable|mimes:pdf',
-                
+
                 'tax_card' => 'nullable|mimes:pdf',
                 'bio' => 'nullable|string',
                 'provider_id' => 'nullable|exists:providers,id',
+                'vat' => 'nullable|string',
+                'tax_card_number' => 'nullable|string',
+                'commercial_register_number' => 'nullable|string',
             ]);
 
             $user = new User();
@@ -210,6 +213,11 @@ class AuthController extends Controller
                         $provider->tax_card = $filename;
                     }
                     $provider->bio = $request->bio;
+
+                    $provider->vat = $request->vat;
+                    $provider->tax_card_number = $request->tax_card_number;
+                    $provider->commercial_register_number = $request->commercial_register_number;
+
                     $provider->save();
                     $roleId = $provider->id;
                     $this->notification->sendNotification(
