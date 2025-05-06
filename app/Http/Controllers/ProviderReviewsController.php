@@ -19,7 +19,7 @@ class ProviderReviewsController extends Controller
     {
         try {
             $request->validate([
-                'provider_id' => 'required|exists:provider_services,id',
+                'provider_id' => 'required|exists:providers,id',
             ]);
 
             $reviews = ProviderReview::select(
