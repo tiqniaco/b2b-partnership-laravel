@@ -150,6 +150,9 @@ class ProviderController extends Controller
                 "image" => "nullable|image|mimes:jpeg,png,jpg,gif,svg",
                 "commercial_register" => "nullable|mimes:pdf",
                 "tax_card" => "nullable|mimes:pdf",
+                'vat' => 'nullable|string',
+                'tax_card_number' => 'nullable|string',
+                'commercial_register_number' => 'nullable|string',
             ]);
 
             $provider = Provider::findOrFail($id);
@@ -173,6 +176,9 @@ class ProviderController extends Controller
             $provider->governments_id = $request->government_id ?? $provider->governments_id;
             $provider->sub_specialization_id = $request->sub_specialization_id ?? $provider->sub_specialization_id;
             $provider->provider_types_id = $request->provider_types_id ?? $provider->provider_types_id;
+            $provider->vat = $request->vat ?? $provider->vat;
+            $provider->tax_card_number = $request->tax_card_number ?? $provider->tax_card_number;
+            $provider->commercial_register_number = $request->commercial_register_number ?? $provider->commercial_register_number;
             if ($request->hasFile('commercial_register')) {
                 if (file_exists(public_path($provider->commercial_register))) {
                     unlink(public_path($provider->commercial_register));

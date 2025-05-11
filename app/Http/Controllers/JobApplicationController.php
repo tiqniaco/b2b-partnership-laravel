@@ -5,7 +5,9 @@ namespace App\Http\Controllers;
 use App\Models\Client;
 use App\Models\Job;
 use App\Models\JobApplication;
+use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 
 class JobApplicationController extends Controller
@@ -34,8 +36,7 @@ class JobApplicationController extends Controller
 
 
             // التحقق من الحد الأقصى اليومي للتقديمات
-            $client = Client::where('user_id', auth()->id())->first();
-            $dailyApplications = JobApplication::where('client_id', $client->id)
+            $dailyApplications = JobApplication::where('user_id', Auth::user()->id)
                 ->whereDate('created_at', today())
                 ->count();
 
@@ -44,7 +45,7 @@ class JobApplicationController extends Controller
             }
 
             $application = new JobApplication();
-            $application->client_id = $client->id;
+            $application->user_id = Auth::user()->id;
             $application->job_id = $request->job_id;
             $application->years_of_experience = $request->years_of_experience;
             $application->cover_letter = $request->cover_letter;
