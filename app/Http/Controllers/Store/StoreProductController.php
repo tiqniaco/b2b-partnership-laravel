@@ -8,7 +8,6 @@ use App\Models\ProductDescriptionTitle;
 use App\Models\StoreProduct;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
-use function Laravel\Prompts\search;
 
 class StoreProductController extends Controller
 {
@@ -39,7 +38,7 @@ class StoreProductController extends Controller
                     });
                 })
                     ->paginate(12);
-            } else {
+            } else if ($request->filled('category_id')) {
                 $products = StoreProduct::where('category_id', '=', $categoryId)
                     ->when($request->filled('search'), function ($query) use ($request) {
                         $searchTerm = '%' . $request->search . '%';
@@ -51,7 +50,10 @@ class StoreProductController extends Controller
                         });
                     })
                     ->paginate(12);
+            } else {
+                $products =  StoreProduct::paginate(12);
             }
+
             return response()->json(
                 $products,
                 200,
@@ -220,7 +222,6 @@ class StoreProductController extends Controller
     public function update(Request $request, string $id)
     {
         try {
-
             $request->validate([
                 'category_id' => 'nullable|exists:store_categories,id',
                 'title_ar' => 'nullable|string',
@@ -233,10 +234,17 @@ class StoreProductController extends Controller
                 'image' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg',
                 "terms_and_conditions_en" => "nullable|text",
                 "terms_and_conditions_ar" => "nullable|text",
-
             ]);
 
-            $product = StoreProduct::findOrFail($id);
+            $product = StoreProduct::find($id);
+
+            if (!$product) {
+                return response()->json([
+                    'status' => 'error',
+                    'message' => 'Product not found.',
+                ], 404);
+            }
+
             $product->category_id = $request->category_id ?? $product->category_id;
             $product->title_ar = $request->title_ar ?? $product->title_ar;
             $product->title_en = $request->title_en ?? $product->title_en;
@@ -256,7 +264,6 @@ class StoreProductController extends Controller
             $product->discount = $request->discount ?? $product->discount;
             if ($request->hasFile('image')) {
                 if (file_exists(public_path($product->image))) {
-
                     unlink(public_path($product->image));
                 }
                 $imageName = 'images/store_products/' . time() . '.' . $request->image->extension();
@@ -268,9 +275,10 @@ class StoreProductController extends Controller
             return response()->json(
                 [
                     'status' => 'success',
-                    'message' => 'Data created successfully.',
+                    'message' => 'Product updated successfully.',
+                    'data' => $product
                 ],
-                201,
+                200,
             );
         } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
             return response()->json([
