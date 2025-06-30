@@ -31,6 +31,9 @@ use App\Http\Controllers\Store\StoreProductController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\RequestOffersController;
 use App\Http\Controllers\SavedJobController;
+use App\Http\Controllers\BagContentController;
+use App\Http\Controllers\BagContentStoreProductController;
+
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -177,6 +180,7 @@ Route::prefix("store")->group(function () {
     Route::get("top-selling-products", [StoreProductController::class, "topSelling"]);
     Route::apiResource('product-description-titles', ProductDescriptionTitleController::class);
     Route::apiResource('product-description-contents', ProductDescriptionContentController::class);
+    Route::get('recommended-products', [StoreProductController::class, 'recommended']);
 
     // Store Cart routes
     Route::apiResource('carts', StoreCartController::class)->middleware(['auth:sanctum']);
@@ -205,3 +209,10 @@ Route::post('admins/{id}/update', [AdminController::class, 'update'])->middlewar
 Route::get('admin/waiting-providers', [AdminController::class, 'waitingProviders'])->middleware(['auth:sanctum']);
 Route::post('admin/accept-provider', [AdminController::class, 'acceptProvider'])->middleware(['auth:sanctum']);
 Route::post('admin/reject-provider', [AdminController::class, 'rejectProvider'])->middleware(['auth:sanctum']);
+
+// Bag Content Routes
+Route::apiResource('store/bag-contents', BagContentController::class)->except("update");
+Route::post('store/bag-contents/{id}/update', [BagContentController::class, 'update']);
+
+// Bag Content Store Product
+Route::apiResource("store/product-bag-content",  BagContentStoreProductController::class);

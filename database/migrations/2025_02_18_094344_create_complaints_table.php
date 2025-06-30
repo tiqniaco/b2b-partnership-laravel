@@ -13,6 +13,8 @@ return new class extends Migration
     {
         Schema::create('complaints', function (Blueprint $table) {
             $table->id();
+            $table->foreignId('sender_id')->constrained('users');
+            $table->foreignId('receiver_id')->constrained('admins');
             $table->foreignId('user_id')->constrained('users');
             $table->text('content');
             $table->enum('content_type', ['text', 'image', 'voice'])->default('text');

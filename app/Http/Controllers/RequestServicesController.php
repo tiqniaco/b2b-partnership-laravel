@@ -47,7 +47,8 @@ class RequestServicesController extends Controller
                 })
                 ->when($request->filled('search'), function ($query) use ($request) {
                     return $query->where('title_ar', 'like', '%' . $request->search . '%')
-                        ->orWhere('title_en', 'like', '%' . $request->search . '%');
+                        ->orWhere('title_en', 'like', '%' . $request->search . '%')
+                        ->orWhere('description', 'like', '%' . $request->search . '%');
                 })
                 ->orderBy('created_at', 'desc')
                 ->paginate(12);
@@ -84,12 +85,12 @@ class RequestServicesController extends Controller
     public function store(Request $request)
     {
         try {
-//            if (Auth::user()->role == 'provider') {
-//                return response()->json([
-//                    'status' => 'error',
-//                    'message' => 'You are not allowed to create a request service.',
-//                ], 403);
-//            }
+            //            if (Auth::user()->role == 'provider') {
+            //                return response()->json([
+            //                    'status' => 'error',
+            //                    'message' => 'You are not allowed to create a request service.',
+            //                ], 403);
+            //            }
 
             $request->validate([
                 'user_id' => 'required|exists:users,id',
