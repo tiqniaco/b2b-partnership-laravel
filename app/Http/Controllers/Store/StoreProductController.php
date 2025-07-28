@@ -14,7 +14,7 @@ class StoreProductController extends Controller
 {
     public function __construct()
     {
-        $this->middleware('auth:sanctum', ['except' => ['index', 'show', 'topSelling','recommended']]);
+        $this->middleware('auth:sanctum', ['except' => ['index', 'show', 'topSelling', 'recommended']]);
     }
 
     /**
@@ -190,13 +190,13 @@ class StoreProductController extends Controller
 
             $descriptions = ProductDescriptionTitle::where('product_id', '=', $product->id)
                 ->get();
-            
+
 
             $bagContents = BagContentStoreProduct::where('store_product_id', '=', $product->id)
                 ->with('bagContent')
                 ->get();
-                $contents = [];
-            
+            $contents = [];
+
             foreach ($bagContents as $bagContent) {
                 $contents[] = $bagContent->bagContent;
             }
@@ -252,8 +252,8 @@ class StoreProductController extends Controller
                 'price' => 'nullable|numeric',
                 'discount' => 'nullable|numeric',
                 'image' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg',
-                "terms_and_conditions_en" => "nullable|text",
-                "terms_and_conditions_ar" => "nullable|text",
+                "terms_and_conditions_en" => "nullable|string",
+                "terms_and_conditions_ar" => "nullable|string",
             ]);
 
             $product = StoreProduct::find($id);
@@ -426,19 +426,17 @@ class StoreProductController extends Controller
 
             if ($request->category_id != null) {
                 $products = DB::table('recommended_products')->where('category_id', '=', $request->category_id)
-                ->get();
+                    ->get();
             } else {
                 $products = DB::table('recommended_products')->get();
             }
-        
+
 
             return response()->json([
                 'status' => 'success',
                 'message' => 'Data fetched successfully.',
                 'data' => $products,
             ], 200);
-
-            
         } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
             return response()->json([
                 'status' => 'error',

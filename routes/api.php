@@ -154,7 +154,8 @@ Route::get('favorite-providers', [FavoriteProvidersController::class, 'index']);
 Route::post('toggle-favorite', [FavoriteProvidersController::class, 'store']);
 
 // Request Services
-Route::apiResource('request-services', RequestServicesController::class)->middleware(['auth:sanctum']);
+Route::apiResource('request-services', RequestServicesController::class)->middleware(['auth:sanctum'])->except(['index', 'update']);
+Route::get('request-services', [RequestServicesController::class, 'index']);
 Route::post('request-services/{id}/update', [RequestServicesController::class, 'update'])->middleware(['auth:sanctum']);
 
 // Request Offers
