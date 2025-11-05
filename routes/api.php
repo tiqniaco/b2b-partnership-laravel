@@ -36,6 +36,7 @@ use App\Http\Controllers\BagContentStoreProductController;
 use App\Http\Controllers\Api\DownloadController;
 use App\Http\Controllers\Api\FCMController;
 use App\Http\Controllers\Api\Admin\AdminReportsController;
+use App\Http\Controllers\Admin\DownloadSettingsController;
 
 use Illuminate\Support\Facades\Route;
 
@@ -235,6 +236,7 @@ Route::prefix('store')->group(function () {
         Route::post('generate-download-token', [DownloadController::class, 'generateDownloadToken']);
         Route::get('download-token/{token}/status', [DownloadController::class, 'getTokenStatus']);
         Route::get('my-download-tokens', [DownloadController::class, 'myDownloadTokens']);
+        Route::get('download-config', [DownloadController::class, 'getDownloadConfig']);
     });
 });
 
@@ -250,6 +252,23 @@ Route::middleware('auth:sanctum')->group(function () {
     });
 });
 
+// Demo Download Routes (Public - no auth required)
+Route::get('demo-download/{product}', [DownloadController::class, 'downloadDemo']);
+
+// Secure Download Routes (Authentication required)
+Route::middleware(['auth:sanctum'])->group(function () {
+    // Download token management
+    Route::post('generate-download-token', [DownloadController::class, 'generateToken']);
+    Route::post('verify-download-token', [DownloadController::class, 'verifyToken']);
+    Route::get('my-download-tokens', [DownloadController::class, 'getUserTokens']);
+
+    // FCM Routes
+    Route::post('fcm/register-token', [FCMController::class, 'registerToken']);
+    Route::post('fcm/update-token', [FCMController::class, 'updateToken']);
+    Route::delete('fcm/remove-token', [FCMController::class, 'removeToken']);
+    Route::post('fcm/test-notification', [FCMController::class, 'testNotification']);
+});
+
 // Admin Routes
 Route::middleware(['auth:sanctum'])->prefix('admin')->group(function () {
     // FCM Admin Routes
@@ -263,5 +282,13 @@ Route::middleware(['auth:sanctum'])->prefix('admin')->group(function () {
         Route::get('orders', [AdminReportsController::class, 'ordersReport']);
         Route::get('products-performance', [AdminReportsController::class, 'productsPerformanceReport']);
         Route::get('users-activity', [AdminReportsController::class, 'usersActivityReport']);
+    });
+
+    // Download Settings Management
+    Route::prefix('download-settings')->group(function () {
+        Route::get('/', [DownloadSettingsController::class, 'index']);
+        Route::post('update', [DownloadSettingsController::class, 'update']);
+        Route::get('{key}', [DownloadSettingsController::class, 'show']);
+        Route::post('reset', [DownloadSettingsController::class, 'reset']);
     });
 });

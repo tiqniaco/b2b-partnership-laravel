@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\StoreProduct;
 use App\Models\DownloadToken;
 use App\Services\DownloadService;
+use App\Services\DownloadConfigService;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Response;
@@ -48,12 +49,18 @@ class DownloadController extends Controller
     public function generateDownloadToken(Request $request): JsonResponse
     {
         try {
+            // Get validation rules from DownloadConfigService
+            $minDownloads = DownloadConfigService::getMinDownloads();
+            $maxDownloads = DownloadConfigService::getMaxDownloadsLimit();
+            $minHours = DownloadConfigService::getMinExpiryHours();
+            $maxHours = DownloadConfigService::getMaxExpiryHours();
+
             $request->validate([
                 'product_id' => 'required|integer|exists:store_products,id',
                 'user_id' => 'required|integer|exists:users,id',
                 'order_id' => 'required|integer|exists:store_orders,id',
-                'expires_in_hours' => 'nullable|integer|min:1|max:168', // Max 1 week
-                'max_downloads' => 'nullable|integer|min:1|max:10'
+                'expires_in_hours' => "nullable|integer|min:{$minHours}|max:{$maxHours}",
+                'max_downloads' => "nullable|integer|min:{$minDownloads}|max:{$maxDownloads}"
             ]);
 
             $product = StoreProduct::findOrFail($request->product_id);
@@ -62,8 +69,8 @@ class DownloadController extends Controller
             $token = $this->downloadService->createDownloadToken(
                 $user,
                 $product,
-                $request->max_downloads ?? 3,
-                ceil(($request->expires_in_hours ?? 24) / 24), // Convert hours to days
+                $request->max_downloads, // Will use config default if null
+                $request->expires_in_hours ? ceil($request->expires_in_hours / 24) : null, // Convert hours to days
                 $request->order_id
             );
             return response()->json([
@@ -173,6 +180,26 @@ class DownloadController extends Controller
             return response()->json([
                 'success' => false,
                 'message' => 'Failed to retrieve download tokens',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Get download configuration settings
+     * GET /api/store/download-config
+     */
+    public function getDownloadConfig(): JsonResponse
+    {
+        try {
+            return response()->json([
+                'success' => true,
+                'data' => DownloadConfigService::getAllSettings()
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to retrieve download configuration',
                 'error' => $e->getMessage()
             ], 500);
         }

@@ -48,10 +48,10 @@ class AdminReportsController extends Controller
                 'orders_this_month' => StoreOrder::whereMonth('created_at', now()->month)
                     ->whereYear('created_at', now()->year)
                     ->count(),
-                'total_revenue' => StoreOrder::sum('total'),
+                'total_revenue' => StoreOrder::sum('total_price'),
                 'revenue_this_month' => StoreOrder::whereMonth('created_at', now()->month)
                     ->whereYear('created_at', now()->year)
-                    ->sum('total'),
+                    ->sum('total_price'),
             ];
 
             // Products statistics
@@ -68,7 +68,7 @@ class AdminReportsController extends Controller
                     ->where('downloads_count', '<', DB::raw('max_downloads'))
                     ->count(),
                 'total_downloads' => DownloadToken::sum('downloads_count'),
-                'downloads_today' => DownloadToken::whereDate('last_downloaded_at', today())->sum('downloads_count'),
+                'downloads_today' => DownloadToken::whereDate('updated_at', today())->sum('downloads_count'),
             ];
 
             // Services statistics
@@ -226,7 +226,7 @@ class AdminReportsController extends Controller
             // Add summary statistics
             $summary = [
                 'total_orders' => $query->count(),
-                'total_amount' => $query->sum('total'),
+                'total_amount' => $query->sum('total_price'),
                 'average_order_value' => $query->avg('total'),
             ];
 
@@ -270,12 +270,12 @@ class AdminReportsController extends Controller
             // Get products with performance metrics
             $products = StoreProduct::select([
                 'store_products.id',
-                'store_products.name',
+                'store_products.title_ar',
                 'store_products.price',
                 'store_products.demo_file',
                 DB::raw('COUNT(DISTINCT download_tokens.id) as total_downloads'),
                 DB::raw('COUNT(DISTINCT store_orders.id) as total_orders'),
-                DB::raw('SUM(store_orders.total) as total_revenue'),
+                DB::raw('SUM(store_orders.total_price) as total_revenue'),
                 DB::raw('SUM(download_tokens.downloads_count) as actual_downloads')
             ])
                 ->leftJoin('download_tokens', function ($join) use ($dateFrom, $dateTo) {
@@ -286,7 +286,7 @@ class AdminReportsController extends Controller
                     $join->on('store_products.id', '=', 'store_orders.product_id')
                         ->whereBetween('store_orders.created_at', [$dateFrom, $dateTo]);
                 })
-                ->groupBy('store_products.id', 'store_products.name', 'store_products.price', 'store_products.demo_file');
+                ->groupBy('store_products.id', 'store_products.title_ar', 'store_products.price', 'store_products.demo_file');
 
             // Apply sorting
             switch ($request->sort_by) {
@@ -360,7 +360,7 @@ class AdminReportsController extends Controller
                 'users.created_at',
                 'users.fcm_token',
                 DB::raw('COUNT(DISTINCT store_orders.id) as total_orders'),
-                DB::raw('SUM(store_orders.total) as total_spent'),
+                DB::raw('SUM(store_orders.total_price) as total_spent'),
                 DB::raw('COUNT(DISTINCT download_tokens.id) as download_tokens_count'),
                 DB::raw('SUM(download_tokens.downloads_count) as total_downloads')
             ])
@@ -436,11 +436,11 @@ class AdminReportsController extends Controller
     {
         $product = StoreProduct::select([
             'store_products.id',
-            'store_products.name',
+            'store_products.title_ar',
             DB::raw('SUM(download_tokens.downloads_count) as total_downloads')
         ])
             ->leftJoin('download_tokens', 'store_products.id', '=', 'download_tokens.product_id')
-            ->groupBy('store_products.id', 'store_products.name')
+            ->groupBy('store_products.id', 'store_products.title_ar')
             ->orderBy('total_downloads', 'desc')
             ->first();
 

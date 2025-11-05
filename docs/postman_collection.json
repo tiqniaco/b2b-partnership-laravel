@@ -1,0 +1,1332 @@
+{
+    "info": {
+        "name": "B2B Partnership Laravel API",
+        "description": "Complete API collection for B2B Partnership platform with authentication, store management, downloads, and notifications",
+        "version": "1.0.0",
+        "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+    },
+    "variable": [
+        {
+            "key": "base_url",
+            "value": "http://localhost:8000/api",
+            "type": "string"
+        },
+        {
+            "key": "access_token",
+            "value": "",
+            "type": "string"
+        },
+        {
+            "key": "admin_token",
+            "value": "",
+            "type": "string"
+        }
+    ],
+    "auth": {
+        "type": "bearer",
+        "bearer": [
+            {
+                "key": "token",
+                "value": "{{access_token}}",
+                "type": "string"
+            }
+        ]
+    },
+    "item": [
+        {
+            "name": "Authentication",
+            "item": [
+                {
+                    "name": "Register User",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            },
+                            {
+                                "key": "Accept",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"name\": \"John Doe\",\n  \"email\": \"john@example.com\",\n  \"password\": \"password123\",\n  \"phone\": \"1234567890\",\n  \"country_code\": \"+20\",\n  \"role\": \"client\",\n  \"government_id\": \"1\"\n}"
+                        },
+                        "url": {
+                            "raw": "{{base_url}}/auth/register",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "auth",
+                                "register"
+                            ]
+                        },
+                        "description": "Register a new user with client role"
+                    }
+                },
+                {
+                    "name": "Register Provider",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            },
+                            {
+                                "key": "Accept",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"name\": \"Provider Company\",\n  \"email\": \"provider@example.com\",\n  \"password\": \"password123\",\n  \"phone\": \"9876543210\",\n  \"country_code\": \"+20\",\n  \"role\": \"provider\",\n  \"sub_specialization_id\": \"1\",\n  \"provider_type_id\": \"1\",\n  \"bio\": \"Professional service provider\"\n}"
+                        },
+                        "url": {
+                            "raw": "{{base_url}}/auth/register",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "auth",
+                                "register"
+                            ]
+                        },
+                        "description": "Register a new provider"
+                    }
+                },
+                {
+                    "name": "Register Admin",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            },
+                            {
+                                "key": "Accept",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"name\": \"Admin User\",\n  \"email\": \"admin@example.com\",\n  \"password\": \"password123\",\n  \"phone\": \"5555555555\",\n  \"country_code\": \"+20\",\n  \"role\": \"admin\"\n}"
+                        },
+                        "url": {
+                            "raw": "{{base_url}}/auth/register",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "auth",
+                                "register"
+                            ]
+                        },
+                        "description": "Register a new admin user"
+                    }
+                },
+                {
+                    "name": "Login",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "if (pm.response.code === 200) {",
+                                    "    const response = pm.response.json();",
+                                    "    if (response.token) {",
+                                    "        pm.collectionVariables.set(\"access_token\", response.token);",
+                                    "        if (response.role === \"admin\") {",
+                                    "            pm.collectionVariables.set(\"admin_token\", response.token);",
+                                    "        }",
+                                    "    }",
+                                    "}"
+                                ]
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            },
+                            {
+                                "key": "Accept",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"login\": \"john@example.com\",\n  \"password\": \"password123\"\n}"
+                        },
+                        "url": {
+                            "raw": "{{base_url}}/auth/login",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "auth",
+                                "login"
+                            ]
+                        },
+                        "description": "Login with email/phone and password. Token will be automatically saved."
+                    }
+                },
+                {
+                    "name": "Logout",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Accept",
+                                "value": "application/json"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/auth/logout",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "auth",
+                                "logout"
+                            ]
+                        },
+                        "description": "Logout current user and revoke token"
+                    }
+                },
+                {
+                    "name": "Update Profile",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            },
+                            {
+                                "key": "Accept",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"name\": \"Updated Name\",\n  \"phone\": \"9999999999\"\n}"
+                        },
+                        "url": {
+                            "raw": "{{base_url}}/auth/update-profile",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "auth",
+                                "update-profile"
+                            ]
+                        },
+                        "description": "Update user profile information"
+                    }
+                },
+                {
+                    "name": "Forget Password",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            },
+                            {
+                                "key": "Accept",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"email\": \"john@example.com\"\n}"
+                        },
+                        "url": {
+                            "raw": "{{base_url}}/auth/forget-password",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "auth",
+                                "forget-password"
+                            ]
+                        },
+                        "description": "Send password reset email"
+                    }
+                }
+            ]
+        },
+        {
+            "name": "Store & Products",
+            "item": [
+                {
+                    "name": "Get Categories",
+                    "request": {
+                        "auth": {
+                            "type": "noauth"
+                        },
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Accept",
+                                "value": "application/json"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/store/categories",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "store",
+                                "categories"
+                            ]
+                        },
+                        "description": "Get all store categories (public endpoint)"
+                    }
+                },
+                {
+                    "name": "Get Products",
+                    "request": {
+                        "auth": {
+                            "type": "noauth"
+                        },
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Accept",
+                                "value": "application/json"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/store/products?page=1&category_id=1",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "store",
+                                "products"
+                            ],
+                            "query": [
+                                {
+                                    "key": "page",
+                                    "value": "1"
+                                },
+                                {
+                                    "key": "category_id",
+                                    "value": "1"
+                                }
+                            ]
+                        },
+                        "description": "Get products with optional category filter"
+                    }
+                },
+                {
+                    "name": "Get Top Selling Products",
+                    "request": {
+                        "auth": {
+                            "type": "noauth"
+                        },
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Accept",
+                                "value": "application/json"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/store/top-selling-products",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "store",
+                                "top-selling-products"
+                            ]
+                        },
+                        "description": "Get top selling products"
+                    }
+                },
+                {
+                    "name": "Get Recommended Products",
+                    "request": {
+                        "auth": {
+                            "type": "noauth"
+                        },
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Accept",
+                                "value": "application/json"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/store/recommended-products",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "store",
+                                "recommended-products"
+                            ]
+                        },
+                        "description": "Get recommended products"
+                    }
+                }
+            ]
+        },
+        {
+            "name": "Download System",
+            "item": [
+                {
+                    "name": "Download Demo File",
+                    "request": {
+                        "auth": {
+                            "type": "noauth"
+                        },
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Accept",
+                                "value": "application/json"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/store/products/1/demo",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "store",
+                                "products",
+                                "1",
+                                "demo"
+                            ]
+                        },
+                        "description": "Download demo file for product (public access)"
+                    }
+                },
+                {
+                    "name": "Generate Download Token",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            },
+                            {
+                                "key": "Accept",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"product_id\": 1,\n  \"user_id\": 1,\n  \"order_id\": 1,\n  \"expires_in_hours\": 24,\n  \"max_downloads\": 5\n}"
+                        },
+                        "url": {
+                            "raw": "{{base_url}}/store/generate-download-token",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "store",
+                                "generate-download-token"
+                            ]
+                        },
+                        "description": "Generate secure download token for purchased product"
+                    }
+                },
+                {
+                    "name": "Get My Download Tokens",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Accept",
+                                "value": "application/json"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/store/my-download-tokens",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "store",
+                                "my-download-tokens"
+                            ]
+                        },
+                        "description": "Get all download tokens for authenticated user"
+                    }
+                },
+                {
+                    "name": "Download File by Token",
+                    "request": {
+                        "auth": {
+                            "type": "noauth"
+                        },
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Accept",
+                                "value": "application/json"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/download/{token}",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "download",
+                                "{token}"
+                            ]
+                        },
+                        "description": "Download file using secure token (replace {token} with actual token)"
+                    }
+                },
+                {
+                    "name": "Get Download Config",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Accept",
+                                "value": "application/json"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/store/download-config",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "store",
+                                "download-config"
+                            ]
+                        },
+                        "description": "Get download configuration settings"
+                    }
+                }
+            ]
+        },
+        {
+            "name": "FCM Notifications",
+            "item": [
+                {
+                    "name": "Register FCM Token",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            },
+                            {
+                                "key": "Accept",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"fcm_token\": \"fGHJ123...fcmTokenString\",\n  \"device_type\": \"android\"\n}"
+                        },
+                        "url": {
+                            "raw": "{{base_url}}/fcm/register-token",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "fcm",
+                                "register-token"
+                            ]
+                        },
+                        "description": "Register user's FCM token for push notifications"
+                    }
+                },
+                {
+                    "name": "Update FCM Token",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            },
+                            {
+                                "key": "Accept",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"fcm_token\": \"newFCMTokenString123...\",\n  \"device_type\": \"ios\"\n}"
+                        },
+                        "url": {
+                            "raw": "{{base_url}}/fcm/update-token",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "fcm",
+                                "update-token"
+                            ]
+                        },
+                        "description": "Update user's FCM token"
+                    }
+                },
+                {
+                    "name": "Remove FCM Token",
+                    "request": {
+                        "method": "DELETE",
+                        "header": [
+                            {
+                                "key": "Accept",
+                                "value": "application/json"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/fcm/remove-token",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "fcm",
+                                "remove-token"
+                            ]
+                        },
+                        "description": "Remove user's FCM token"
+                    }
+                },
+                {
+                    "name": "Send Test Notification",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            },
+                            {
+                                "key": "Accept",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"title\": \"Test Notification\",\n  \"body\": \"This is a test notification\",\n  \"data\": {\n    \"key\": \"value\",\n    \"action\": \"test\"\n  }\n}"
+                        },
+                        "url": {
+                            "raw": "{{base_url}}/fcm/test-notification",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "fcm",
+                                "test-notification"
+                            ]
+                        },
+                        "description": "Send test push notification to current user"
+                    }
+                }
+            ]
+        },
+        {
+            "name": "Store Cart & Orders",
+            "item": [
+                {
+                    "name": "Add to Cart",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            },
+                            {
+                                "key": "Accept",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"product_id\": 1,\n  \"quantity\": 2\n}"
+                        },
+                        "url": {
+                            "raw": "{{base_url}}/store/carts",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "store",
+                                "carts"
+                            ]
+                        },
+                        "description": "Add product to cart"
+                    }
+                },
+                {
+                    "name": "Get Cart Items",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Accept",
+                                "value": "application/json"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/store/carts",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "store",
+                                "carts"
+                            ]
+                        },
+                        "description": "Get user's cart items"
+                    }
+                },
+                {
+                    "name": "Clear Cart",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Accept",
+                                "value": "application/json"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/store/cart/clear",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "store",
+                                "cart",
+                                "clear"
+                            ]
+                        },
+                        "description": "Clear all items from cart"
+                    }
+                },
+                {
+                    "name": "Create Order",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            },
+                            {
+                                "key": "Accept",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"products\": [\n    {\n      \"product_id\": 1,\n      \"quantity\": 2,\n      \"price\": 999.99\n    }\n  ],\n  \"total_price\": 1999.98,\n  \"payment_method\": \"credit_card\",\n  \"shipping_address\": \"123 Main St, City, Country\"\n}"
+                        },
+                        "url": {
+                            "raw": "{{base_url}}/store/orders",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "store",
+                                "orders"
+                            ]
+                        },
+                        "description": "Create new order"
+                    }
+                },
+                {
+                    "name": "Get My Orders",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Accept",
+                                "value": "application/json"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/store/orders",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "store",
+                                "orders"
+                            ]
+                        },
+                        "description": "Get user's orders"
+                    }
+                }
+            ]
+        },
+        {
+            "name": "Admin - Reports",
+            "item": [
+                {
+                    "name": "Dashboard Statistics",
+                    "request": {
+                        "auth": {
+                            "type": "bearer",
+                            "bearer": [
+                                {
+                                    "key": "token",
+                                    "value": "{{admin_token}}",
+                                    "type": "string"
+                                }
+                            ]
+                        },
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Accept",
+                                "value": "application/json"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/admin/reports/dashboard?date_from=2025-01-01&date_to=2025-12-31",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "admin",
+                                "reports",
+                                "dashboard"
+                            ],
+                            "query": [
+                                {
+                                    "key": "date_from",
+                                    "value": "2025-01-01"
+                                },
+                                {
+                                    "key": "date_to",
+                                    "value": "2025-12-31"
+                                }
+                            ]
+                        },
+                        "description": "Get comprehensive dashboard statistics"
+                    }
+                },
+                {
+                    "name": "Downloads Report",
+                    "request": {
+                        "auth": {
+                            "type": "bearer",
+                            "bearer": [
+                                {
+                                    "key": "token",
+                                    "value": "{{admin_token}}",
+                                    "type": "string"
+                                }
+                            ]
+                        },
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Accept",
+                                "value": "application/json"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/admin/reports/downloads",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "admin",
+                                "reports",
+                                "downloads"
+                            ]
+                        },
+                        "description": "Get detailed downloads report"
+                    }
+                },
+                {
+                    "name": "Orders Report",
+                    "request": {
+                        "auth": {
+                            "type": "bearer",
+                            "bearer": [
+                                {
+                                    "key": "token",
+                                    "value": "{{admin_token}}",
+                                    "type": "string"
+                                }
+                            ]
+                        },
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Accept",
+                                "value": "application/json"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/admin/reports/orders",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "admin",
+                                "reports",
+                                "orders"
+                            ]
+                        },
+                        "description": "Get orders analytics report"
+                    }
+                },
+                {
+                    "name": "Products Performance Report",
+                    "request": {
+                        "auth": {
+                            "type": "bearer",
+                            "bearer": [
+                                {
+                                    "key": "token",
+                                    "value": "{{admin_token}}",
+                                    "type": "string"
+                                }
+                            ]
+                        },
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Accept",
+                                "value": "application/json"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/admin/reports/products-performance",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "admin",
+                                "reports",
+                                "products-performance"
+                            ]
+                        },
+                        "description": "Get products performance analytics"
+                    }
+                },
+                {
+                    "name": "Users Activity Report",
+                    "request": {
+                        "auth": {
+                            "type": "bearer",
+                            "bearer": [
+                                {
+                                    "key": "token",
+                                    "value": "{{admin_token}}",
+                                    "type": "string"
+                                }
+                            ]
+                        },
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Accept",
+                                "value": "application/json"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/admin/reports/users-activity",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "admin",
+                                "reports",
+                                "users-activity"
+                            ]
+                        },
+                        "description": "Get users activity analytics"
+                    }
+                }
+            ]
+        },
+        {
+            "name": "Admin - Download Settings",
+            "item": [
+                {
+                    "name": "Get Download Settings",
+                    "request": {
+                        "auth": {
+                            "type": "bearer",
+                            "bearer": [
+                                {
+                                    "key": "token",
+                                    "value": "{{admin_token}}",
+                                    "type": "string"
+                                }
+                            ]
+                        },
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Accept",
+                                "value": "application/json"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/admin/download-settings",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "admin",
+                                "download-settings"
+                            ]
+                        },
+                        "description": "Get all download configuration settings"
+                    }
+                },
+                {
+                    "name": "Get Specific Setting",
+                    "request": {
+                        "auth": {
+                            "type": "bearer",
+                            "bearer": [
+                                {
+                                    "key": "token",
+                                    "value": "{{admin_token}}",
+                                    "type": "string"
+                                }
+                            ]
+                        },
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Accept",
+                                "value": "application/json"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/admin/download-settings/default_max_downloads",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "admin",
+                                "download-settings",
+                                "default_max_downloads"
+                            ]
+                        },
+                        "description": "Get specific download setting by key"
+                    }
+                },
+                {
+                    "name": "Update Download Setting",
+                    "request": {
+                        "auth": {
+                            "type": "bearer",
+                            "bearer": [
+                                {
+                                    "key": "token",
+                                    "value": "{{admin_token}}",
+                                    "type": "string"
+                                }
+                            ]
+                        },
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            },
+                            {
+                                "key": "Accept",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"key\": \"default_max_downloads\",\n  \"value\": \"10\",\n  \"description\": \"Updated default max downloads to 10\"\n}"
+                        },
+                        "url": {
+                            "raw": "{{base_url}}/admin/download-settings/update",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "admin",
+                                "download-settings",
+                                "update"
+                            ]
+                        },
+                        "description": "Update download setting value"
+                    }
+                },
+                {
+                    "name": "Reset Download Settings",
+                    "request": {
+                        "auth": {
+                            "type": "bearer",
+                            "bearer": [
+                                {
+                                    "key": "token",
+                                    "value": "{{admin_token}}",
+                                    "type": "string"
+                                }
+                            ]
+                        },
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Accept",
+                                "value": "application/json"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/admin/download-settings/reset",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "admin",
+                                "download-settings",
+                                "reset"
+                            ]
+                        },
+                        "description": "Reset all download settings to default values"
+                    }
+                }
+            ]
+        },
+        {
+            "name": "Admin - FCM Notifications",
+            "item": [
+                {
+                    "name": "Send Admin Notification",
+                    "request": {
+                        "auth": {
+                            "type": "bearer",
+                            "bearer": [
+                                {
+                                    "key": "token",
+                                    "value": "{{admin_token}}",
+                                    "type": "string"
+                                }
+                            ]
+                        },
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            },
+                            {
+                                "key": "Accept",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"user_id\": 1,\n  \"title\": \"Admin Notification\",\n  \"body\": \"Important update from admin\",\n  \"data\": {\n    \"type\": \"admin_notice\",\n    \"priority\": \"high\"\n  }\n}"
+                        },
+                        "url": {
+                            "raw": "{{base_url}}/admin/send-notification",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "admin",
+                                "send-notification"
+                            ]
+                        },
+                        "description": "Send notification to specific user"
+                    }
+                },
+                {
+                    "name": "Send Bulk Notification",
+                    "request": {
+                        "auth": {
+                            "type": "bearer",
+                            "bearer": [
+                                {
+                                    "key": "token",
+                                    "value": "{{admin_token}}",
+                                    "type": "string"
+                                }
+                            ]
+                        },
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            },
+                            {
+                                "key": "Accept",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"title\": \"System Maintenance\",\n  \"body\": \"Scheduled maintenance tonight at 2 AM\",\n  \"data\": {\n    \"type\": \"maintenance\",\n    \"scheduled_time\": \"2025-11-06T02:00:00Z\"\n  },\n  \"user_roles\": [\"client\", \"provider\"]\n}"
+                        },
+                        "url": {
+                            "raw": "{{base_url}}/admin/send-bulk-notification",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "admin",
+                                "send-bulk-notification"
+                            ]
+                        },
+                        "description": "Send notification to multiple users by role"
+                    }
+                }
+            ]
+        },
+        {
+            "name": "Public Data",
+            "item": [
+                {
+                    "name": "Get Countries",
+                    "request": {
+                        "auth": {
+                            "type": "noauth"
+                        },
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Accept",
+                                "value": "application/json"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/countries",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "countries"
+                            ]
+                        },
+                        "description": "Get all countries (public endpoint)"
+                    }
+                },
+                {
+                    "name": "Get Governments",
+                    "request": {
+                        "auth": {
+                            "type": "noauth"
+                        },
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Accept",
+                                "value": "application/json"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/governments",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "governments"
+                            ]
+                        },
+                        "description": "Get all governments/states (public endpoint)"
+                    }
+                },
+                {
+                    "name": "Get Specializations",
+                    "request": {
+                        "auth": {
+                            "type": "noauth"
+                        },
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Accept",
+                                "value": "application/json"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/specializations",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "specializations"
+                            ]
+                        },
+                        "description": "Get all specializations (public endpoint)"
+                    }
+                },
+                {
+                    "name": "Get Sub-Specializations",
+                    "request": {
+                        "auth": {
+                            "type": "noauth"
+                        },
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Accept",
+                                "value": "application/json"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/sub-specializations",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "sub-specializations"
+                            ]
+                        },
+                        "description": "Get all sub-specializations (public endpoint)"
+                    }
+                },
+                {
+                    "name": "Get Provider Types",
+                    "request": {
+                        "auth": {
+                            "type": "noauth"
+                        },
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Accept",
+                                "value": "application/json"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/provider-types",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "provider-types"
+                            ]
+                        },
+                        "description": "Get all provider types (public endpoint)"
+                    }
+                }
+            ]
+        }
+    ]
+}

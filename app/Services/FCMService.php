@@ -229,6 +229,63 @@ class FCMService
     }
 
     /**
+     * Send notification to specific FCM token
+     */
+    public function sendNotificationToToken(string $token, string $title, string $body, array $data = []): array
+    {
+        try {
+            $accessToken = $this->getAccessToken();
+            $projectId = $this->serviceAccount['project_id'];
+
+            $message = [
+                'message' => [
+                    'token' => $token,
+                    'notification' => [
+                        'title' => $title,
+                        'body' => $body
+                    ],
+                    'data' => array_map('strval', $data) // FCM requires all data values to be strings
+                ]
+            ];
+
+            $response = Http::withHeaders([
+                'Authorization' => 'Bearer ' . $accessToken,
+                'Content-Type' => 'application/json'
+            ])->post("https://fcm.googleapis.com/v1/projects/{$projectId}/messages:send", $message);
+
+            if ($response->successful()) {
+                $responseData = $response->json();
+                Log::info("FCM notification sent successfully to token: " . substr($token, 0, 20) . "...", [
+                    'response' => $responseData
+                ]);
+                return [
+                    'success' => true,
+                    'response' => $responseData
+                ];
+            } else {
+                $error = $response->json();
+                Log::error("Failed to send FCM notification to token: " . substr($token, 0, 20) . "...", [
+                    'error' => $error,
+                    'status' => $response->status()
+                ]);
+                return [
+                    'success' => false,
+                    'error' => $error,
+                    'status' => $response->status()
+                ];
+            }
+        } catch (\Exception $e) {
+            Log::error("Exception sending FCM notification to token: " . substr($token, 0, 20) . "...", [
+                'exception' => $e->getMessage()
+            ]);
+            return [
+                'success' => false,
+                'error' => $e->getMessage()
+            ];
+        }
+    }
+
+    /**
      * Send service status notification
      */
     public function sendServiceStatusNotification(User $user, string $status, array $serviceData = []): bool

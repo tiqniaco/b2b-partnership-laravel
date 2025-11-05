@@ -20,6 +20,12 @@ class AuthController extends Controller
         $this->notification = new NotificationController();
     }
 
+    /**
+     * Authenticate user with email/phone and password
+     *
+     * @param Request $request
+     * @return \Illuminate\Http\JsonResponse
+     */
     public function login(Request $request)
     {
         try {
@@ -134,6 +140,12 @@ class AuthController extends Controller
         }
     }
 
+    /**
+     * Register a new user account
+     *
+     * @param Request $request
+     * @return \Illuminate\Http\JsonResponse
+     */
     public function register(Request $request)
     {
         try {
@@ -465,11 +477,11 @@ class AuthController extends Controller
 
             $user->delete();
 
-//            $this->notification->sendNotification(
-//                topic: "admin",
-//                title: "Account Deleted",
-//                body: "Account of $name has been deleted.",
-//            );
+            //            $this->notification->sendNotification(
+            //                topic: "admin",
+            //                title: "Account Deleted",
+            //                body: "Account of $name has been deleted.",
+            //            );
 
             return response()->json([
                 'status' => "success",

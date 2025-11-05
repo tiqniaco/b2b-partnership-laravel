@@ -20,6 +20,151 @@ class FCMController extends Controller
     }
 
     /**
+     * Register user's FCM token
+     * POST /api/fcm/register-token
+     */
+    public function registerToken(Request $request): JsonResponse
+    {
+        try {
+            $request->validate([
+                'fcm_token' => 'required|string|max:500',
+                'device_type' => 'nullable|string|in:android,ios,web'
+            ]);
+
+            $user = User::find(Auth::id());
+            $user->fcm_token = $request->fcm_token;
+            $user->save();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'FCM token registered successfully',
+                'data' => [
+                    'user_id' => $user->id,
+                    'token_registered' => true
+                ]
+            ]);
+        } catch (ValidationException $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Validation failed',
+                'errors' => $e->errors()
+            ], 422);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to register FCM token',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Update user's FCM token
+     * POST /api/fcm/update-token
+     */
+    public function updateToken(Request $request): JsonResponse
+    {
+        try {
+            $request->validate([
+                'fcm_token' => 'required|string|max:500',
+                'device_type' => 'nullable|string|in:android,ios,web'
+            ]);
+
+            $user = User::find(Auth::id());
+            $user->fcm_token = $request->fcm_token;
+            $user->save();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'FCM token updated successfully'
+            ]);
+        } catch (ValidationException $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Validation failed',
+                'errors' => $e->errors()
+            ], 422);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to update FCM token',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Remove user's FCM token
+     * DELETE /api/fcm/remove-token
+     */
+    public function removeToken(Request $request): JsonResponse
+    {
+        try {
+            $user = User::find(Auth::id());
+            $user->fcm_token = null;
+            $user->save();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'FCM token removed successfully'
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to remove FCM token',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Send test notification to user
+     * POST /api/fcm/test-notification
+     */
+    public function testNotification(Request $request): JsonResponse
+    {
+        try {
+            $request->validate([
+                'title' => 'required|string|max:200',
+                'body' => 'required|string|max:500'
+            ]);
+
+            $user = User::find(Auth::id());
+
+            if (!$user->fcm_token) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'No FCM token found for user'
+                ], 400);
+            }
+
+            $result = $this->fcmService->sendNotificationToToken(
+                $user->fcm_token,
+                $request->title,
+                $request->body
+            );
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Test notification sent successfully',
+                'firebase_response' => $result
+            ]);
+        } catch (ValidationException $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Validation failed',
+                'errors' => $e->errors()
+            ], 422);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to send test notification',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
      * Save user's FCM token
      * POST /api/user/fcm-token
      */

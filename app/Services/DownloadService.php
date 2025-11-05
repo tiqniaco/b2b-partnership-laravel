@@ -14,8 +14,14 @@ class DownloadService
     /**
      * Create a download token for a user and product
      */
-    public function createDownloadToken(User $user, StoreProduct $product, int $maxDownloads = 3, int $expiryDays = 30, ?int $orderId = null): DownloadToken
+    public function createDownloadToken(User $user, StoreProduct $product, ?int $maxDownloads = null, ?int $expiryDays = null, ?int $orderId = null): DownloadToken
     {
+        // Use DownloadConfigService for better validation and configuration
+        $maxDownloads = DownloadConfigService::validateMaxDownloads($maxDownloads);
+        $expiryHours = $expiryDays ? ($expiryDays * 24) : null;
+        $validatedExpiryHours = DownloadConfigService::validateExpiryHours($expiryHours);
+        $expiryDays = ceil($validatedExpiryHours / 24);
+
         return DownloadToken::create([
             'user_id' => $user->id,
             'product_id' => $product->id,

@@ -1,0 +1,4339 @@
+openapi: 3.0.3
+info:
+  title: B2B Partnership Laravel API
+  description: |
+    Comprehensive API documentation for B2B Partnership platform featuring:
+    - Authentication & User Management
+    - Store & Products with Download System
+    - Service Requests & Job Management
+    - FCM Push Notifications
+    - Admin Reports & Analytics
+    - Secure Download Token System
+  version: 1.0.0
+  contact:
+    name: API Support
+    email: support@tiqnia.com
+  license:
+    name: MIT
+    url: https://opensource.org/licenses/MIT
+
+servers:
+  - url: http://localhost:8000/api
+    description: Local Development Server
+  - url: https://api.tiqnia.com/api
+    description: Production Server
+
+security:
+  - bearerAuth: []
+
+paths:
+  # ==========================================
+  # AUTHENTICATION ENDPOINTS
+  # ==========================================
+  /auth/register:
+    post:
+      tags:
+        - Authentication
+      summary: Register new user
+      description: Register a new user with role (client, provider, admin)
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - name
+                - email
+                - password
+                - phone
+                - role
+              properties:
+                name:
+                  type: string
+                  example: "John Doe"
+                email:
+                  type: string
+                  format: email
+                  example: "john@example.com"
+                password:
+                  type: string
+                  minLength: 6
+                  example: "password123"
+                country_code:
+                  type: string
+                  example: "+20"
+                phone:
+                  type: string
+                  example: "1234567890"
+                role:
+                  type: string
+                  enum: [client, provider, admin]
+                  example: "client"
+      responses:
+        '201':
+          description: User registered successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: "success"
+                  message:
+                    type: string
+                    example: "User registered successfully"
+                  user:
+                    $ref: '#/components/schemas/User'
+                  token:
+                    type: string
+                    example: "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9..."
+
+  /auth/login:
+    post:
+      tags:
+        - Authentication
+      summary: User login
+      description: Authenticate user and return access token
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - email
+                - password
+              properties:
+                email:
+                  type: string
+                  format: email
+                  example: "john@example.com"
+                password:
+                  type: string
+                  example: "password123"
+      responses:
+        '200':
+          description: Login successful
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: "success"
+                  message:
+                    type: string
+                    example: "Login successful"
+                  user:
+                    $ref: '#/components/schemas/User'
+                  token:
+                    type: string
+                    example: "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9..."
+
+  /auth/logout:
+    post:
+      tags:
+        - Authentication
+      summary: Logout user
+      description: Logout the current authenticated user and revoke their token
+      responses:
+        '200':
+          description: Successfully logged out
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Successfully logged out"
+
+  # ==========================================
+  # COUNTRIES ENDPOINTS
+  # ==========================================
+  /countries:
+    get:
+      tags:
+        - Countries
+      summary: List all countries
+      description: Get list of all available countries
+      security: []
+      responses:
+        '200':
+          description: Countries retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Country'
+
+  /countries/{id}:
+    get:
+      tags:
+        - Countries
+      summary: Get country by ID
+      description: Get specific country details
+      security: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+            example: 1
+      responses:
+        '200':
+          description: Country retrieved successfully
+
+  # ==========================================
+  # STORE ENDPOINTS
+  # ==========================================
+  /store/categories:
+    get:
+      tags:
+        - Store
+      summary: List all store categories
+      description: Get list of all product categories
+      security: []
+      responses:
+        '200':
+          description: Categories retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Category'
+
+  /store/products:
+    get:
+      tags:
+        - Store
+      summary: List all products
+      description: Get list of all store products
+      security: []
+      responses:
+        '200':
+          description: Products retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Product'
+
+  /store/products/{id}/demo:
+    get:
+      tags:
+        - Downloads
+      summary: Download product demo
+      description: Download demo version of product (public access)
+      security: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+            example: 1
+      responses:
+        '200':
+          description: Demo file downloaded successfully
+          content:
+            application/octet-stream:
+              schema:
+                type: string
+                format: binary
+
+  /store/generate-download-token:
+    post:
+      tags:
+        - Downloads
+      summary: Generate download token
+      description: Generate secure download token for authenticated users
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - product_id
+              properties:
+                product_id:
+                  type: integer
+                  example: 1
+                download_type:
+                  type: string
+                  enum: [full, demo]
+                  example: "full"
+      responses:
+        '201':
+          description: Download token generated successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  token:
+                    type: string
+                    example: "abc123def456"
+                  expires_at:
+                    type: string
+                    format: date-time
+                  download_url:
+                    type: string
+                    example: "http://localhost:8000/download/abc123def456"
+
+  /download/{token}:
+    get:
+      tags:
+        - Downloads
+      summary: Download by token
+      description: Download file using secure token
+      security: []
+      parameters:
+        - name: token
+          in: path
+          required: true
+          schema:
+            type: string
+            example: "abc123def456"
+      responses:
+        '200':
+          description: File downloaded successfully
+          content:
+            application/octet-stream:
+              schema:
+                type: string
+                format: binary
+
+  # ==========================================
+  # FCM NOTIFICATIONS ENDPOINTS
+  # ==========================================
+  /fcm/register-token:
+    post:
+      tags:
+        - FCM Notifications
+      summary: Register FCM token
+      description: Register FCM token for push notifications
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - fcm_token
+              properties:
+                fcm_token:
+                  type: string
+                  maxLength: 500
+                  example: "fGHJ123...fcmTokenString"
+                device_type:
+                  type: string
+                  enum: [android, ios, web]
+                  example: "android"
+      responses:
+        '200':
+          description: FCM token registered successfully
+
+  /fcm/test-notification:
+    post:
+      tags:
+        - FCM Notifications
+      summary: Send test notification
+      description: Send test push notification to current user
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                title:
+                  type: string
+                  example: "Test Notification"
+                body:
+                  type: string
+                  example: "This is a test notification"
+      responses:
+        '200':
+          description: Notification sent successfully
+
+  # ==========================================
+  # ADMIN ENDPOINTS
+  # ==========================================
+  /admin/reports/dashboard:
+    get:
+      tags:
+        - Admin Reports
+      summary: Get admin dashboard data
+      description: Get comprehensive dashboard statistics
+      responses:
+        '200':
+          description: Dashboard data retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  total_users:
+                    type: integer
+                    example: 1500
+                  total_orders:
+                    type: integer
+                    example: 350
+                  total_downloads:
+                    type: integer
+                    example: 1200
+
+  /admin/download-settings:
+    get:
+      tags:
+        - Admin Settings
+      summary: Get download settings
+      description: Get current download configuration settings
+      responses:
+        '200':
+          description: Download settings retrieved successfully
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  schemas:
+    User:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        name:
+          type: string
+          example: "John Doe"
+        email:
+          type: string
+          format: email
+          example: "john@example.com"
+        phone:
+          type: string
+          example: "1234567890"
+        role:
+          type: string
+          enum: [client, provider, admin]
+          example: "client"
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+
+    Country:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        name:
+          type: string
+          example: "Egypt"
+        code:
+          type: string
+          example: "EG"
+        flag:
+          type: string
+          example: "🇪🇬"
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+
+    Category:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        name:
+          type: string
+          example: "Software"
+        description:
+          type: string
+          example: "Software products and tools"
+        image:
+          type: string
+          example: "https://example.com/images/category.jpg"
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+
+    Product:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        name:
+          type: string
+          example: "Professional Software"
+        description:
+          type: string
+          example: "High-quality professional software solution"
+        price:
+          type: number
+          format: float
+          example: 99.99
+        category_id:
+          type: integer
+          example: 1
+        image:
+          type: string
+          example: "https://example.com/images/product.jpg"
+        file_path:
+          type: string
+          example: "/products/software.zip"
+        demo_file_path:
+          type: string
+          example: "/products/demo/software-demo.zip"
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+
+    ErrorResponse:
+      type: object
+      properties:
+        status:
+          type: string
+          example: "error"
+        message:
+          type: string
+          example: "Error description"
+        error:
+          type: string
+          example: "Detailed error message"
+
+tags:
+  - name: Authentication
+    description: User authentication endpoints
+  - name: Countries
+    description: Countries management
+  - name: Store
+    description: Store and product management
+  - name: Downloads
+    description: Secure download system with tokens
+  - name: FCM Notifications
+    description: Firebase Cloud Messaging for push notifications
+  - name: Admin Reports
+    description: Administrative reports and analytics
+  - name: Admin Settings
+    description: System configuration and settings
+                  description: "VAT number for providers"
+                tax_card_number:
+                  type: string
+                commercial_register_number:
+                  type: string
+      responses:
+        200:
+          description: User registered successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: "success"
+                  message:
+                    type: string
+                    example: "Register successfully."
+                  role:
+                    type: string
+                    example: "client"
+                  role_id:
+                    type: integer
+                    example: 1
+        422:
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationError'
+
+  /auth/login:
+    post:
+      tags:
+        - Authentication
+      summary: Login user
+      description: Login with email/phone and password
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - login
+                - password
+              properties:
+                login:
+                  type: string
+                  description: "Email or phone number"
+                  example: "john@example.com"
+                password:
+                  type: string
+                  example: "password123"
+      responses:
+        200:
+          description: Login successful
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: "success"
+                  message:
+                    type: string
+                    example: "Login successfully."
+                  user_id:
+                    type: integer
+                    example: 1
+                  role_id:
+                    type: integer
+                    example: 1
+                  name:
+                    type: string
+                    example: "John Doe"
+                  email:
+                    type: string
+                    example: "john@example.com"
+                  phone:
+                    type: string
+                    example: "1234567890"
+                  role:
+                    type: string
+                    example: "client"
+                  token:
+                    type: string
+                    example: "1|abcdef123456..."
+        401:
+          description: Invalid credentials
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /auth/logout:
+    post:
+      tags:
+        - Authentication
+      summary: Logout user
+      description: Logout the current authenticated user and revoke their token
+      responses:
+        '200':
+          description: Successfully logged out
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Successfully logged out"
+
+  /auth/update-profile:
+    post:
+      tags:
+        - Authentication
+      summary: Update user profile
+      description: Update authenticated user profile information
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                  example: "John Doe Updated"
+                email:
+                  type: string
+                  format: email
+                  example: "john.updated@example.com"
+                phone:
+                  type: string
+                  example: "1234567891"
+                image:
+                  type: string
+                  format: binary
+                  description: "New profile image"
+                bio:
+                  type: string
+                  description: "User bio"
+      responses:
+        '200':
+          description: Profile updated successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Profile updated successfully"
+                  user:
+                    $ref: '#/components/schemas/User'
+
+  /auth/reset-password:
+    post:
+      tags:
+        - Authentication
+      summary: Reset password
+      description: Reset password for authenticated user
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - current_password
+                - new_password
+                - new_password_confirmation
+              properties:
+                current_password:
+                  type: string
+                  example: "oldpassword123"
+                new_password:
+                  type: string
+                  minLength: 6
+                  example: "newpassword123"
+                new_password_confirmation:
+                  type: string
+                  example: "newpassword123"
+      responses:
+        '200':
+          description: Password reset successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Password reset successfully"
+
+  /auth/forget-password:
+    post:
+      tags:
+        - Authentication
+      summary: Forget password
+      description: Send password reset link to user email
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - email
+              properties:
+                email:
+                  type: string
+                  format: email
+                  example: "john@example.com"
+      responses:
+        '200':
+          description: Password reset link sent
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Password reset link sent to your email"
+
+  /auth/delete-account:
+    post:
+      tags:
+        - Authentication
+      summary: Delete user account
+      description: Delete the authenticated user account permanently
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - password
+              properties:
+                password:
+                  type: string
+                  example: "password123"
+      responses:
+        '200':
+          description: Account deleted successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Account deleted successfully"
+
+  /auth/get-verify-code:
+    post:
+      tags:
+        - Authentication
+      summary: Get verification code
+      description: Send verification code to user phone/email
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - email
+              properties:
+                email:
+                  type: string
+                  format: email
+                  example: "john@example.com"
+                phone:
+                  type: string
+                  example: "1234567890"
+      responses:
+        '200':
+          description: Verification code sent
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Verification code sent"
+
+  /auth/switch-provider-account:
+    post:
+      tags:
+        - Authentication
+      summary: Switch to provider account
+      description: Switch user account type to provider
+      responses:
+        '200':
+          description: Successfully switched to provider account
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Switched to provider account"
+                  user:
+                    $ref: '#/components/schemas/User'
+
+  /auth/switch-client-account:
+    post:
+      tags:
+        - Authentication
+      summary: Switch to client account
+      description: Switch user account type to client
+      responses:
+        '200':
+          description: Successfully switched to client account
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Switched to client account"
+                  user:
+                    $ref: '#/components/schemas/User'  # ==========================================
+  # STORE & PRODUCTS ENDPOINTS
+  # ==========================================
+  /store/categories:
+    get:
+      tags:
+        - Store
+      summary: Get all store categories
+      security: []
+      parameters:
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 1
+        - name: per_page
+          in: query
+          schema:
+            type: integer
+            default: 15
+      responses:
+        200:
+          description: Categories retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/StoreCategory'
+                  pagination:
+                    $ref: '#/components/schemas/Pagination'
+
+  /store/products:
+    get:
+      tags:
+        - Store
+      summary: Get all store products
+      security: []
+      parameters:
+        - name: category_id
+          in: query
+          schema:
+            type: integer
+        - name: search
+          in: query
+          schema:
+            type: string
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 1
+      responses:
+        200:
+          description: Products retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/StoreProduct'
+
+  /store/products/{id}/demo:
+    get:
+      tags:
+        - Store
+        - Downloads
+      summary: Download demo file
+      description: Download demo file for a product (public access)
+      security: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        200:
+          description: Demo file download
+          content:
+            application/octet-stream:
+              schema:
+                type: string
+                format: binary
+        404:
+          description: Demo file not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  # ==========================================
+  # DOWNLOAD SYSTEM ENDPOINTS
+  # ==========================================
+  /store/generate-download-token:
+    post:
+      tags:
+        - Downloads
+      summary: Generate download token
+      description: Generate secure download token for purchased products
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - product_id
+                - user_id
+                - order_id
+              properties:
+                product_id:
+                  type: integer
+                  example: 1
+                user_id:
+                  type: integer
+                  example: 1
+                order_id:
+                  type: integer
+                  example: 1
+                expires_in_hours:
+                  type: integer
+                  minimum: 1
+                  maximum: 168
+                  example: 24
+                max_downloads:
+                  type: integer
+                  minimum: 1
+                  maximum: 10
+                  example: 5
+      responses:
+        200:
+          description: Download token generated successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: "Download token generated successfully"
+                  data:
+                    type: object
+                    properties:
+                      token:
+                        type: string
+                        example: "abc123def456..."
+                      download_url:
+                        type: string
+                        example: "https://api.example.com/download/abc123def456..."
+                      expires_at:
+                        type: string
+                        format: date-time
+                        example: "2025-11-06T12:00:00Z"
+                      max_downloads:
+                        type: integer
+                        example: 5
+                      downloads_count:
+                        type: integer
+                        example: 0
+        422:
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationError'
+
+  /download/{token}:
+    get:
+      tags:
+        - Downloads
+      summary: Download file using token
+      description: Download file using secure token (no authentication required)
+      security: []
+      parameters:
+        - name: token
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        200:
+          description: File download successful
+          content:
+            application/octet-stream:
+              schema:
+                type: string
+                format: binary
+        404:
+          description: Token not found or expired
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        429:
+          description: Download limit exceeded
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /store/my-download-tokens:
+    get:
+      tags:
+        - Downloads
+      summary: Get user's download tokens
+      description: Retrieve all download tokens for authenticated user
+      responses:
+        200:
+          description: Download tokens retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/DownloadToken'
+
+  # ==========================================
+  # FCM NOTIFICATIONS ENDPOINTS
+  # ==========================================
+  /fcm/register-token:
+    post:
+      tags:
+        - FCM Notifications
+      summary: Register FCM token
+      description: Register user's FCM token for push notifications
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - fcm_token
+              properties:
+                fcm_token:
+                  type: string
+                  maxLength: 500
+                  example: "fGHJ123...fcmTokenString"
+                device_type:
+                  type: string
+                  enum: [android, ios, web]
+                  example: "android"
+      responses:
+        200:
+          description: FCM token registered successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: "FCM token registered successfully"
+                  data:
+                    type: object
+                    properties:
+                      user_id:
+                        type: integer
+                        example: 1
+                      token_registered:
+                        type: boolean
+                        example: true
+
+  /fcm/test-notification:
+    post:
+      tags:
+        - FCM Notifications
+      summary: Send test notification
+      description: Send test push notification to current user
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                title:
+                  type: string
+                  example: "Test Notification"
+                body:
+                  type: string
+                  example: "This is a test notification"
+                data:
+                  type: object
+                  example: {"key": "value"}
+      responses:
+        200:
+          description: Notification sent successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  example: true
+                  message:
+                    type: string
+                    example: "Test notification sent successfully"
+
+  # ==========================================
+  # GOVERNMENTS ENDPOINTS
+  # ==========================================
+  /governments:
+    get:
+      tags:
+        - Governments
+      summary: List all governments
+      description: Get list of all governments/states
+      security: []
+      responses:
+        '200':
+          description: Governments retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Government'
+    post:
+      tags:
+        - Governments
+      summary: Create new government
+      description: Create a new government/state (admin only)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - name
+                - country_id
+              properties:
+                name:
+                  type: string
+                  example: "Cairo"
+                country_id:
+                  type: integer
+                  example: 1
+      responses:
+        '201':
+          description: Government created successfully
+
+  /governments/{id}:
+    get:
+      tags:
+        - Governments
+      summary: Get government by ID
+      security: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Government retrieved successfully
+    put:
+      tags:
+        - Governments
+      summary: Update government
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                country_id:
+                  type: integer
+      responses:
+        '200':
+          description: Government updated successfully
+    delete:
+      tags:
+        - Governments
+      summary: Delete government
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Government deleted successfully
+
+  # ==========================================
+  # PROVIDER TYPES ENDPOINTS
+  # ==========================================
+  /provider-types:
+    get:
+      tags:
+        - Provider Types
+      summary: List all provider types
+      security: []
+      responses:
+        '200':
+          description: Provider types retrieved successfully
+    post:
+      tags:
+        - Provider Types
+      summary: Create new provider type
+      responses:
+        '201':
+          description: Provider type created successfully
+
+  /provider-types/{id}:
+    get:
+      tags:
+        - Provider Types
+      summary: Get provider type by ID
+      security: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Provider type retrieved successfully
+    put:
+      tags:
+        - Provider Types
+      summary: Update provider type
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Provider type updated successfully
+    delete:
+      tags:
+        - Provider Types
+      summary: Delete provider type
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Provider type deleted successfully
+
+  # ==========================================
+  # SPECIALIZATIONS ENDPOINTS
+  # ==========================================
+  /specializations:
+    get:
+      tags:
+        - Specializations
+      summary: List all specializations
+      security: []
+      responses:
+        '200':
+          description: Specializations retrieved successfully
+    post:
+      tags:
+        - Specializations
+      summary: Create new specialization
+      responses:
+        '201':
+          description: Specialization created successfully
+
+  /specializations/{id}:
+    get:
+      tags:
+        - Specializations
+      summary: Get specialization by ID
+      security: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Specialization retrieved successfully
+    put:
+      tags:
+        - Specializations
+      summary: Update specialization
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Specialization updated successfully
+    delete:
+      tags:
+        - Specializations
+      summary: Delete specialization
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Specialization deleted successfully
+
+  /specializations/{id}/update:
+    post:
+      tags:
+        - Specializations
+      summary: Update specialization (POST method)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Specialization updated successfully
+
+  /specializations/providers:
+    post:
+      tags:
+        - Specializations
+      summary: Get providers by specialization
+      responses:
+        '200':
+          description: Providers retrieved successfully
+
+  # ==========================================
+  # SUB-SPECIALIZATIONS ENDPOINTS
+  # ==========================================
+  /sub-specializations:
+    get:
+      tags:
+        - Sub-Specializations
+      summary: List all sub-specializations
+      security: []
+      responses:
+        '200':
+          description: Sub-specializations retrieved successfully
+    post:
+      tags:
+        - Sub-Specializations
+      summary: Create new sub-specialization
+      responses:
+        '201':
+          description: Sub-specialization created successfully
+
+  /sub-specializations/{id}:
+    get:
+      tags:
+        - Sub-Specializations
+      summary: Get sub-specialization by ID
+      security: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Sub-specialization retrieved successfully
+    put:
+      tags:
+        - Sub-Specializations
+      summary: Update sub-specialization
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Sub-specialization updated successfully
+    delete:
+      tags:
+        - Sub-Specializations
+      summary: Delete sub-specialization
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Sub-specialization deleted successfully
+
+  /sub-specializations/{id}/update:
+    post:
+      tags:
+        - Sub-Specializations
+      summary: Update sub-specialization (POST method)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Sub-specialization updated successfully
+
+  # ==========================================
+  # PROVIDERS ENDPOINTS
+  # ==========================================
+  /providers:
+    get:
+      tags:
+        - Providers
+      summary: List all providers
+      security: []
+      responses:
+        '200':
+          description: Providers retrieved successfully
+    post:
+      tags:
+        - Providers
+      summary: Create new provider
+      responses:
+        '201':
+          description: Provider created successfully
+
+  /providers/{id}:
+    get:
+      tags:
+        - Providers
+      summary: Get provider by ID
+      security: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Provider retrieved successfully
+    put:
+      tags:
+        - Providers
+      summary: Update provider
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Provider updated successfully
+    delete:
+      tags:
+        - Providers
+      summary: Delete provider
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Provider deleted successfully
+
+  /providers/{id}/services:
+    get:
+      tags:
+        - Providers
+      summary: Get provider services
+      security: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Provider services retrieved successfully
+
+  /providers/{id}/update:
+    post:
+      tags:
+        - Providers
+      summary: Update provider (POST method)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Provider updated successfully
+
+  # ==========================================
+  # PROVIDER CONTACTS ENDPOINTS
+  # ==========================================
+  /provider-contacts:
+    get:
+      tags:
+        - Provider Contacts
+      summary: List all provider contacts
+      responses:
+        '200':
+          description: Provider contacts retrieved successfully
+    post:
+      tags:
+        - Provider Contacts
+      summary: Create new provider contact
+      responses:
+        '201':
+          description: Provider contact created successfully
+
+  /provider-contacts/{id}:
+    get:
+      tags:
+        - Provider Contacts
+      summary: Get provider contact by ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Provider contact retrieved successfully
+    put:
+      tags:
+        - Provider Contacts
+      summary: Update provider contact
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Provider contact updated successfully
+    delete:
+      tags:
+        - Provider Contacts
+      summary: Delete provider contact
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Provider contact deleted successfully
+
+  /provider/{id}/contacts:
+    get:
+      tags:
+        - Provider Contacts
+      summary: Get contacts for specific provider
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Provider contacts retrieved successfully
+
+  # ==========================================
+  # PROVIDER SERVICES ENDPOINTS
+  # ==========================================
+  /provider-service:
+    get:
+      tags:
+        - Provider Services
+      summary: List all provider services
+      responses:
+        '200':
+          description: Provider services retrieved successfully
+    post:
+      tags:
+        - Provider Services
+      summary: Create new provider service
+      responses:
+        '201':
+          description: Provider service created successfully
+
+  /provider-service/{id}:
+    get:
+      tags:
+        - Provider Services
+      summary: Get provider service by ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Provider service retrieved successfully
+    put:
+      tags:
+        - Provider Services
+      summary: Update provider service
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Provider service updated successfully
+    delete:
+      tags:
+        - Provider Services
+      summary: Delete provider service
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Provider service deleted successfully
+
+  /provider-service/{id}/update:
+    post:
+      tags:
+        - Provider Services
+      summary: Update provider service (POST method)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Provider service updated successfully
+
+  /specializations/{id}/services:
+    get:
+      tags:
+        - Provider Services
+      summary: Get services by specialization
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Specialization services retrieved successfully
+
+  # ==========================================
+  # CLIENT SERVICES ENDPOINTS
+  # ==========================================
+  /client-service:
+    get:
+      tags:
+        - Client Services
+      summary: List all client services
+      responses:
+        '200':
+          description: Client services retrieved successfully
+    post:
+      tags:
+        - Client Services
+      summary: Create new client service
+      responses:
+        '201':
+          description: Client service created successfully
+
+  /client-service/{id}:
+    get:
+      tags:
+        - Client Services
+      summary: Get client service by ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Client service retrieved successfully
+    put:
+      tags:
+        - Client Services
+      summary: Update client service
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Client service updated successfully
+    delete:
+      tags:
+        - Client Services
+      summary: Delete client service
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Client service deleted successfully
+
+  /client-service/{id}/update:
+    post:
+      tags:
+        - Client Services
+      summary: Update client service (POST method)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Client service updated successfully
+
+  # ==========================================
+  # JOBS ENDPOINTS
+  # ==========================================
+  /jobs:
+    get:
+      tags:
+        - Jobs
+      summary: List all jobs
+      security: []
+      responses:
+        '200':
+          description: Jobs retrieved successfully
+    post:
+      tags:
+        - Jobs
+      summary: Create new job
+      responses:
+        '201':
+          description: Job created successfully
+
+  /jobs/{id}:
+    get:
+      tags:
+        - Jobs
+      summary: Get job by ID
+      security: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Job retrieved successfully
+    put:
+      tags:
+        - Jobs
+      summary: Update job
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Job updated successfully
+    delete:
+      tags:
+        - Jobs
+      summary: Delete job
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Job deleted successfully
+
+  /provider-jobs:
+    get:
+      tags:
+        - Jobs
+      summary: Get jobs for current provider
+      responses:
+        '200':
+          description: Provider jobs retrieved successfully
+
+  # ==========================================
+  # HOME ENDPOINTS
+  # ==========================================
+  /home/top-services:
+    get:
+      tags:
+        - Home
+      summary: Get top services
+      security: []
+      responses:
+        '200':
+          description: Top services retrieved successfully
+
+  /home/new-services:
+    get:
+      tags:
+        - Home
+      summary: Get new services
+      security: []
+      responses:
+        '200':
+          description: New services retrieved successfully
+
+  /home/new-jobs:
+    get:
+      tags:
+        - Home
+      summary: Get new jobs
+      security: []
+      responses:
+        '200':
+          description: New jobs retrieved successfully
+
+  /home/top-providers:
+    get:
+      tags:
+        - Home
+      summary: Get top providers
+      security: []
+      responses:
+        '200':
+          description: Top providers retrieved successfully
+
+  /home/countries-top-providers:
+    get:
+      tags:
+        - Home
+      summary: Get top providers by countries
+      security: []
+      responses:
+        '200':
+          description: Countries top providers retrieved successfully
+
+  /home/country/{id}/top-providers:
+    get:
+      tags:
+        - Home
+      summary: Get top providers for specific country
+      security: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Country top providers retrieved successfully
+
+  # ==========================================
+  # FAVORITES ENDPOINTS
+  # ==========================================
+  /favorite-providers:
+    get:
+      tags:
+        - Favorites
+      summary: Get favorite providers
+      responses:
+        '200':
+          description: Favorite providers retrieved successfully
+
+  /toggle-favorite:
+    post:
+      tags:
+        - Favorites
+      summary: Toggle provider favorite
+      responses:
+        '200':
+          description: Favorite toggled successfully
+
+  # ==========================================
+  # REQUEST SERVICES ENDPOINTS
+  # ==========================================
+  /request-services:
+    get:
+      tags:
+        - Request Services
+      summary: List all request services
+      security: []
+      responses:
+        '200':
+          description: Request services retrieved successfully
+    post:
+      tags:
+        - Request Services
+      summary: Create new request service
+      responses:
+        '201':
+          description: Request service created successfully
+
+  /request-services/{id}:
+    get:
+      tags:
+        - Request Services
+      summary: Get request service by ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Request service retrieved successfully
+    delete:
+      tags:
+        - Request Services
+      summary: Delete request service
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Request service deleted successfully
+
+  /request-services/{id}/update:
+    post:
+      tags:
+        - Request Services
+      summary: Update request service
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Request service updated successfully
+
+  # ==========================================
+  # REQUEST OFFERS ENDPOINTS
+  # ==========================================
+  /request-offers:
+    get:
+      tags:
+        - Request Offers
+      summary: List all request offers
+      responses:
+        '200':
+          description: Request offers retrieved successfully
+    post:
+      tags:
+        - Request Offers
+      summary: Create new request offer
+      responses:
+        '201':
+          description: Request offer created successfully
+
+  /request-offers/{id}:
+    get:
+      tags:
+        - Request Offers
+      summary: Get request offer by ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Request offer retrieved successfully
+    put:
+      tags:
+        - Request Offers
+      summary: Update request offer
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Request offer updated successfully
+    delete:
+      tags:
+        - Request Offers
+      summary: Delete request offer
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Request offer deleted successfully
+
+  /request-offers/{id}/accept-offer:
+    patch:
+      tags:
+        - Request Offers
+      summary: Accept offer
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Offer accepted successfully
+
+  /user-offers:
+    post:
+      tags:
+        - Request Offers
+      summary: Get user offers
+      responses:
+        '200':
+          description: User offers retrieved successfully
+
+  # ==========================================
+  # ADDITIONAL STORE ENDPOINTS
+  # ==========================================
+  /store/categories/{id}/update:
+    post:
+      tags:
+        - Store
+      summary: Update store category (POST method)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Category updated successfully
+
+  /store/products/{id}/update:
+    post:
+      tags:
+        - Store
+      summary: Update store product (POST method)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Product updated successfully
+
+  /store/top-selling-products:
+    get:
+      tags:
+        - Store
+      summary: Get top selling products
+      security: []
+      responses:
+        '200':
+          description: Top selling products retrieved successfully
+
+  /store/product-description-titles:
+    get:
+      tags:
+        - Store
+      summary: List product description titles
+      responses:
+        '200':
+          description: Product description titles retrieved successfully
+    post:
+      tags:
+        - Store
+      summary: Create product description title
+      responses:
+        '201':
+          description: Product description title created successfully
+
+  /store/product-description-titles/{id}:
+    get:
+      tags:
+        - Store
+      summary: Get product description title by ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Product description title retrieved successfully
+    put:
+      tags:
+        - Store
+      summary: Update product description title
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Product description title updated successfully
+    delete:
+      tags:
+        - Store
+      summary: Delete product description title
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Product description title deleted successfully
+
+  /store/product-description-contents:
+    get:
+      tags:
+        - Store
+      summary: List product description contents
+      responses:
+        '200':
+          description: Product description contents retrieved successfully
+    post:
+      tags:
+        - Store
+      summary: Create product description content
+      responses:
+        '201':
+          description: Product description content created successfully
+
+  /store/product-description-contents/{id}:
+    get:
+      tags:
+        - Store
+      summary: Get product description content by ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Product description content retrieved successfully
+    put:
+      tags:
+        - Store
+      summary: Update product description content
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Product description content updated successfully
+    delete:
+      tags:
+        - Store
+      summary: Delete product description content
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Product description content deleted successfully
+
+  /store/recommended-products:
+    get:
+      tags:
+        - Store
+      summary: Get recommended products
+      security: []
+      responses:
+        '200':
+          description: Recommended products retrieved successfully
+
+  /store/carts:
+    get:
+      tags:
+        - Store
+      summary: List cart items
+      responses:
+        '200':
+          description: Cart items retrieved successfully
+    post:
+      tags:
+        - Store
+      summary: Add item to cart
+      responses:
+        '201':
+          description: Item added to cart successfully
+
+  /store/carts/{id}:
+    get:
+      tags:
+        - Store
+      summary: Get cart item by ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Cart item retrieved successfully
+    put:
+      tags:
+        - Store
+      summary: Update cart item
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Cart item updated successfully
+    delete:
+      tags:
+        - Store
+      summary: Remove item from cart
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Cart item removed successfully
+
+  /store/cart/clear:
+    post:
+      tags:
+        - Store
+      summary: Clear cart
+      responses:
+        '200':
+          description: Cart cleared successfully
+
+  /store/orders:
+    get:
+      tags:
+        - Store
+      summary: List user orders
+      responses:
+        '200':
+          description: Orders retrieved successfully
+    post:
+      tags:
+        - Store
+      summary: Create new order
+      responses:
+        '201':
+          description: Order created successfully
+
+  /store/orders/{id}:
+    get:
+      tags:
+        - Store
+      summary: Get order by ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Order retrieved successfully
+    put:
+      tags:
+        - Store
+      summary: Update order
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Order updated successfully
+    delete:
+      tags:
+        - Store
+      summary: Cancel order
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Order cancelled successfully
+
+  /store/admin-orders:
+    get:
+      tags:
+        - Store
+      summary: Get admin orders (admin only)
+      responses:
+        '200':
+          description: Admin orders retrieved successfully
+
+  /store/contact-us:
+    get:
+      tags:
+        - Store
+      summary: Get contact us information
+      security: []
+      responses:
+        '200':
+          description: Contact information retrieved successfully
+    post:
+      tags:
+        - Store
+      summary: Send contact us message
+      responses:
+        '200':
+          description: Message sent successfully
+
+  # ==========================================
+  # ADDITIONAL MISSING ENDPOINTS
+  # ==========================================
+
+  # BANNERS ENDPOINTS
+  /banners:
+    get:
+      tags:
+        - Banners
+      summary: List all banners
+      security: []
+      responses:
+        '200':
+          description: Banners retrieved successfully
+    post:
+      tags:
+        - Banners
+      summary: Create new banner
+      responses:
+        '201':
+          description: Banner created successfully
+
+  /banners/{id}:
+    get:
+      tags:
+        - Banners
+      summary: Get banner by ID
+      security: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Banner retrieved successfully
+    put:
+      tags:
+        - Banners
+      summary: Update banner
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Banner updated successfully
+    delete:
+      tags:
+        - Banners
+      summary: Delete banner
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Banner deleted successfully
+
+  /banners/{id}/update:
+    post:
+      tags:
+        - Banners
+      summary: Update banner (POST method)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Banner updated successfully
+
+  # JOB APPLICATIONS ENDPOINTS
+  /job-application:
+    post:
+      tags:
+        - Job Applications
+      summary: Apply for job
+      responses:
+        '201':
+          description: Job application submitted successfully
+
+  /client/job-application:
+    get:
+      tags:
+        - Job Applications
+      summary: Get client job applications
+      responses:
+        '200':
+          description: Client applications retrieved successfully
+
+  /job-applications:
+    get:
+      tags:
+        - Job Applications
+      summary: List all job applications
+      responses:
+        '200':
+          description: Job applications retrieved successfully
+
+  /job-applications/{id}:
+    delete:
+      tags:
+        - Job Applications
+      summary: Delete job application
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Job application deleted successfully
+
+  /job-applications/{id}/update-status:
+    post:
+      tags:
+        - Job Applications
+      summary: Update job application status
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Job application status updated successfully
+
+  /job-applications/search:
+    get:
+      tags:
+        - Job Applications
+      summary: Search job applications
+      responses:
+        '200':
+          description: Job applications search results retrieved successfully
+
+  # SAVED JOBS ENDPOINTS
+  /saved-jobs:
+    get:
+      tags:
+        - Saved Jobs
+      summary: List saved jobs
+      responses:
+        '200':
+          description: Saved jobs retrieved successfully
+    post:
+      tags:
+        - Saved Jobs
+      summary: Save job
+      responses:
+        '201':
+          description: Job saved successfully
+
+  /saved-jobs/{id}:
+    get:
+      tags:
+        - Saved Jobs
+      summary: Get saved job by ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Saved job retrieved successfully
+    put:
+      tags:
+        - Saved Jobs
+      summary: Update saved job
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Saved job updated successfully
+    delete:
+      tags:
+        - Saved Jobs
+      summary: Remove saved job
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Saved job removed successfully
+
+  # CLIENTS ENDPOINTS
+  /clients:
+    get:
+      tags:
+        - Clients
+      summary: List all clients
+      responses:
+        '200':
+          description: Clients retrieved successfully
+    post:
+      tags:
+        - Clients
+      summary: Create new client
+      responses:
+        '201':
+          description: Client created successfully
+
+  /clients/{id}:
+    get:
+      tags:
+        - Clients
+      summary: Get client by ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Client retrieved successfully
+    put:
+      tags:
+        - Clients
+      summary: Update client
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Client updated successfully
+    delete:
+      tags:
+        - Clients
+      summary: Delete client
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Client deleted successfully
+
+  /clients/{id}/update:
+    post:
+      tags:
+        - Clients
+      summary: Update client (POST method)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Client updated successfully
+
+  /clients/{id}/services:
+    get:
+      tags:
+        - Clients
+      summary: Get client services
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Client services retrieved successfully
+
+  # COMPLAINTS ENDPOINTS
+  /complaints:
+    get:
+      tags:
+        - Complaints
+      summary: List user complaints
+      responses:
+        '200':
+          description: Complaints retrieved successfully
+    post:
+      tags:
+        - Complaints
+      summary: Create new complaint
+      responses:
+        '201':
+          description: Complaint created successfully
+
+  /complaints/{id}:
+    put:
+      tags:
+        - Complaints
+      summary: Update complaint
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Complaint updated successfully
+    delete:
+      tags:
+        - Complaints
+      summary: Delete complaint
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Complaint deleted successfully
+
+  /complaints/users:
+    get:
+      tags:
+        - Complaints
+      summary: Get complaints users
+      responses:
+        '200':
+          description: Complaints users retrieved successfully
+
+  # NOTIFICATIONS ENDPOINTS
+  /send-notification:
+    post:
+      tags:
+        - Notifications
+      summary: Send notification
+      responses:
+        '200':
+          description: Notification sent successfully
+
+  /notifications:
+    get:
+      tags:
+        - Notifications
+      summary: List notifications
+      responses:
+        '200':
+          description: Notifications retrieved successfully
+
+  # ADMIN ENDPOINTS
+  /admins:
+    get:
+      tags:
+        - Admin
+      summary: List all admins
+      responses:
+        '200':
+          description: Admins retrieved successfully
+    post:
+      tags:
+        - Admin
+      summary: Create new admin
+      responses:
+        '201':
+          description: Admin created successfully
+
+  /admins/{id}:
+    get:
+      tags:
+        - Admin
+      summary: Get admin by ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Admin retrieved successfully
+    put:
+      tags:
+        - Admin
+      summary: Update admin
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Admin updated successfully
+    delete:
+      tags:
+        - Admin
+      summary: Delete admin
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Admin deleted successfully
+
+  /admins/{id}/update:
+    post:
+      tags:
+        - Admin
+      summary: Update admin (POST method)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Admin updated successfully
+
+  /admin/waiting-providers:
+    get:
+      tags:
+        - Admin
+      summary: Get waiting providers
+      responses:
+        '200':
+          description: Waiting providers retrieved successfully
+
+  /admin/accept-provider:
+    post:
+      tags:
+        - Admin
+      summary: Accept provider
+      responses:
+        '200':
+          description: Provider accepted successfully
+
+  /admin/reject-provider:
+    post:
+      tags:
+        - Admin
+      summary: Reject provider
+      responses:
+        '200':
+          description: Provider rejected successfully
+
+  # BAG CONTENT ENDPOINTS
+  /store/bag-contents:
+    get:
+      tags:
+        - Bag Contents
+      summary: List bag contents
+      responses:
+        '200':
+          description: Bag contents retrieved successfully
+    post:
+      tags:
+        - Bag Contents
+      summary: Create bag content
+      responses:
+        '201':
+          description: Bag content created successfully
+
+  /store/bag-contents/{id}:
+    get:
+      tags:
+        - Bag Contents
+      summary: Get bag content by ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Bag content retrieved successfully
+    delete:
+      tags:
+        - Bag Contents
+      summary: Delete bag content
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Bag content deleted successfully
+
+  /store/bag-contents/{id}/update:
+    post:
+      tags:
+        - Bag Contents
+      summary: Update bag content
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Bag content updated successfully
+
+  /store/product-bag-content:
+    get:
+      tags:
+        - Product Bag Contents
+      summary: List product bag contents
+      responses:
+        '200':
+          description: Product bag contents retrieved successfully
+    post:
+      tags:
+        - Product Bag Contents
+      summary: Create product bag content
+      responses:
+        '201':
+          description: Product bag content created successfully
+
+  /store/product-bag-content/{id}:
+    get:
+      tags:
+        - Product Bag Contents
+      summary: Get product bag content by ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Product bag content retrieved successfully
+    put:
+      tags:
+        - Product Bag Contents
+      summary: Update product bag content
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Product bag content updated successfully
+    delete:
+      tags:
+        - Product Bag Contents
+      summary: Delete product bag content
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Product bag content deleted successfully
+
+  # OTP ENDPOINTS
+  /send-otp:
+    post:
+      tags:
+        - OTP
+      summary: Send OTP
+      security: []
+      responses:
+        '200':
+          description: OTP sent successfully
+
+  /verify-otp:
+    post:
+      tags:
+        - OTP
+      summary: Verify OTP
+      security: []
+      responses:
+        '200':
+          description: OTP verified successfully
+
+  # ADDITIONAL PROVIDER ENDPOINTS
+  /provider-service-features:
+    get:
+      tags:
+        - Provider Service Features
+      summary: List provider service features
+      responses:
+        '200':
+          description: Provider service features retrieved successfully
+    post:
+      tags:
+        - Provider Service Features
+      summary: Create provider service feature
+      responses:
+        '201':
+          description: Provider service feature created successfully
+
+  /provider-service-features/{id}:
+    get:
+      tags:
+        - Provider Service Features
+      summary: Get provider service feature by ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Provider service feature retrieved successfully
+    put:
+      tags:
+        - Provider Service Features
+      summary: Update provider service feature
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Provider service feature updated successfully
+    delete:
+      tags:
+        - Provider Service Features
+      summary: Delete provider service feature
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Provider service feature deleted successfully
+
+  /provider-service-reviews:
+    get:
+      tags:
+        - Provider Service Reviews
+      summary: List provider service reviews
+      responses:
+        '200':
+          description: Provider service reviews retrieved successfully
+    post:
+      tags:
+        - Provider Service Reviews
+      summary: Create provider service review
+      responses:
+        '201':
+          description: Provider service review created successfully
+
+  /provider-service-reviews/{id}:
+    get:
+      tags:
+        - Provider Service Reviews
+      summary: Get provider service review by ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Provider service review retrieved successfully
+    put:
+      tags:
+        - Provider Service Reviews
+      summary: Update provider service review
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Provider service review updated successfully
+    delete:
+      tags:
+        - Provider Service Reviews
+      summary: Delete provider service review
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Provider service review deleted successfully
+
+  /provider-previous-works:
+    get:
+      tags:
+        - Provider Previous Works
+      summary: List provider previous works
+      responses:
+        '200':
+          description: Provider previous works retrieved successfully
+    post:
+      tags:
+        - Provider Previous Works
+      summary: Create provider previous work
+      responses:
+        '201':
+          description: Provider previous work created successfully
+
+  /provider-previous-works/{id}:
+    get:
+      tags:
+        - Provider Previous Works
+      summary: Get provider previous work by ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Provider previous work retrieved successfully
+    put:
+      tags:
+        - Provider Previous Works
+      summary: Update provider previous work
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Provider previous work updated successfully
+    delete:
+      tags:
+        - Provider Previous Works
+      summary: Delete provider previous work
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Provider previous work deleted successfully
+
+  /provider-previous-works/{id}/update:
+    post:
+      tags:
+        - Provider Previous Works
+      summary: Update provider previous work (POST method)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Provider previous work updated successfully
+
+  /previous-work-images:
+    get:
+      tags:
+        - Previous Work Images
+      summary: List previous work images
+      responses:
+        '200':
+          description: Previous work images retrieved successfully
+    post:
+      tags:
+        - Previous Work Images
+      summary: Create previous work image
+      responses:
+        '201':
+          description: Previous work image created successfully
+
+  /previous-work-images/{id}:
+    get:
+      tags:
+        - Previous Work Images
+      summary: Get previous work image by ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Previous work image retrieved successfully
+    put:
+      tags:
+        - Previous Work Images
+      summary: Update previous work image
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Previous work image updated successfully
+    delete:
+      tags:
+        - Previous Work Images
+      summary: Delete previous work image
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Previous work image deleted successfully
+
+  /previous-work-images/{id}/update:
+    post:
+      tags:
+        - Previous Work Images
+      summary: Update previous work image (POST method)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Previous work image updated successfully
+
+  # DEMO DOWNLOAD (DUPLICATE FROM ABOVE, DIFFERENT PATH)
+  /demo-download/{product}:
+    get:
+      tags:
+        - Downloads
+      summary: Demo download (alternative path)
+      security: []
+      parameters:
+        - name: product
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Demo file downloaded successfully
+
+  # ADDITIONAL FCM ENDPOINTS
+  /fcm/register-token:
+    post:
+      tags:
+        - FCM Notifications
+      summary: Register FCM token (alternative endpoint)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - fcm_token
+              properties:
+                fcm_token:
+                  type: string
+                  example: "fGHJ123...fcmTokenString"
+                device_type:
+                  type: string
+                  enum: [android, ios, web]
+                  example: "android"
+      responses:
+        '200':
+          description: FCM token registered successfully
+
+  /fcm/update-token:
+    post:
+      tags:
+        - FCM Notifications
+      summary: Update FCM token
+      responses:
+        '200':
+          description: FCM token updated successfully
+
+  /fcm/remove-token:
+    delete:
+      tags:
+        - FCM Notifications
+      summary: Remove FCM token
+      responses:
+        '200':
+          description: FCM token removed successfully
+
+  /fcm/test-notification:
+    post:
+      tags:
+        - FCM Notifications
+      summary: Test notification (alternative endpoint)
+      responses:
+        '200':
+          description: Test notification sent successfully
+
+  # ADDITIONAL ADMIN FCM ENDPOINTS
+  /admin/send-notification:
+    post:
+      tags:
+        - Admin FCM
+      summary: Send admin notification
+      responses:
+        '200':
+          description: Admin notification sent successfully
+
+  /admin/send-bulk-notification:
+    post:
+      tags:
+        - Admin FCM
+      summary: Send bulk notification
+      responses:
+        '200':
+          description: Bulk notification sent successfully
+
+  # ADDITIONAL ADMIN REPORT ENDPOINTS
+  /admin/reports/downloads:
+    get:
+      tags:
+        - Admin Reports
+      summary: Get downloads report
+      responses:
+        '200':
+          description: Downloads report retrieved successfully
+
+  /admin/reports/orders:
+    get:
+      tags:
+        - Admin Reports
+      summary: Get orders report
+      responses:
+        '200':
+          description: Orders report retrieved successfully
+
+  /admin/reports/products-performance:
+    get:
+      tags:
+        - Admin Reports
+      summary: Get products performance report
+      responses:
+        '200':
+          description: Products performance report retrieved successfully
+
+  /admin/reports/users-activity:
+    get:
+      tags:
+        - Admin Reports
+      summary: Get users activity report
+      responses:
+        '200':
+          description: Users activity report retrieved successfully
+
+  # ADDITIONAL DOWNLOAD SETTINGS ENDPOINTS
+  /admin/download-settings/{key}:
+    get:
+      tags:
+        - Admin Settings
+      summary: Get specific download setting
+      parameters:
+        - name: key
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Download setting retrieved successfully
+
+  /admin/download-settings/update:
+    post:
+      tags:
+        - Admin Settings
+      summary: Update download settings
+      responses:
+        '200':
+          description: Download settings updated successfully
+
+  /admin/download-settings/reset:
+    post:
+      tags:
+        - Admin Settings
+      summary: Reset download settings
+      responses:
+        '200':
+          description: Download settings reset successfully
+
+  # ADDITIONAL DOWNLOAD ENDPOINTS
+  /store/download-token/{token}/status:
+    get:
+      tags:
+        - Downloads
+      summary: Get download token status
+      parameters:
+        - name: token
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Token status retrieved successfully
+
+  /store/download-config:
+    get:
+      tags:
+        - Downloads
+      summary: Get download configuration
+      responses:
+        '200':
+          description: Download configuration retrieved successfully
+
+  /generate-download-token:
+    post:
+      tags:
+        - Downloads
+      summary: Generate download token (alternative endpoint)
+      responses:
+        '201':
+          description: Download token generated successfully
+
+  /verify-download-token:
+    post:
+      tags:
+        - Downloads
+      summary: Verify download token
+      responses:
+        '200':
+          description: Download token verified successfully
+
+  /my-download-tokens:
+    get:
+      tags:
+        - Downloads
+      summary: Get user download tokens (alternative endpoint)
+      responses:
+        '200':
+          description: User download tokens retrieved successfully
+
+components:
+
+  # ==========================================
+  # ADMIN REPORTS ENDPOINTS
+  # ==========================================
+  /admin/reports/dashboard:
+    get:
+      tags:
+        - Admin Reports
+      summary: Get dashboard statistics
+      description: Get comprehensive dashboard statistics for admin
+      parameters:
+        - name: date_from
+          in: query
+          schema:
+            type: string
+            format: date
+            example: "2025-01-01"
+        - name: date_to
+          in: query
+          schema:
+            type: string
+            format: date
+            example: "2025-12-31"
+      responses:
+        200:
+          description: Dashboard statistics retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  data:
+                    type: object
+                    properties:
+                      users:
+                        $ref: '#/components/schemas/UsersStats'
+                      orders:
+                        $ref: '#/components/schemas/OrdersStats'
+                      products:
+                        $ref: '#/components/schemas/ProductsStats'
+                      downloads:
+                        $ref: '#/components/schemas/DownloadsStats'
+                      services:
+                        $ref: '#/components/schemas/ServicesStats'
+                      generated_at:
+                        type: string
+                        format: date-time
+
+  /admin/download-settings:
+    get:
+      tags:
+        - Admin Settings
+      summary: Get download settings
+      description: Retrieve all download configuration settings
+      responses:
+        200:
+          description: Download settings retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/DownloadSetting'
+                  message:
+                    type: string
+                    example: "Download settings retrieved successfully"
+
+  /admin/download-settings/{id}:
+    put:
+      tags:
+        - Admin Settings
+      summary: Update download setting
+      description: Update a specific download setting
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                value:
+                  oneOf:
+                    - type: string
+                    - type: integer
+                    - type: boolean
+                  example: "10"
+                description:
+                  type: string
+                  example: "Updated description"
+      responses:
+        200:
+          description: Setting updated successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: "Setting updated successfully"
+                  data:
+                    $ref: '#/components/schemas/DownloadSetting'
+
+  # ==========================================
+  # PUBLIC ENDPOINTS
+  # ==========================================
+  # ==========================================
+  # COUNTRIES ENDPOINTS
+  # ==========================================
+  /countries:
+    get:
+      tags:
+        - Countries
+      summary: List all countries
+      description: Get list of all available countries
+      security: []
+      responses:
+        '200':
+          description: Countries retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Country'
+    post:
+      tags:
+        - Countries
+      summary: Create new country
+      description: Create a new country (admin only)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - name
+                - code
+              properties:
+                name:
+                  type: string
+                  example: "Egypt"
+                code:
+                  type: string
+                  example: "EG"
+                flag:
+                  type: string
+                  example: "🇪🇬"
+      responses:
+        '201':
+          description: Country created successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/Country'
+
+  /countries/{id}:
+    get:
+      tags:
+        - Countries
+      summary: Get country by ID
+      description: Get specific country details
+      security: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+            example: 1
+      responses:
+        '200':
+          description: Country retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/Country'
+    delete:
+      tags:
+        - Countries
+      summary: Delete country
+      description: Delete a country (admin only)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+            example: 1
+      responses:
+        '200':
+          description: Country deleted successfully
+
+  /countries/{id}/update:
+    post:
+      tags:
+        - Countries
+      summary: Update country
+      description: Update existing country (admin only)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+            example: 1
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                  example: "Egypt Updated"
+                code:
+                  type: string
+                  example: "EG"
+                flag:
+                  type: string
+                  example: "🇪🇬"
+      responses:
+        '200':
+          description: Country updated successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/Country'  /governments:
+    get:
+      tags:
+        - Public Data
+      summary: Get all governments
+      security: []
+      responses:
+        200:
+          description: Governments retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Government'
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: "Use Bearer token obtained from login endpoint"
+
+  schemas:
+    # Basic Models
+    StoreCategory:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        name:
+          type: string
+          example: "Electronics"
+        description:
+          type: string
+          example: "Electronic products category"
+        image:
+          type: string
+          example: "images/categories/electronics.jpg"
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+
+    StoreProduct:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        name:
+          type: string
+          example: "iPhone 15"
+        description:
+          type: string
+          example: "Latest iPhone model"
+        price:
+          type: number
+          format: float
+          example: 999.99
+        category_id:
+          type: integer
+          example: 1
+        image:
+          type: string
+          example: "images/products/iphone15.jpg"
+        file:
+          type: string
+          example: "files/products/iphone15_manual.pdf"
+        demo_file:
+          type: string
+          example: "files/demos/iphone15_demo.pdf"
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+
+    DownloadToken:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        token:
+          type: string
+          example: "abc123def456..."
+        user_id:
+          type: integer
+          example: 1
+        product_id:
+          type: integer
+          example: 1
+        order_id:
+          type: integer
+          example: 1
+        max_downloads:
+          type: integer
+          example: 5
+        downloads_count:
+          type: integer
+          example: 2
+        expires_at:
+          type: string
+          format: date-time
+          example: "2025-11-06T12:00:00Z"
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+
+    DownloadSetting:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        key:
+          type: string
+          example: "default_max_downloads"
+        value:
+          oneOf:
+            - type: string
+            - type: integer
+            - type: boolean
+          example: 5
+        type:
+          type: string
+          enum: [string, integer, boolean]
+          example: "integer"
+        description:
+          type: string
+          example: "Default maximum downloads per token"
+        is_active:
+          type: boolean
+          example: true
+        updated_at:
+          type: string
+          format: date-time
+
+    Country:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        name:
+          type: string
+          example: "Egypt"
+        code:
+          type: string
+          example: "EG"
+        flag:
+          type: string
+          example: "images/flags/egypt.png"
+
+    Government:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        name:
+          type: string
+          example: "Cairo"
+        country_id:
+          type: integer
+          example: 1
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+        country:
+          $ref: '#/components/schemas/Country'
+
+    Provider:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        name:
+          type: string
+          example: "John Doe Provider"
+        email:
+          type: string
+          example: "provider@example.com"
+        phone:
+          type: string
+          example: "1234567890"
+        bio:
+          type: string
+          example: "Experienced provider in IT services"
+        image:
+          type: string
+          example: "https://example.com/images/provider.jpg"
+        status:
+          type: string
+          enum: [pending, approved, rejected]
+          example: "approved"
+        provider_type_id:
+          type: integer
+          example: 1
+        sub_specialization_id:
+          type: integer
+          example: 1
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+
+    Job:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        title:
+          type: string
+          example: "Web Developer"
+        description:
+          type: string
+          example: "Looking for experienced web developer"
+        budget:
+          type: number
+          format: float
+          example: 5000.00
+        client_id:
+          type: integer
+          example: 1
+        specialization_id:
+          type: integer
+          example: 1
+        status:
+          type: string
+          enum: [open, closed, in_progress]
+          example: "open"
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+
+    Specialization:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        name:
+          type: string
+          example: "Information Technology"
+        description:
+          type: string
+          example: "IT related services"
+        image:
+          type: string
+          example: "https://example.com/images/specialization.jpg"
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+
+    SubSpecialization:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        name:
+          type: string
+          example: "Web Development"
+        specialization_id:
+          type: integer
+          example: 1
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+        specialization:
+          $ref: '#/components/schemas/Specialization'
+
+    # Statistics Schemas
+    UsersStats:
+      type: object
+      properties:
+        total_users:
+          type: integer
+          example: 1250
+        new_users_today:
+          type: integer
+          example: 15
+        new_users_this_month:
+          type: integer
+          example: 320
+        active_users_with_fcm:
+          type: integer
+          example: 890
+
+    OrdersStats:
+      type: object
+      properties:
+        total_orders:
+          type: integer
+          example: 587
+        orders_today:
+          type: integer
+          example: 12
+        orders_this_month:
+          type: integer
+          example: 156
+        total_revenue:
+          type: number
+          format: float
+          example: 45670.50
+        revenue_this_month:
+          type: number
+          format: float
+          example: 12890.25
+
+    ProductsStats:
+      type: object
+      properties:
+        total_products:
+          type: integer
+          example: 245
+        products_with_demo:
+          type: integer
+          example: 189
+        most_downloaded_product:
+          type: object
+          properties:
+            id:
+              type: integer
+            name:
+              type: string
+            downloads:
+              type: integer
+
+    DownloadsStats:
+      type: object
+      properties:
+        total_download_tokens:
+          type: integer
+          example: 1890
+        active_tokens:
+          type: integer
+          example: 234
+        total_downloads:
+          type: integer
+          example: 5670
+        downloads_today:
+          type: integer
+          example: 45
+
+    ServicesStats:
+      type: object
+      properties:
+        total_service_requests:
+          type: integer
+          example: 678
+        pending_services:
+          type: integer
+          example: 45
+        completed_services:
+          type: integer
+          example: 598
+
+    # Response Schemas
+    Pagination:
+      type: object
+      properties:
+        current_page:
+          type: integer
+          example: 1
+        last_page:
+          type: integer
+          example: 10
+        per_page:
+          type: integer
+          example: 15
+        total:
+          type: integer
+          example: 150
+
+    ErrorResponse:
+      type: object
+      properties:
+        status:
+          type: string
+          example: "error"
+        message:
+          type: string
+          example: "Error description"
+        error:
+          type: string
+          example: "Detailed error message"
+
+    ValidationError:
+      type: object
+      properties:
+        status:
+          type: string
+          example: "error"
+        message:
+          type: string
+          example: "Validation error"
+        errors:
+          type: object
+          example:
+            email: ["The email field is required."]
+            password: ["The password must be at least 6 characters."]
+
+tags:
+  - name: Authentication
+    description: User authentication endpoints
+  - name: Countries
+    description: Countries management
+  - name: Governments
+    description: Governments/states management
+  - name: Provider Types
+    description: Provider types management
+  - name: Specializations
+    description: Specializations management
+  - name: Sub-Specializations
+    description: Sub-specializations management
+  - name: Providers
+    description: Provider management
+  - name: Provider Contacts
+    description: Provider contact information
+  - name: Provider Services
+    description: Provider services management
+  - name: Provider Service Features
+    description: Service features management
+  - name: Provider Service Reviews
+    description: Service reviews and ratings
+  - name: Provider Previous Works
+    description: Provider portfolio management
+  - name: Previous Work Images
+    description: Portfolio images management
+  - name: Client Services
+    description: Client services management
+  - name: Clients
+    description: Client management
+  - name: Jobs
+    description: Job posting and management
+  - name: Job Applications
+    description: Job application management
+  - name: Saved Jobs
+    description: User saved jobs
+  - name: Home
+    description: Home page data endpoints
+  - name: Favorites
+    description: User favorites management
+  - name: Request Services
+    description: Service request management
+  - name: Request Offers
+    description: Service offer management
+  - name: Store
+    description: Store and product management
+  - name: Bag Contents
+    description: Shopping bag content management
+  - name: Product Bag Contents
+    description: Product-specific bag contents
+  - name: Banners
+    description: Banner management
+  - name: Complaints
+    description: User complaints system
+  - name: Notifications
+    description: Notification system
+  - name: OTP
+    description: One-time password verification
+  - name: Downloads
+    description: Secure download system with tokens
+  - name: FCM Notifications
+    description: Firebase Cloud Messaging for push notifications
+  - name: Admin
+    description: Admin user management
+  - name: Admin FCM
+    description: Admin FCM notification management
+  - name: Admin Reports
+    description: Administrative reports and analytics
+  - name: Admin Settings
+    description: System configuration and settings
