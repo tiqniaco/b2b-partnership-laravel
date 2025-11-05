@@ -202,8 +202,35 @@ class StoreOrderController extends Controller
             if ($order->status == 'approved') {
                 $order->expiration_date = now()->addMonth(1);
             }
+
+            $oldStatus = $order->status;
             $order->status = $request->status ?? $order->status;
             $order->save();
+
+            // إنشاء روابط التحميل عند الموافقة على الطلب أو اكتماله
+            if (in_array($order->status, ['approved', 'completed']) && $oldStatus !== $order->status) {
+                $user = $order->user;
+                $products = $order->products; // جلب جميع المنتجات في الطلب
+                $downloadTokens = [];
+
+                foreach ($products as $product) {
+                    // إنشاء رابط تحميل لكل منتج
+                    $token = app(\App\Services\DownloadService::class)
+                        ->createDownloadToken($user, $product, 3, 1, $order->id);
+
+                    $downloadTokens[] = $token;
+                }
+
+                if (!empty($downloadTokens)) {
+                    // إرسال البريد الإلكتروني مع روابط التحميل
+                    app(\App\Services\EmailService::class)
+                        ->sendDownloadLinksEmail($user, $order, $downloadTokens);
+
+                    // إرسال إشعار FCM (اختياري)
+                    app(\App\Services\FCMService::class)
+                        ->sendToUser($user, '✅ طلبك جاهز للتحميل', 'اضغط لتحميل الحقيبة التدريبية.');
+                }
+            }
 
 
             $this->notification->sendNotification(
