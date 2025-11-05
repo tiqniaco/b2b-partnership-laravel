@@ -31,4 +31,8 @@ return [
         'region' => env('AWS_DEFAULT_REGION', 'us-east-1'),
     ],
 
+    'fcm' => [
+        'service_account_path' => storage_path('firebase-service-account.json'),
+    ],
+
 ];

@@ -33,6 +33,9 @@ use App\Http\Controllers\RequestOffersController;
 use App\Http\Controllers\SavedJobController;
 use App\Http\Controllers\BagContentController;
 use App\Http\Controllers\BagContentStoreProductController;
+use App\Http\Controllers\Api\DownloadController;
+use App\Http\Controllers\Api\FCMController;
+use App\Http\Controllers\Api\Admin\AdminReportsController;
 
 use Illuminate\Support\Facades\Route;
 
@@ -217,3 +220,48 @@ Route::post('store/bag-contents/{id}/update', [BagContentController::class, 'upd
 
 // Bag Content Store Product
 Route::apiResource("store/product-bag-content",  BagContentStoreProductController::class);
+
+// ===============================================
+// NEW FEATURES ROUTES - DOWNLOAD & NOTIFICATIONS
+// ===============================================
+
+// Download Routes
+Route::prefix('store')->group(function () {
+    // Demo download (public access)
+    Route::get('products/{id}/demo', [DownloadController::class, 'downloadDemo']);
+
+    // Authenticated download routes
+    Route::middleware('auth:sanctum')->group(function () {
+        Route::post('generate-download-token', [DownloadController::class, 'generateDownloadToken']);
+        Route::get('download-token/{token}/status', [DownloadController::class, 'getTokenStatus']);
+        Route::get('my-download-tokens', [DownloadController::class, 'myDownloadTokens']);
+    });
+});
+
+// Direct download using token (no auth required)
+Route::get('download/{token}', [DownloadController::class, 'downloadByToken']);
+
+// FCM Routes
+Route::middleware('auth:sanctum')->group(function () {
+    Route::prefix('user')->group(function () {
+        Route::post('fcm-token', [FCMController::class, 'saveFCMToken']);
+        Route::delete('fcm-token', [FCMController::class, 'removeFCMToken']);
+        Route::post('test-notification', [FCMController::class, 'sendTestNotification']);
+    });
+});
+
+// Admin Routes
+Route::middleware(['auth:sanctum'])->prefix('admin')->group(function () {
+    // FCM Admin Routes
+    Route::post('send-notification', [FCMController::class, 'sendAdminNotification']);
+    Route::post('send-bulk-notification', [FCMController::class, 'sendBulkNotification']);
+
+    // Admin Reports
+    Route::prefix('reports')->group(function () {
+        Route::get('dashboard', [AdminReportsController::class, 'dashboard']);
+        Route::get('downloads', [AdminReportsController::class, 'downloadsReport']);
+        Route::get('orders', [AdminReportsController::class, 'ordersReport']);
+        Route::get('products-performance', [AdminReportsController::class, 'productsPerformanceReport']);
+        Route::get('users-activity', [AdminReportsController::class, 'usersActivityReport']);
+    });
+});

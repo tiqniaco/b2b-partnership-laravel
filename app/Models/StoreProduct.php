@@ -15,6 +15,7 @@ class StoreProduct extends Model
         'description_ar',
         'description_en',
         'file',
+        'demo_file',
         'price',
         'discount',
         'image',
@@ -24,5 +25,15 @@ class StoreProduct extends Model
     public function bagContents()
     {
         return $this->belongsToMany(BagContentStoreProduct::class);
+    }
+
+    public function downloadTokens()
+    {
+        return $this->hasMany(DownloadToken::class, 'product_id');
+    }
+
+    public function category()
+    {
+        return $this->belongsTo(StoreCategory::class, 'category_id');
     }
 }

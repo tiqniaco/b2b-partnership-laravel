@@ -24,6 +24,7 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
+        'fcm_token',
     ];
 
     /**
@@ -45,4 +46,14 @@ class User extends Authenticatable
         'email_verified_at' => 'datetime',
         'password' => 'hashed',
     ];
+
+    public function downloadTokens()
+    {
+        return $this->hasMany(DownloadToken::class);
+    }
+
+    public function storeOrders()
+    {
+        return $this->hasMany(StoreOrder::class);
+    }
 }
