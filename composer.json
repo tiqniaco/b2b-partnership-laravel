@@ -2,7 +2,10 @@
     "name": "laravel/laravel",
     "type": "project",
     "description": "The skeleton application for the Laravel framework.",
-    "keywords": ["laravel", "framework"],
+    "keywords": [
+        "laravel",
+        "framework"
+    ],
     "license": "MIT",
     "require": {
         "php": "^8.1",
@@ -48,6 +51,41 @@
         ],
         "post-create-project-cmd": [
             "@php artisan key:generate --ansi"
+        ],
+        "fresh": [
+            "@php artisan migrate:fresh --seed"
+        ],
+        "setup": [
+            "@composer install --optimize-autoloader",
+            "@php artisan key:generate --ansi",
+            "@php artisan migrate --force",
+            "@php artisan db:seed --force"
+        ],
+        "production": [
+            "@composer install --optimize-autoloader",
+            "@php artisan config:cache",
+            "@php artisan route:cache",
+            "@php artisan view:cache",
+            "@php artisan optimize"
+        ],
+        "production-clean": [
+            "@composer install --optimize-autoloader --no-dev",
+            "@php artisan config:cache",
+            "@php artisan route:cache",
+            "@php artisan view:cache",
+            "@php artisan optimize"
+        ],
+        "clear-cache": [
+            "@php artisan config:clear",
+            "@php artisan route:clear",
+            "@php artisan view:clear",
+            "@php artisan cache:clear"
+        ],
+        "test": [
+            "vendor/bin/phpunit"
+        ],
+        "test-coverage": [
+            "vendor/bin/phpunit --coverage-html coverage"
         ]
     },
     "extra": {
