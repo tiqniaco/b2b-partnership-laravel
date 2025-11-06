@@ -94,6 +94,7 @@ class StoreProductController extends Controller
                 'description_ar' => 'required|string',
                 'description_en' => 'required|string',
                 'file' => 'nullable|file|mimes:pdf,doc,docx,excel,csv,txt,zip,rar,ppt,pptx,jpg,jpeg,png,gif,svg|max:50000',
+                'demo_file' => 'nullable|file|mimes:pdf,doc,docx,excel,csv,txt,zip,rar,ppt,pptx,jpg,jpeg,png,gif,svg|max:50000',
                 'price' => 'required|numeric',
                 'discount' => 'nullable|numeric',
                 'image' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg',
@@ -121,6 +122,11 @@ class StoreProductController extends Controller
                 $fileName = 'files/store_products/' . time() . '.' . $request->file->extension();
                 $request->file->move(public_path('files/store_products'), $fileName);
                 $product->file = $fileName;
+            }
+            if ($request->hasFile('demo_file')) {
+                $demoFileName = 'files/store_products/demo_' . time() . '.' . $request->demo_file->extension();
+                $request->demo_file->move(public_path('files/store_products'), $demoFileName);
+                $product->demo_file = $demoFileName;
             }
             $product->price = $request->price;
             $product->discount = $request->discount;
@@ -249,6 +255,7 @@ class StoreProductController extends Controller
                 'description_ar' => 'nullable|string',
                 'description_en' => 'nullable|string',
                 'file' => 'nullable|file|mimes:pdf,doc,docx,excel,csv,txt,zip,rar,ppt,pptx,jpg,jpeg,png,gif,svg|max:50000',
+                'demo_file' => 'nullable|file|mimes:pdf,doc,docx,excel,csv,txt,zip,rar,ppt,pptx,jpg,jpeg,png,gif,svg|max:50000',
                 'price' => 'nullable|numeric',
                 'discount' => 'nullable|numeric',
                 'image' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg',
@@ -279,6 +286,14 @@ class StoreProductController extends Controller
                 $fileName = 'files/store_products/' . time() . '.' . $request->file->extension();
                 $request->file->move(public_path('files/store_products'), $fileName);
                 $product->file = $fileName;
+            }
+            if ($request->hasFile('demo_file')) {
+                if ($product->demo_file && file_exists(public_path($product->demo_file))) {
+                    unlink(public_path($product->demo_file));
+                }
+                $demoFileName = 'files/store_products/demo_' . time() . '.' . $request->demo_file->extension();
+                $request->demo_file->move(public_path('files/store_products'), $demoFileName);
+                $product->demo_file = $demoFileName;
             }
             $product->price = $request->price ?? $product->price;
             $product->discount = $request->discount ?? $product->discount;
