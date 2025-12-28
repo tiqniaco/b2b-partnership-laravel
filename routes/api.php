@@ -1,7 +1,17 @@
 <?php
 
+use App\Http\Controllers\Admin\DownloadSettingsController;
+use App\Http\Controllers\Admin\MonthsPlan\MonthsPlanController;
+use App\Http\Controllers\Admin\Package\PackageController;
+use App\Http\Controllers\Admin\UserPackage\UserPackageController;
+use App\Http\Controllers\Admin\UserPackage\UserSubscribeController;
 use App\Http\Controllers\AdminController;
+use App\Http\Controllers\Api\Admin\AdminReportsController;
+use App\Http\Controllers\Api\DownloadController;
+use App\Http\Controllers\Api\FCMController;
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\BagContentController;
+use App\Http\Controllers\BagContentStoreProductController;
 use App\Http\Controllers\ClientsController;
 use App\Http\Controllers\ClientServiceController;
 use App\Http\Controllers\ComplaintController;
@@ -11,34 +21,32 @@ use App\Http\Controllers\GovernmentController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\JobApplicationController;
 use App\Http\Controllers\JobController;
+use App\Http\Controllers\NotificationController;
+use App\Http\Controllers\PHPMailerController;
+use App\Http\Controllers\PreviousWorkImageController;
 use App\Http\Controllers\ProviderController;
+use App\Http\Controllers\ProviderPreviousWorksController;
+use App\Http\Controllers\ProviderReviewsController;
+use App\Http\Controllers\ProviderServiceController;
+use App\Http\Controllers\ProviderServiceFeatureController;
 use App\Http\Controllers\ProviderTypeController;
+use App\Http\Controllers\RequestOffersController;
+use App\Http\Controllers\RequestServicesController;
+use App\Http\Controllers\SavedJobController;
 use App\Http\Controllers\SpecializationController;
 use App\Http\Controllers\Store\ProductDescriptionContentController;
 use App\Http\Controllers\Store\ProductDescriptionTitleController;
-use App\Http\Controllers\SubSpecializationController;
-use App\Http\Controllers\PHPMailerController;
-use App\Http\Controllers\PreviousWorkImageController;
-use App\Http\Controllers\ProviderPreviousWorksController;
-use App\Http\Controllers\ProviderServiceController;
-use App\Http\Controllers\ProviderServiceFeatureController;
-use App\Http\Controllers\ProviderReviewsController;
-use App\Http\Controllers\RequestServicesController;
 use App\Http\Controllers\Store\StoreCartController;
 use App\Http\Controllers\Store\StoreCategoryController;
 use App\Http\Controllers\Store\StoreOrderController;
 use App\Http\Controllers\Store\StoreProductController;
-use App\Http\Controllers\NotificationController;
-use App\Http\Controllers\RequestOffersController;
-use App\Http\Controllers\SavedJobController;
-use App\Http\Controllers\BagContentController;
-use App\Http\Controllers\BagContentStoreProductController;
-use App\Http\Controllers\Api\DownloadController;
-use App\Http\Controllers\Api\FCMController;
-use App\Http\Controllers\Api\Admin\AdminReportsController;
-use App\Http\Controllers\Admin\DownloadSettingsController;
-
+use App\Http\Controllers\SubSpecializationController;
+use App\Models\User;
 use Illuminate\Support\Facades\Route;
+
+
+
+
 
 /*
 |--------------------------------------------------------------------------
@@ -65,6 +73,9 @@ Route::prefix("auth")->group(function () {
     Route::post('switch-client-account', [AuthController::class, 'switchClientAccount'])->middleware('auth:sanctum');
 });
 
+Route::get('use', function () {
+    return User::get();
+});
 // Country Routes
 Route::get('countries', [CountryController::class, 'index']);
 Route::post('countries', [CountryController::class, 'store'])->middleware(['auth:sanctum']);
@@ -268,6 +279,10 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::delete('fcm/remove-token', [FCMController::class, 'removeToken']);
     Route::post('fcm/test-notification', [FCMController::class, 'testNotification']);
 });
+Route::apiResource('months-plans', MonthsPlanController::class)->names('months_plan');
+Route::apiResource('packages', PackageController::class)->names('package');
+Route::apiResource('user-packages', UserPackageController::class)->names('user_package');
+Route::post('subscribe-plan', [UserSubscribeController::class, 'subscribe'])->name('user_package.subscribe');
 
 // Admin Routes
 Route::middleware(['auth:sanctum'])->prefix('admin')->group(function () {
